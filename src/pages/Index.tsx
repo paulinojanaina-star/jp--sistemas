@@ -1,12 +1,25 @@
-/* Home Page - Replace this page layout, components, content, behavior with what you want and translate to the language of the user */
-const Index = () => {
+import { DashboardMetrics } from '@/components/DashboardMetrics'
+import { DashboardChart } from '@/components/DashboardChart'
+import { DashboardRecentActivity } from '@/components/DashboardRecentActivity'
+
+export default function Index() {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6">
-        This is a example page ready to be rewritten with your own content
-      </h1>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
+          Visão Geral
+        </h2>
+        <p className="text-muted-foreground">
+          Bem-vindo ao painel de controle de estoque da unidade.
+        </p>
+      </div>
+
+      <DashboardMetrics />
+
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        <DashboardChart />
+        <DashboardRecentActivity />
+      </div>
     </div>
   )
 }
-
-export default Index

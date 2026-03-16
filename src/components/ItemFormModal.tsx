@@ -1,0 +1,203 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { useInventoryStore } from '@/stores/useInventoryStore'
+import { useToast } from '@/hooks/use-toast'
+import { Plus } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+
+const itemSchema = z.object({
+  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  description: z.string().optional(),
+  category: z.string().min(1, 'Selecione uma categoria'),
+  unit: z.string().min(1, 'Selecione a unidade de medida'),
+  minStock: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
+  currentStock: z.coerce.number().min(0, 'Saldo inicial não pode ser negativo'),
+})
+
+export function ItemFormModal() {
+  const [open, setOpen] = useState(false)
+  const { addItem } = useInventoryStore()
+  const { toast } = useToast()
+
+  const form = useForm<z.infer<typeof itemSchema>>({
+    resolver: zodResolver(itemSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      category: '',
+      unit: '',
+      minStock: 10,
+      currentStock: 0,
+    },
+  })
+
+  const onSubmit = (values: z.infer<typeof itemSchema>) => {
+    addItem(values)
+    toast({ title: 'Sucesso!', description: 'Item cadastrado com sucesso no inventário.' })
+    setOpen(false)
+    form.reset()
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2">
+          <Plus size={16} /> Novo Item
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Cadastrar Novo Item</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-2">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome do Item</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Seringa 10ml" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoria</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Medicação">Medicação</SelectItem>
+                        <SelectItem value="EPI">EPI</SelectItem>
+                        <SelectItem value="Consumíveis">Consumíveis</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unidade de Medida</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Caixa">Caixa</SelectItem>
+                        <SelectItem value="Frasco">Frasco</SelectItem>
+                        <SelectItem value="Unidade">Unidade</SelectItem>
+                        <SelectItem value="Pacote">Pacote</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="minStock"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estoque Mínimo</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="currentStock"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Saldo Inicial</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição / Observações</FormLabel>
+                  <FormControl>
+                    <Textarea className="resize-none" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="mr-2"
+                onClick={() => setOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit">Salvar Item</Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}
