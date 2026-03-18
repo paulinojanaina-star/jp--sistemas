@@ -46,7 +46,9 @@ import {
 const editSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   description: z.string().optional(),
-  unit_type: z.string().min(1, 'Selecione a unidade de medida'),
+  unit_type: z.enum(['Caixa', 'Unidade', 'Rolo', 'Litro', 'Frasco', 'Par', 'Pacote'], {
+    errorMap: () => ({ message: 'Selecione uma unidade de medida válida' }),
+  }),
   min_quantity: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
 })
 
@@ -62,7 +64,7 @@ export function ItemRowActions({ item }: { item: Item }) {
     defaultValues: {
       name: item.name,
       description: item.description || '',
-      unit_type: item.unit_type,
+      unit_type: (item.unit_type as any) || undefined,
       min_quantity: item.min_quantity,
     },
   })
@@ -72,7 +74,7 @@ export function ItemRowActions({ item }: { item: Item }) {
       form.reset({
         name: item.name,
         description: item.description || '',
-        unit_type: item.unit_type,
+        unit_type: (item.unit_type as any) || undefined,
         min_quantity: item.min_quantity,
       })
     }
@@ -164,7 +166,7 @@ export function ItemRowActions({ item }: { item: Item }) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Unidade de Medida</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || undefined}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione" />
@@ -205,7 +207,7 @@ export function ItemRowActions({ item }: { item: Item }) {
                   <FormItem>
                     <FormLabel>Descrição / Observações</FormLabel>
                     <FormControl>
-                      <Textarea className="resize-none" {...field} />
+                      <Textarea className="resize-none" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

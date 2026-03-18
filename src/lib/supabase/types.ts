@@ -62,7 +62,6 @@ export type Database = {
       }
       items: {
         Row: {
-          category: string | null
           created_at: string | null
           current_quantity: number | null
           description: string | null
@@ -72,7 +71,6 @@ export type Database = {
           unit_type: string | null
         }
         Insert: {
-          category?: string | null
           created_at?: string | null
           current_quantity?: number | null
           description?: string | null
@@ -82,7 +80,6 @@ export type Database = {
           unit_type?: string | null
         }
         Update: {
-          category?: string | null
           created_at?: string | null
           current_quantity?: number | null
           description?: string | null
@@ -331,7 +328,6 @@ export const Constants = {
 //   id: uuid (not null, default: gen_random_uuid())
 //   name: text (not null)
 //   description: text (nullable)
-//   category: text (nullable)
 //   min_quantity: numeric (nullable, default: 0)
 //   current_quantity: numeric (nullable, default: 0)
 //   unit_type: text (nullable)

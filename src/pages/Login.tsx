@@ -25,8 +25,9 @@ export default function Login() {
     const { error } = await signIn(email, password)
     if (error) {
       setError('Credenciais inválidas. Tente novamente.')
+      setLoading(false)
     }
-    setLoading(false)
+    // If no error, we keep loading as true to avoid button flashing before the redirect occurs
   }
 
   return (

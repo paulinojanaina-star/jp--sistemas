@@ -73,8 +73,8 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
 
     if (error) return { error }
 
-    if (initialQty > 0 && session?.user.id) {
-      await addMovement({
+    if (initialQty > 0 && session?.user?.id) {
+      const { error: moveError } = await addMovement({
         item_id: data.id,
         type: 'IN',
         quantity: initialQty,
@@ -82,6 +82,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         responsible_id: session.user.id,
         observations: 'Cadastro inicial',
       })
+      if (moveError) return { error: moveError }
     } else {
       await fetchItems()
     }
