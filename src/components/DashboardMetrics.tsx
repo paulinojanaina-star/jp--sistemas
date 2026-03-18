@@ -6,21 +6,21 @@ export function DashboardMetrics() {
   const { items, movements } = useInventoryStore()
 
   const totalItems = items.length
-  const criticalStock = items.filter((i) => i.currentStock < i.minStock).length
+  const criticalStock = items.filter((i) => i.current_quantity < i.min_quantity).length
 
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
 
   const monthlyMovements = movements.filter((m) => {
-    const d = new Date(m.date + 'T00:00:00')
+    const d = new Date(m.created_at)
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear
   })
 
   const monthlyIn = monthlyMovements
-    .filter((m) => m.type === 'ENTRADA')
+    .filter((m) => m.type === 'IN')
     .reduce((sum, m) => sum + m.quantity, 0)
   const monthlyOut = monthlyMovements
-    .filter((m) => m.type === 'SAIDA')
+    .filter((m) => m.type === 'OUT')
     .reduce((sum, m) => sum + m.quantity, 0)
 
   return (
@@ -32,7 +32,7 @@ export function DashboardMetrics() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalItems}</div>
-          <p className="text-xs text-muted-foreground mt-1">Registrados no catálogo</p>
+          <p className="text-xs text-muted-foreground mt-1">Registrados no banco</p>
         </CardContent>
       </Card>
 

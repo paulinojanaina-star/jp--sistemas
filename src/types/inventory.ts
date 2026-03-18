@@ -1,24 +1,29 @@
 export type ItemCategory = 'Medicação' | 'EPI' | 'Consumíveis' | string
 export type ItemUnit = 'Caixa' | 'Frasco' | 'Unidade' | 'Pacote' | string
-export type MovementType = 'ENTRADA' | 'SAIDA'
+export type MovementType = 'IN' | 'OUT'
 
 export interface Item {
   id: string
   name: string
   description?: string
   category: ItemCategory
-  unit: ItemUnit
-  minStock: number
-  currentStock: number
+  unit_type: ItemUnit
+  min_quantity: number
+  current_quantity: number
+  created_at: string
 }
 
 export interface Movement {
   id: string
-  itemId: string
+  item_id: string
   type: MovementType
   quantity: number
-  date: string // YYYY-MM-DD format for simplicity with native inputs
-  responsible: string
-  unitOriginDest: string
-  observation?: string
+  created_at: string
+  health_unit_name: string
+  responsible_id: string
+  observations?: string
+
+  // Joined fields from Supabase
+  items?: { name: string }
+  profiles?: { email: string; full_name: string }
 }

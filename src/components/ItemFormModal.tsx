@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
-import { Plus } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,13 +36,14 @@ const itemSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   description: z.string().optional(),
   category: z.string().min(1, 'Selecione uma categoria'),
-  unit: z.string().min(1, 'Selecione a unidade de medida'),
-  minStock: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
-  currentStock: z.coerce.number().min(0, 'Saldo inicial não pode ser negativo'),
+  unit_type: z.string().min(1, 'Selecione a unidade de medida'),
+  min_quantity: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
+  current_quantity: z.coerce.number().min(0, 'Saldo inicial não pode ser negativo'),
 })
 
 export function ItemFormModal() {
   const [open, setOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const { addItem } = useInventoryStore()
   const { toast } = useToast()
 
@@ -52,15 +53,29 @@ export function ItemFormModal() {
       name: '',
       description: '',
       category: '',
-      unit: '',
-      minStock: 10,
-      currentStock: 0,
+      unit_type: '',
+      min_quantity: 10,
+      current_quantity: 0,
     },
   })
 
-  const onSubmit = (values: z.infer<typeof itemSchema>) => {
-    addItem(values)
-    toast({ title: 'Sucesso!', description: 'Item cadastrado com sucesso no inventário.' })
+  const onSubmit = async (values: z.infer<typeof itemSchema>) => {
+    setSubmitting(true)
+    const { current_quantity, ...itemData } = values
+
+    const { error } = await addItem(itemData, current_quantity)
+    setSubmitting(false)
+
+    if (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível cadastrar o item.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    toast({ title: 'Sucesso!', description: 'Item cadastrado com sucesso no banco de dados.' })
     setOpen(false)
     form.reset()
   }
@@ -118,7 +133,7 @@ export function ItemFormModal() {
 
               <FormField
                 control={form.control}
-                name="unit"
+                name="unit_type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Unidade de Medida</FormLabel>
@@ -144,7 +159,7 @@ export function ItemFormModal() {
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="minStock"
+                name="min_quantity"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Estoque Mínimo</FormLabel>
@@ -157,7 +172,7 @@ export function ItemFormModal() {
               />
               <FormField
                 control={form.control}
-                name="currentStock"
+                name="current_quantity"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Saldo Inicial</FormLabel>
@@ -190,10 +205,14 @@ export function ItemFormModal() {
                 variant="outline"
                 className="mr-2"
                 onClick={() => setOpen(false)}
+                disabled={submitting}
               >
                 Cancelar
               </Button>
-              <Button type="submit">Salvar Item</Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Salvar Item
+              </Button>
             </div>
           </form>
         </Form>

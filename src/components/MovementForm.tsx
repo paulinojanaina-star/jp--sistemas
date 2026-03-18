@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
-import { AlertCircle, ArrowDownToLine, ArrowUpFromLine, Save } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
+import { AlertCircle, ArrowDownToLine, ArrowUpFromLine, Save, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,59 +29,81 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 const movementSchema = z.object({
-  itemId: z.string().min(1, 'Selecione um item'),
-  type: z.enum(['ENTRADA', 'SAIDA']),
+  item_id: z.string().min(1, 'Selecione um item'),
+  type: z.enum(['IN', 'OUT']),
   quantity: z.coerce.number().min(1, 'A quantidade deve ser maior que zero'),
-  responsible: z.string().min(2, 'Nome do responsável é obrigatório'),
-  unitOriginDest: z.string().min(2, 'Especifique a origem ou destino'),
-  date: z.string().min(1, 'Data é obrigatória'),
-  observation: z.string().optional(),
+  health_unit_name: z.string().min(2, 'Especifique a origem ou destino'),
+  observations: z.string().optional(),
 })
 
 export function MovementForm() {
   const { items, addMovement } = useInventoryStore()
+  const { session } = useAuth()
   const { toast } = useToast()
+  const [submitting, setSubmitting] = useState(false)
 
   const form = useForm<z.infer<typeof movementSchema>>({
     resolver: zodResolver(movementSchema),
     defaultValues: {
-      type: 'SAIDA',
+      type: 'OUT',
       quantity: 1,
-      date: new Date().toISOString().split('T')[0],
-      responsible: '',
-      unitOriginDest: '',
-      observation: '',
+      health_unit_name: '',
+      observations: '',
     },
   })
 
-  const selectedItemId = form.watch('itemId')
+  const selectedItemId = form.watch('item_id')
   const selectedType = form.watch('type')
   const quantityInput = form.watch('quantity')
 
   const selectedItem = items.find((i) => i.id === selectedItemId)
-  const isOutbound = selectedType === 'SAIDA'
+  const isOutbound = selectedType === 'OUT'
 
   const quantity = Number(quantityInput) || 0
-  const willBeNegative = selectedItem && isOutbound && quantity > selectedItem.currentStock
+  const willBeNegative = selectedItem && isOutbound && quantity > selectedItem.current_quantity
   const newBalance = selectedItem
     ? isOutbound
-      ? selectedItem.currentStock - quantity
-      : selectedItem.currentStock + quantity
+      ? selectedItem.current_quantity - quantity
+      : selectedItem.current_quantity + quantity
     : null
 
-  const onSubmit = (values: z.infer<typeof movementSchema>) => {
+  const onSubmit = async (values: z.infer<typeof movementSchema>) => {
     if (willBeNegative) {
       form.setError('quantity', { message: 'Quantidade excede o saldo atual!' })
       return
     }
 
-    addMovement(values)
+    if (!session?.user?.id) {
+      toast({
+        title: 'Erro de Autenticação',
+        description: 'Usuário não autenticado',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setSubmitting(true)
+    const { error } = await addMovement({
+      ...values,
+      responsible_id: session.user.id,
+    })
+    setSubmitting(false)
+
+    if (error) {
+      toast({
+        title: 'Erro ao salvar',
+        description: error.message || 'Falha ao registrar movimentação.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     toast({
-      title: values.type === 'ENTRADA' ? 'Entrada registrada' : 'Saída registrada',
-      description: `Movimentação de ${values.quantity} ${selectedItem?.unit}(s) de ${selectedItem?.name} salva.`,
+      title: values.type === 'IN' ? 'Entrada registrada' : 'Saída registrada',
+      description: `Movimentação de ${values.quantity} ${selectedItem?.unit_type}(s) de ${selectedItem?.name} salva.`,
     })
 
-    form.reset({ ...form.getValues(), itemId: '', quantity: 1, observation: '' })
+    form.reset({ ...form.getValues(), item_id: '', quantity: 1, observations: '' })
   }
 
   return (
@@ -101,13 +125,13 @@ export function MovementForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="ENTRADA">
+                        <SelectItem value="IN">
                           <div className="flex items-center gap-2">
                             <ArrowDownToLine className="text-emerald-500 h-4 w-4" /> Entrada
                             (Recebimento)
                           </div>
                         </SelectItem>
-                        <SelectItem value="SAIDA">
+                        <SelectItem value="OUT">
                           <div className="flex items-center gap-2">
                             <ArrowUpFromLine className="text-primary h-4 w-4" /> Saída
                             (Distribuição)
@@ -120,24 +144,17 @@ export function MovementForm() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-2">
+                <FormLabel>Responsável (Automático)</FormLabel>
+                <div className="h-10 px-3 py-2 border rounded-md bg-muted text-sm text-muted-foreground flex items-center">
+                  {session?.user?.email}
+                </div>
+              </div>
             </div>
 
             <FormField
               control={form.control}
-              name="itemId"
+              name="item_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Item</FormLabel>
@@ -152,7 +169,7 @@ export function MovementForm() {
                         <SelectItem key={item.id} value={item.id}>
                           {item.name}{' '}
                           <span className="text-muted-foreground text-xs ml-2">
-                            (Saldo: {item.currentStock} {item.unit})
+                            (Saldo: {item.current_quantity} {item.unit_type})
                           </span>
                         </SelectItem>
                       ))}
@@ -185,7 +202,7 @@ export function MovementForm() {
                   >
                     <span>Novo Saldo Previsto:</span>
                     <span className="font-bold text-base">
-                      {newBalance} {selectedItem.unit}
+                      {newBalance} {selectedItem.unit_type}
                     </span>
                   </div>
                 )}
@@ -194,21 +211,7 @@ export function MovementForm() {
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="responsible"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Responsável</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome do solicitante/entregador" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="unitOriginDest"
+                  name="health_unit_name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
@@ -226,7 +229,7 @@ export function MovementForm() {
 
             <FormField
               control={form.control}
-              name="observation"
+              name="observations"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Observações Adicionais (Opcional)</FormLabel>
@@ -252,8 +255,18 @@ export function MovementForm() {
               </Alert>
             )}
 
-            <Button type="submit" size="lg" className="w-full md:w-auto" disabled={willBeNegative}>
-              <Save className="mr-2 h-5 w-5" /> Confirmar Movimentação
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full md:w-auto"
+              disabled={willBeNegative || submitting}
+            >
+              {submitting ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-5 w-5" />
+              )}
+              {submitting ? 'Salvando...' : 'Confirmar Movimentação'}
             </Button>
           </form>
         </Form>

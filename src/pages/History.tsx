@@ -23,16 +23,15 @@ import {
 } from '@/components/ui/select'
 
 export default function History() {
-  const { movements, items } = useInventoryStore()
+  const { movements } = useInventoryStore()
   const { toast } = useToast()
 
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<string>('TODOS')
 
   const filteredMovements = movements.filter((m) => {
-    const item = items.find((i) => i.id === m.itemId)
-    const itemName = item ? item.name.toLowerCase() : ''
-    const respName = m.responsible.toLowerCase()
+    const itemName = m.items?.name.toLowerCase() || ''
+    const respName = m.profiles?.full_name?.toLowerCase() || m.profiles?.email?.toLowerCase() || ''
     const matchSearch =
       itemName.includes(search.toLowerCase()) || respName.includes(search.toLowerCase())
     const matchType = filterType === 'TODOS' || m.type === filterType
@@ -51,7 +50,9 @@ export default function History() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Histórico de Movimentações</h2>
-          <p className="text-muted-foreground">Auditoria completa de entradas e saídas.</p>
+          <p className="text-muted-foreground">
+            Auditoria completa de entradas e saídas do banco de dados.
+          </p>
         </div>
         <Button onClick={handleExport} variant="outline" className="bg-white">
           <Download className="mr-2 h-4 w-4" /> Exportar Relatório
@@ -76,8 +77,8 @@ export default function History() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="TODOS">Todas as Operações</SelectItem>
-                <SelectItem value="ENTRADA">Apenas Entradas</SelectItem>
-                <SelectItem value="SAIDA">Apenas Saídas</SelectItem>
+                <SelectItem value="IN">Apenas Entradas</SelectItem>
+                <SelectItem value="OUT">Apenas Saídas</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,7 +91,7 @@ export default function History() {
                 <TableHead>Item</TableHead>
                 <TableHead className="text-right">Qtd</TableHead>
                 <TableHead>Responsável</TableHead>
-                <TableHead>Origem/Destino</TableHead>
+                <TableHead>Unidade Origem/Destino</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -102,13 +103,18 @@ export default function History() {
                 </TableRow>
               ) : (
                 filteredMovements.map((m) => {
-                  const item = items.find((i) => i.id === m.itemId)
-                  const isEntry = m.type === 'ENTRADA'
+                  const isEntry = m.type === 'IN'
 
                   return (
                     <TableRow key={m.id}>
                       <TableCell className="whitespace-nowrap text-sm">
-                        {new Date(m.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                        {new Date(m.created_at).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -121,23 +127,28 @@ export default function History() {
                             ) : (
                               <ArrowUpFromLine size={12} />
                             )}
-                            {m.type}
+                            {isEntry ? 'ENTRADA' : 'SAÍDA'}
                           </span>
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium">{item?.name || 'Excluído'}</TableCell>
+                      <TableCell className="font-medium">{m.items?.name || 'Excluído'}</TableCell>
                       <TableCell
                         className={`text-right font-mono font-bold ${isEntry ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-300'}`}
                       >
                         {isEntry ? '+' : '-'}
                         {m.quantity}
                       </TableCell>
-                      <TableCell className="text-sm">{m.responsible}</TableCell>
+                      <TableCell
+                        className="text-sm truncate max-w-[150px]"
+                        title={m.profiles?.email}
+                      >
+                        {m.profiles?.full_name || m.profiles?.email || 'Desconhecido'}
+                      </TableCell>
                       <TableCell
                         className="text-sm text-muted-foreground truncate max-w-[150px]"
-                        title={m.unitOriginDest}
+                        title={m.health_unit_name}
                       >
-                        {m.unitOriginDest}
+                        {m.health_unit_name}
                       </TableCell>
                     </TableRow>
                   )

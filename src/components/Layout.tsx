@@ -2,19 +2,25 @@ import { Outlet } from 'react-router-dom'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from './AppSidebar'
 import { useInventoryStore } from '@/stores/useInventoryStore'
-import { Bell, UserCircle, Search } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { useAuth } from '@/hooks/use-auth'
+import { Bell, Search, LogOut, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 export default function Layout() {
-  const { items } = useInventoryStore()
-  const lowStockItems = items.filter((i) => i.currentStock < i.minStock)
+  const { items, loading } = useInventoryStore()
+  const { user, signOut } = useAuth()
+
+  const lowStockItems = items.filter((i) => i.current_quantity < i.min_quantity)
+  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
+  const userInitials = userName.substring(0, 2).toUpperCase()
 
   return (
     <SidebarProvider>
@@ -45,7 +51,9 @@ export default function Layout() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-72">
                   <div className="p-3 border-b font-medium text-sm">Alertas de Estoque</div>
-                  {lowStockItems.length === 0 ? (
+                  {loading ? (
+                    <div className="p-4 text-center text-muted-foreground">Carregando...</div>
+                  ) : lowStockItems.length === 0 ? (
                     <div className="p-4 text-sm text-center text-muted-foreground">
                       Estoque regularizado.
                     </div>
@@ -58,7 +66,8 @@ export default function Layout() {
                         >
                           <span className="font-semibold text-sm">{item.name}</span>
                           <span className="text-xs text-destructive font-medium flex items-center gap-1">
-                            Abaixo do mínimo: {item.currentStock} / {item.minStock} {item.unit}
+                            Abaixo do mínimo: {item.current_quantity} / {item.min_quantity}{' '}
+                            {item.unit_type}
                           </span>
                         </DropdownMenuItem>
                       ))}
@@ -67,19 +76,44 @@ export default function Layout() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
-                <div className="hidden sm:block text-right">
-                  <p className="text-sm font-medium leading-none">Dr. Admin</p>
-                  <p className="text-xs text-muted-foreground">Unidade Central</p>
-                </div>
-                <UserCircle className="h-8 w-8 text-slate-400" />
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+                    <div className="hidden sm:block text-right">
+                      <p className="text-sm font-medium leading-none truncate max-w-[120px]">
+                        {userName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Sessão Ativa</p>
+                    </div>
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
+                        {userInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground border-b mb-1 truncate">
+                    {user?.email}
+                  </div>
+                  <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sair do sistema
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
           <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
             <div className="max-w-7xl mx-auto animate-fade-in-up">
-              <Outlet />
+              {loading ? (
+                <div className="flex items-center justify-center h-64">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <Outlet />
+              )}
             </div>
           </main>
         </div>

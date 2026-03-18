@@ -69,10 +69,10 @@ export default function Items() {
                 </TableRow>
               ) : (
                 filteredItems.map((item) => {
-                  const isLow = item.currentStock < item.minStock
+                  const isLow = item.current_quantity < item.min_quantity
                   const percentage = Math.min(
                     100,
-                    Math.max(0, (item.currentStock / (item.minStock * 2 || 1)) * 100),
+                    Math.max(0, (item.current_quantity / (item.min_quantity * 2 || 1)) * 100),
                   )
 
                   return (
@@ -85,7 +85,7 @@ export default function Items() {
                           {item.name}
                           {isLow && <AlertCircle className="h-4 w-4 text-destructive" />}
                         </div>
-                        <div className="text-xs text-muted-foreground">{item.unit}</div>
+                        <div className="text-xs text-muted-foreground">{item.unit_type}</div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="font-normal">
@@ -96,13 +96,13 @@ export default function Items() {
                         <span
                           className={`font-mono text-base ${isLow ? 'text-destructive font-bold' : 'font-medium'}`}
                         >
-                          {item.currentStock}
+                          {item.current_quantity}
                         </span>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1.5">
                           <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground">
-                            <span>Min: {item.minStock}</span>
+                            <span>Min: {item.min_quantity}</span>
                             <span>{percentage > 100 ? '+100' : Math.round(percentage)}%</span>
                           </div>
                           <Progress

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
 
 export function DashboardRecentActivity() {
-  const { movements, items } = useInventoryStore()
+  const { movements } = useInventoryStore()
   const recent = movements.slice(0, 5)
 
   return (
@@ -16,37 +16,36 @@ export function DashboardRecentActivity() {
         <div className="space-y-4">
           {recent.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Nenhuma movimentação recente.
+              Nenhuma movimentação recente no banco.
             </p>
           ) : (
             recent.map((m) => {
-              const item = items.find((i) => i.id === m.itemId)
-              const isEntry = m.type === 'ENTRADA'
+              const isEntry = m.type === 'IN'
 
               return (
                 <div
                   key={m.id}
                   className="flex items-center justify-between border-b border-border/50 pb-3 last:border-0 last:pb-0"
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
                     <div
-                      className={`p-2 rounded-full mt-0.5 ${isEntry ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-primary'}`}
+                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isEntry ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-primary'}`}
                     >
                       {isEntry ? <ArrowDownToLine size={14} /> : <ArrowUpFromLine size={14} />}
                     </div>
-                    <div>
-                      <p className="font-medium text-sm leading-tight mb-1">
-                        {item?.name || 'Item Desconhecido'}
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm leading-tight mb-1 truncate">
+                        {m.items?.name || 'Item Excluído'}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(m.date + 'T00:00:00').toLocaleDateString('pt-BR')} •{' '}
-                        {m.responsible}
+                      <p className="text-xs text-muted-foreground truncate">
+                        {new Date(m.created_at).toLocaleDateString('pt-BR')} •{' '}
+                        {m.profiles?.full_name || m.profiles?.email || 'Desconhecido'}
                       </p>
                     </div>
                   </div>
                   <Badge
                     variant={isEntry ? 'outline' : 'default'}
-                    className={`font-mono ${isEntry ? 'text-emerald-600 border-emerald-200' : ''}`}
+                    className={`font-mono shrink-0 ml-2 ${isEntry ? 'text-emerald-600 border-emerald-200' : ''}`}
                   >
                     {isEntry ? '+' : '-'}
                     {m.quantity}
