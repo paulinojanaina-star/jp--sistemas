@@ -22,6 +22,7 @@ export interface Movement {
   health_unit_name: string
   responsible_id: string
   observations?: string
+  document_url?: string
 
   // Joined fields from Supabase
   items?: { name: string }

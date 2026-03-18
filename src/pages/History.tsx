@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Search, Download, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
+import { Search, Download, ArrowDownToLine, ArrowUpFromLine, FileText } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -92,12 +92,13 @@ export default function History() {
                 <TableHead className="text-right">Qtd</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Unidade Origem/Destino</TableHead>
+                <TableHead className="text-center">Anexo</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredMovements.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                     Nenhum registro encontrado.
                   </TableCell>
                 </TableRow>
@@ -149,6 +150,15 @@ export default function History() {
                         title={m.health_unit_name}
                       >
                         {m.health_unit_name}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {m.document_url && (
+                          <Button variant="ghost" size="icon" asChild title="Ver Anexo">
+                            <a href={m.document_url} target="_blank" rel="noopener noreferrer">
+                              <FileText className="h-4 w-4 text-primary" />
+                            </a>
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   )

@@ -6,6 +6,7 @@ import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { AlertCircle, ArrowDownToLine, ArrowUpFromLine, Save, Loader2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase/client'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +35,7 @@ const movementSchema = z.object({
   quantity: z.coerce.number().positive('A quantidade deve ser maior que zero'),
   health_unit_name: z.string().min(2, 'Especifique a origem ou destino').trim(),
   observations: z.string().optional(),
+  file: z.any().optional(),
 })
 
 export function MovementForm() {
@@ -44,11 +46,7 @@ export function MovementForm() {
 
   const form = useForm<z.infer<typeof movementSchema>>({
     resolver: zodResolver(movementSchema),
-    defaultValues: {
-      type: 'OUT',
-      health_unit_name: '',
-      observations: '',
-    },
+    defaultValues: { type: 'OUT', health_unit_name: '', observations: '' },
   })
 
   const selectedItemId = form.watch('item_id')
@@ -57,7 +55,6 @@ export function MovementForm() {
 
   const selectedItem = items.find((i) => i.id === selectedItemId)
   const isOutbound = selectedType === 'OUT'
-
   const quantity = Number(quantityInput) || 0
   const willBeNegative = selectedItem && isOutbound && quantity > selectedItem.current_quantity
   const newBalance = selectedItem
@@ -67,23 +64,34 @@ export function MovementForm() {
     : null
 
   const onSubmit = async (values: z.infer<typeof movementSchema>) => {
-    if (willBeNegative) {
-      form.setError('quantity', { message: 'Quantidade excede o saldo atual!' })
-      return
-    }
-
-    if (!session?.user?.id) {
-      toast({
-        title: 'Erro de Autenticação',
-        description: 'Usuário não autenticado',
-        variant: 'destructive',
-      })
-      return
-    }
+    if (willBeNegative)
+      return form.setError('quantity', { message: 'Quantidade excede o saldo atual!' })
+    if (!session?.user?.id) return toast({ title: 'Erro de Autenticação', variant: 'destructive' })
 
     setSubmitting(true)
+    let documentUrl = undefined
 
-    // Ensure strict payload formatting to match database constraints perfectly
+    if (isOutbound && values.file && values.file.length > 0) {
+      const file = values.file[0] as File
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
+      const filePath = `${session.user.id}/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('movement-attachments')
+        .upload(filePath, file)
+      if (uploadError) {
+        setSubmitting(false)
+        return toast({
+          title: 'Erro no Upload',
+          description: uploadError.message,
+          variant: 'destructive',
+        })
+      }
+      documentUrl = supabase.storage.from('movement-attachments').getPublicUrl(filePath)
+        .data.publicUrl
+    }
+
     const movementPayload = {
       item_id: values.item_id,
       type: values.type.toUpperCase() as 'IN' | 'OUT',
@@ -91,26 +99,22 @@ export function MovementForm() {
       health_unit_name: values.health_unit_name.trim(),
       observations: values.observations?.trim() || undefined,
       responsible_id: session.user.id,
+      document_url: documentUrl,
     }
 
     const { error } = await addMovement(movementPayload)
     setSubmitting(false)
 
-    if (error) {
-      toast({
-        title: 'Erro ao salvar',
-        description: error.message || 'Falha ao registrar movimentação.',
-        variant: 'destructive',
-      })
-      return
-    }
+    if (error)
+      return toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' })
 
     toast({
-      title: values.type === 'IN' ? 'Entrada registrada' : 'Saída registrada',
-      description: `Movimentação de ${values.quantity} ${selectedItem?.unit_type}(s) de ${selectedItem?.name} salva.`,
+      title: isOutbound ? 'Saída registrada' : 'Entrada registrada',
+      description: `Movimentação salva com sucesso.`,
     })
-
-    form.reset({ ...form.getValues(), item_id: '', quantity: 1, observations: '' })
+    form.reset({ ...form.getValues(), item_id: '', quantity: 1, observations: '', file: undefined })
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement
+    if (fileInput) fileInput.value = ''
   }
 
   return (
@@ -135,22 +139,18 @@ export function MovementForm() {
                         <SelectItem value="IN">
                           <div className="flex items-center gap-2">
                             <ArrowDownToLine className="text-emerald-500 h-4 w-4" /> Entrada
-                            (Recebimento)
                           </div>
                         </SelectItem>
                         <SelectItem value="OUT">
                           <div className="flex items-center gap-2">
                             <ArrowUpFromLine className="text-primary h-4 w-4" /> Saída
-                            (Distribuição)
                           </div>
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
-
               <div className="space-y-2">
                 <FormLabel>Responsável (Automático)</FormLabel>
                 <div className="h-10 px-3 py-2 border rounded-md bg-muted text-sm text-muted-foreground flex items-center">
@@ -176,7 +176,7 @@ export function MovementForm() {
                         <SelectItem key={item.id} value={item.id}>
                           {item.name}{' '}
                           <span className="text-muted-foreground text-xs ml-2">
-                            (Saldo: {item.current_quantity} {item.unit_type})
+                            (Saldo: {item.current_quantity})
                           </span>
                         </SelectItem>
                       ))}
@@ -202,37 +202,55 @@ export function MovementForm() {
                     </FormItem>
                   )}
                 />
-
                 {selectedItem && (
                   <div
                     className={`p-3 rounded-md border text-sm flex justify-between items-center ${willBeNegative ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'bg-muted/50 border-border'}`}
                   >
-                    <span>Novo Saldo Previsto:</span>
+                    <span>Novo Saldo:</span>
                     <span className="font-bold text-base">
                       {newBalance} {selectedItem.unit_type}
                     </span>
                   </div>
                 )}
               </div>
-
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="health_unit_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {isOutbound ? 'Unidade de Destino' : 'Origem / Fornecedor'}
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: UTI, Almoxarifado Central..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="health_unit_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {isOutbound ? 'Unidade de Destino' : 'Origem / Fornecedor'}
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: UTI, Almoxarifado..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
+
+            {isOutbound && (
+              <FormField
+                control={form.control}
+                name="file"
+                render={({ field: { value, onChange, ...fieldProps } }) => (
+                  <FormItem>
+                    <FormLabel>Anexar Comprovante ou Foto (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="file-upload"
+                        type="file"
+                        accept="image/jpeg, image/png, application/pdf"
+                        onChange={(e) => onChange(e.target.files)}
+                        {...fieldProps}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
@@ -243,7 +261,7 @@ export function MovementForm() {
                   <FormControl>
                     <Textarea
                       className="resize-none h-20"
-                      placeholder="Motivo específico, número do lote..."
+                      placeholder="Motivo específico..."
                       {...field}
                     />
                   </FormControl>
@@ -256,9 +274,7 @@ export function MovementForm() {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Erro de Validação</AlertTitle>
-                <AlertDescription>
-                  O saldo não pode ficar negativo. Ajuste a quantidade.
-                </AlertDescription>
+                <AlertDescription>O saldo não pode ficar negativo.</AlertDescription>
               </Alert>
             )}
 
