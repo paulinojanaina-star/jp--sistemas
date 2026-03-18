@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Loader2 } from 'lucide-react'
+import { Item, ITEM_CATEGORIES, ITEM_UNITS } from '@/types/inventory'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,55 +42,119 @@ const itemSchema = z.object({
   current_quantity: z.coerce.number().min(0, 'Saldo inicial não pode ser negativo'),
 })
 
-export function ItemFormModal() {
-  const [open, setOpen] = useState(false)
+interface ItemFormModalProps {
+  item?: Item
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  trigger?: React.ReactNode
+}
+
+export function ItemFormModal({
+  item,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  trigger,
+}: ItemFormModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+  const setOpen = isControlled && controlledOnOpenChange ? controlledOnOpenChange : setInternalOpen
+
   const [submitting, setSubmitting] = useState(false)
-  const { addItem } = useInventoryStore()
+  const { addItem, updateItem } = useInventoryStore()
   const { toast } = useToast()
+
+  const isEditing = !!item
 
   const form = useForm<z.infer<typeof itemSchema>>({
     resolver: zodResolver(itemSchema),
     defaultValues: {
-      name: '',
-      description: '',
-      category: '',
-      unit_type: '',
-      min_quantity: 10,
-      current_quantity: 0,
+      name: item?.name || '',
+      description: item?.description || '',
+      category: item?.category || '',
+      unit_type: item?.unit_type || '',
+      min_quantity: item?.min_quantity || 10,
+      current_quantity: item?.current_quantity || 0,
     },
   })
 
+  useEffect(() => {
+    if (open) {
+      if (item) {
+        form.reset({
+          name: item.name,
+          description: item.description || '',
+          category: item.category,
+          unit_type: item.unit_type,
+          min_quantity: item.min_quantity,
+          current_quantity: item.current_quantity,
+        })
+      } else {
+        form.reset({
+          name: '',
+          description: '',
+          category: '',
+          unit_type: '',
+          min_quantity: 10,
+          current_quantity: 0,
+        })
+      }
+    }
+  }, [open, item, form])
+
   const onSubmit = async (values: z.infer<typeof itemSchema>) => {
     setSubmitting(true)
-    const { current_quantity, ...itemData } = values
 
-    const { error } = await addItem(itemData, current_quantity)
-    setSubmitting(false)
+    if (isEditing && item) {
+      const { current_quantity, ...itemData } = values
+      const { error } = await updateItem(item.id, itemData)
+      setSubmitting(false)
 
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível cadastrar o item.',
-        variant: 'destructive',
-      })
-      return
+      if (error) {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível atualizar o item.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      toast({ title: 'Sucesso!', description: 'Item atualizado com sucesso.' })
+    } else {
+      const { current_quantity, ...itemData } = values
+      const { error } = await addItem(itemData, current_quantity)
+      setSubmitting(false)
+
+      if (error) {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível cadastrar o item.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      toast({ title: 'Sucesso!', description: 'Item cadastrado com sucesso no banco de dados.' })
     }
 
-    toast({ title: 'Sucesso!', description: 'Item cadastrado com sucesso no banco de dados.' })
     setOpen(false)
-    form.reset()
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus size={16} /> Novo Item
-        </Button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button className="gap-2">
+              <Plus size={16} /> Novo Item
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Cadastrar Novo Item</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Item' : 'Cadastrar Novo Item'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-2">
@@ -114,16 +179,22 @@ export function ItemFormModal() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoria</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Medicação">Medicação</SelectItem>
-                        <SelectItem value="EPI">EPI</SelectItem>
-                        <SelectItem value="Consumíveis">Consumíveis</SelectItem>
+                        {ITEM_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -137,19 +208,22 @@ export function ItemFormModal() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Unidade de Medida</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Caixa">Caixa</SelectItem>
-                        <SelectItem value="Unidade">Unidade</SelectItem>
-                        <SelectItem value="Rolo">Rolo</SelectItem>
-                        <SelectItem value="Litro">Litro</SelectItem>
-                        <SelectItem value="Frasco">Frasco</SelectItem>
-                        <SelectItem value="Par">Par</SelectItem>
+                        {ITEM_UNITS.map((unit) => (
+                          <SelectItem key={unit} value={unit}>
+                            {unit}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -172,19 +246,21 @@ export function ItemFormModal() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="current_quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Saldo Inicial</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!isEditing && (
+                <FormField
+                  control={form.control}
+                  name="current_quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Saldo Inicial</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             <FormField
@@ -213,7 +289,7 @@ export function ItemFormModal() {
               </Button>
               <Button type="submit" disabled={submitting}>
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Salvar Item
+                {isEditing ? 'Salvar Alterações' : 'Salvar Item'}
               </Button>
             </div>
           </form>

@@ -1,5 +1,8 @@
-export type ItemCategory = 'Medicação' | 'EPI' | 'Consumíveis' | string
-export type ItemUnit = 'Caixa' | 'Unidade' | 'Rolo' | 'Litro' | 'Frasco' | 'Par' | string
+export const ITEM_CATEGORIES = ['Medicação', 'EPI', 'Consumíveis'] as const
+export const ITEM_UNITS = ['Caixa', 'Unidade', 'Rolo', 'Litro', 'Frasco', 'Par'] as const
+
+export type ItemCategory = (typeof ITEM_CATEGORIES)[number] | string
+export type ItemUnit = (typeof ITEM_UNITS)[number] | string
 export type MovementType = 'IN' | 'OUT'
 
 export interface Item {
