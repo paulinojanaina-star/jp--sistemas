@@ -12,6 +12,8 @@ interface InventoryContextType {
     item: Omit<Item, 'id' | 'created_at' | 'current_quantity'>,
     initialQty: number,
   ) => Promise<{ error?: any }>
+  updateItem: (id: string, updates: Partial<Item>) => Promise<{ error?: any }>
+  deleteItem: (id: string) => Promise<{ error?: any }>
   addMovement: (
     movement: Omit<Movement, 'id' | 'created_at' | 'items' | 'profiles'>,
   ) => Promise<{ error?: any }>
@@ -88,6 +90,20 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     return {}
   }
 
+  const updateItem = async (id: string, updates: Partial<Item>) => {
+    const { error } = await supabase.from('items').update(updates).eq('id', id)
+    if (error) return { error }
+    await refreshData()
+    return {}
+  }
+
+  const deleteItem = async (id: string) => {
+    const { error } = await supabase.from('items').delete().eq('id', id)
+    if (error) return { error }
+    await refreshData()
+    return {}
+  }
+
   const addMovement = async (
     movement: Omit<Movement, 'id' | 'created_at' | 'items' | 'profiles'>,
   ) => {
@@ -101,7 +117,16 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <InventoryContext.Provider
-      value={{ items, movements, loading, refreshData, addItem, addMovement }}
+      value={{
+        items,
+        movements,
+        loading,
+        refreshData,
+        addItem,
+        updateItem,
+        deleteItem,
+        addMovement,
+      }}
     >
       {children}
     </InventoryContext.Provider>

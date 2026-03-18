@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { ItemFormModal } from '@/components/ItemFormModal'
+import { ItemRowActions } from '@/components/ItemRowActions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
@@ -58,12 +59,13 @@ export default function Items() {
                 <TableHead>Categoria</TableHead>
                 <TableHead className="text-right">Estoque Atual</TableHead>
                 <TableHead className="w-[200px]">Nível de Estoque</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                     Nenhum item encontrado.
                   </TableCell>
                 </TableRow>
@@ -110,6 +112,9 @@ export default function Items() {
                             className={`h-1.5 ${isLow ? 'bg-red-100 dark:bg-red-950 [&>div]:bg-destructive' : '[&>div]:bg-emerald-500'}`}
                           />
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <ItemRowActions item={item} />
                       </TableCell>
                     </TableRow>
                   )
