@@ -22,7 +22,6 @@ import { useNotificationStore } from '@/stores/useNotificationStore'
 interface ConsumptionData {
   id: string
   name: string
-  category: string
   unit_type: string
   total: number
   average: number
@@ -67,7 +66,7 @@ export function ConsumptionReport() {
           .eq('type', 'OUT')
           .gte('created_at', start.toISOString())
           .lte('created_at', end.toISOString()),
-        supabase.from('items').select('id, name, category, unit_type'),
+        supabase.from('items').select('id, name, unit_type'),
       ])
 
       if (mErr || iErr) throw new Error('Falha ao buscar dados')
@@ -89,7 +88,6 @@ export function ConsumptionReport() {
           return {
             id: itemId,
             name: item?.name || 'Item Excluído',
-            category: item?.category || '-',
             unit_type: item?.unit_type || '-',
             total,
             average: isMonthly ? (total / days) * 30 : total / days,
@@ -143,7 +141,6 @@ export function ConsumptionReport() {
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead>Item</TableHead>
-              <TableHead>Categoria</TableHead>
               <TableHead>Unidade de Medida</TableHead>
               <TableHead className="text-right">Saída Total</TableHead>
               <TableHead className="text-right">Média de Saída</TableHead>
@@ -155,9 +152,6 @@ export function ConsumptionReport() {
                 <TableRow key={i}>
                   <TableCell>
                     <Skeleton className="h-5 w-[150px]" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-[100px]" />
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-5 w-[80px]" />
@@ -172,7 +166,7 @@ export function ConsumptionReport() {
               ))
             ) : data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                   Nenhuma movimentação de saída encontrada para este período.
                 </TableCell>
               </TableRow>
@@ -191,11 +185,6 @@ export function ConsumptionReport() {
                         </Badge>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="font-normal">
-                      {row.category}
-                    </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{row.unit_type}</TableCell>
                   <TableCell className="text-right font-mono font-medium">{row.total}</TableCell>

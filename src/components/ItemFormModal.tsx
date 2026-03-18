@@ -5,7 +5,7 @@ import * as z from 'zod'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Loader2 } from 'lucide-react'
-import { Item, ITEM_CATEGORIES, ITEM_UNITS } from '@/types/inventory'
+import { Item, ITEM_UNITS } from '@/types/inventory'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,7 +36,6 @@ import {
 const itemSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   description: z.string().optional(),
-  category: z.string().min(1, 'Selecione uma categoria'),
   unit_type: z.string().min(1, 'Selecione a unidade de medida'),
   min_quantity: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
   current_quantity: z.coerce.number().min(0, 'Saldo inicial não pode ser negativo'),
@@ -72,7 +71,6 @@ export function ItemFormModal({
     defaultValues: {
       name: item?.name || '',
       description: item?.description || '',
-      category: item?.category || '',
       unit_type: item?.unit_type || '',
       min_quantity: item?.min_quantity || 10,
       current_quantity: item?.current_quantity || 0,
@@ -85,7 +83,6 @@ export function ItemFormModal({
         form.reset({
           name: item.name,
           description: item.description || '',
-          category: item.category,
           unit_type: item.unit_type,
           min_quantity: item.min_quantity,
           current_quantity: item.current_quantity,
@@ -94,7 +91,6 @@ export function ItemFormModal({
         form.reset({
           name: '',
           description: '',
-          category: '',
           unit_type: '',
           min_quantity: 10,
           current_quantity: 0,
@@ -175,35 +171,6 @@ export function ItemFormModal({
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categoria</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {ITEM_CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="unit_type"
                 render={({ field }) => (
                   <FormItem>
@@ -230,9 +197,7 @@ export function ItemFormModal({
                   </FormItem>
                 )}
               />
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="min_quantity"
@@ -246,22 +211,23 @@ export function ItemFormModal({
                   </FormItem>
                 )}
               />
-              {!isEditing && (
-                <FormField
-                  control={form.control}
-                  name="current_quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Saldo Inicial</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
             </div>
+
+            {!isEditing && (
+              <FormField
+                control={form.control}
+                name="current_quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Saldo Inicial</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}

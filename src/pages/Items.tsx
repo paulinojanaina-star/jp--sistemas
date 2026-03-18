@@ -29,9 +29,7 @@ export default function Items() {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const filteredItems = items.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.category.toLowerCase().includes(search.toLowerCase())
+    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase())
     if (!matchesSearch) return false
 
     if (stockFilter === 'critical')
@@ -88,7 +86,7 @@ export default function Items() {
             <div className="relative w-full md:max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Pesquisar por nome ou categoria..."
+                placeholder="Pesquisar por nome..."
                 className="pl-9 w-full"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -107,7 +105,6 @@ export default function Items() {
             <TableHeader>
               <TableRow className="bg-muted/30">
                 <TableHead>Item</TableHead>
-                <TableHead>Categoria</TableHead>
                 <TableHead className="text-right">Estoque Atual</TableHead>
                 <TableHead className="w-[200px]">Nível de Estoque</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
@@ -116,7 +113,7 @@ export default function Items() {
             <TableBody>
               {filteredItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                     {stockFilter === 'critical'
                       ? 'Nenhum item com estoque crítico encontrado.'
                       : stockFilter === 'zero'
@@ -160,11 +157,6 @@ export default function Items() {
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground">{item.unit_type}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="font-normal">
-                          {item.category}
-                        </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <span

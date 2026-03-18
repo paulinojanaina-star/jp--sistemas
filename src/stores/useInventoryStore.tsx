@@ -64,7 +64,6 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
       .insert({
         name: item.name,
         description: item.description,
-        category: item.category,
         unit_type: item.unit_type,
         min_quantity: item.min_quantity,
         current_quantity: 0,

@@ -89,20 +89,18 @@ export function StaleItemsReport() {
             <thead>
               <tr>
                 <th>Nome do Material</th>
-                <th>Categoria</th>
                 <th class="text-right">Saldo Atual</th>
                 <th class="text-center">Data da Última Saída</th>
                 <th class="text-right">Dias de Inatividade</th>
               </tr>
             </thead>
             <tbody>
-              ${staleItems.length === 0 ? '<tr><td colspan="5" class="text-center">Todos os itens possuem movimentação recente.</td></tr>' : ''}
+              ${staleItems.length === 0 ? '<tr><td colspan="4" class="text-center">Todos os itens possuem movimentação recente.</td></tr>' : ''}
               ${staleItems
                 .map(
                   (item) => `
                 <tr>
                   <td>${item.name}</td>
-                  <td>${item.category || '-'}</td>
                   <td class="text-right font-bold">${item.current_quantity}</td>
                   <td class="text-center">${item.lastOutDateStr ? new Date(item.lastOutDateStr).toLocaleDateString('pt-BR') : 'Sem saídas'}</td>
                   <td class="text-right">${item.daysInactive} dias</td>
@@ -157,7 +155,6 @@ export function StaleItemsReport() {
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead>Nome do Material</TableHead>
-              <TableHead>Categoria</TableHead>
               <TableHead className="text-right">Saldo Atual</TableHead>
               <TableHead className="text-center">Data da Última Saída</TableHead>
               <TableHead className="text-right">Dias de Inatividade</TableHead>
@@ -166,7 +163,7 @@ export function StaleItemsReport() {
           <TableBody>
             {staleItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center">
+                <TableCell colSpan={4} className="h-32 text-center">
                   <div className="flex flex-col items-center justify-center text-muted-foreground gap-2">
                     <Clock className="h-8 w-8 opacity-20" />
                     <p>Todos os itens em estoque possuem movimentação recente.</p>
@@ -194,11 +191,6 @@ export function StaleItemsReport() {
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">{item.unit_type}</div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="font-normal">
-                        {item.category}
-                      </Badge>
                     </TableCell>
                     <TableCell className="text-right font-mono font-medium">
                       {item.current_quantity}

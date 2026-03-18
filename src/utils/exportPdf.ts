@@ -45,7 +45,6 @@ export const exportStockReportPdf = async (): Promise<{ error?: any }> => {
           <thead>
             <tr>
               <th>Nome do Item</th>
-              <th>Categoria</th>
               <th>Unidade</th>
               <th class="text-right">Quantidade Atual</th>
             </tr>
@@ -57,7 +56,6 @@ export const exportStockReportPdf = async (): Promise<{ error?: any }> => {
                 return `
                   <tr class="${isLow ? 'low-stock' : ''}">
                     <td>${item.name} ${isLow ? '<span class="low-stock-label">ESTOQUE BAIXO</span>' : ''}</td>
-                    <td>${item.category || '-'}</td>
                     <td>${item.unit_type || '-'}</td>
                     <td class="text-right">${item.current_quantity ?? 0}</td>
                   </tr>

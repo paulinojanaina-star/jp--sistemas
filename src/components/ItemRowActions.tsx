@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { Item, ITEM_CATEGORIES, ITEM_UNITS } from '@/types/inventory'
+import { Item, ITEM_UNITS } from '@/types/inventory'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { MoreHorizontal, Edit, Trash, Loader2 } from 'lucide-react'
@@ -46,7 +46,6 @@ import {
 const editSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   description: z.string().optional(),
-  category: z.string().min(1, 'Selecione uma categoria'),
   unit_type: z.string().min(1, 'Selecione a unidade de medida'),
   min_quantity: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
 })
@@ -63,7 +62,6 @@ export function ItemRowActions({ item }: { item: Item }) {
     defaultValues: {
       name: item.name,
       description: item.description || '',
-      category: item.category,
       unit_type: item.unit_type,
       min_quantity: item.min_quantity,
     },
@@ -74,7 +72,6 @@ export function ItemRowActions({ item }: { item: Item }) {
       form.reset({
         name: item.name,
         description: item.description || '',
-        category: item.category,
         unit_type: item.unit_type,
         min_quantity: item.min_quantity,
       })
@@ -163,31 +160,6 @@ export function ItemRowActions({ item }: { item: Item }) {
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Categoria</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {ITEM_CATEGORIES.map((cat) => (
-                            <SelectItem key={cat} value={cat}>
-                              {cat}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="unit_type"
                   render={({ field }) => (
                     <FormItem>
@@ -210,21 +182,21 @@ export function ItemRowActions({ item }: { item: Item }) {
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <FormField
-                control={form.control}
-                name="min_quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estoque Mínimo</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="min_quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estoque Mínimo</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
