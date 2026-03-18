@@ -28,8 +28,12 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   const fetchItems = async () => {
-    const { data, error } = await supabase.from('items').select('*').order('name')
-    if (!error && data) setItems(data)
+    const { data, error } = await supabase.from('items').select('*')
+    if (!error && data) {
+      // Ensure strict alphabetical sorting by name across all lists and dropdowns
+      const sortedData = data.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+      setItems(sortedData)
+    }
   }
 
   const fetchMovements = async () => {
@@ -59,10 +63,17 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     item: Omit<Item, 'id' | 'created_at' | 'current_quantity'>,
     initialQty: number,
   ) => {
+    let formattedName = item.name
+    // Intercept manual "CODE NAME" entries and format them automatically
+    const match = formattedName.match(/^(\d+)\s+(.*)$/)
+    if (match) {
+      formattedName = `${match[2].trim()} (${match[1]})`
+    }
+
     const { data, error } = await supabase
       .from('items')
       .insert({
-        name: item.name,
+        name: formattedName,
         description: item.description,
         unit_type: item.unit_type,
         min_quantity: item.min_quantity,
@@ -91,7 +102,16 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const updateItem = async (id: string, updates: Partial<Item>) => {
-    const { error } = await supabase.from('items').update(updates).eq('id', id)
+    const payload = { ...updates }
+    if (payload.name) {
+      // Intercept manual "CODE NAME" updates and format them automatically
+      const match = payload.name.match(/^(\d+)\s+(.*)$/)
+      if (match) {
+        payload.name = `${match[2].trim()} (${match[1]})`
+      }
+    }
+
+    const { error } = await supabase.from('items').update(payload).eq('id', id)
     if (error) return { error }
     await refreshData()
     return {}

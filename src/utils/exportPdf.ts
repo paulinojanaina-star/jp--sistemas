@@ -1,9 +1,12 @@
 import { supabase } from '@/lib/supabase/client'
 
 export const exportStockReportPdf = async (): Promise<{ error?: any }> => {
-  const { data: latestItems, error } = await supabase.from('items').select('*').order('name')
+  const { data: latestItems, error } = await supabase.from('items').select('*')
 
   if (error || !latestItems) return { error: error || new Error('No data') }
+
+  // Ensure alphabetical sorting by the new item name format
+  latestItems.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
 
   const printWindow = window.open('', '_blank')
   if (!printWindow) return { error: new Error('Popup blocked') }
