@@ -144,10 +144,10 @@ export function ItemFormModal() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Caixa">Caixa</SelectItem>
+                        <SelectItem value="Rolo">Rolo</SelectItem>
                         <SelectItem value="Frasco">Frasco</SelectItem>
+                        <SelectItem value="Litro">Litro</SelectItem>
                         <SelectItem value="Unidade">Unidade</SelectItem>
-                        <SelectItem value="Pacote">Pacote</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
