@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { InventoryProvider } from '@/stores/useInventoryStore'
+import { NotificationProvider } from '@/stores/useNotificationStore'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
 
 import Layout from './components/Layout'
@@ -37,31 +38,33 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
     <AuthProvider>
-      <InventoryProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/login" element={<Login />} />
+      <NotificationProvider>
+        <InventoryProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/login" element={<Login />} />
 
-            <Route
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/" element={<Index />} />
-              <Route path="/itens" element={<Items />} />
-              <Route path="/movimentacoes" element={<Movements />} />
-              <Route path="/historico" element={<History />} />
-              <Route path="/relatorios" element={<Reports />} />
-            </Route>
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/" element={<Index />} />
+                <Route path="/itens" element={<Items />} />
+                <Route path="/movimentacoes" element={<Movements />} />
+                <Route path="/historico" element={<History />} />
+                <Route path="/relatorios" element={<Reports />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </InventoryProvider>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TooltipProvider>
+        </InventoryProvider>
+      </NotificationProvider>
     </AuthProvider>
   </BrowserRouter>
 )

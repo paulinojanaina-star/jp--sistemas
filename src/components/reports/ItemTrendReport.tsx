@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/command'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { useNotificationStore } from '@/stores/useNotificationStore'
+import { Badge } from '@/components/ui/badge'
 
 const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
@@ -32,6 +34,7 @@ const chartConfig = {
 
 export function ItemTrendReport() {
   const { items } = useInventoryStore()
+  const { notifications } = useNotificationStore()
   const { toast } = useToast()
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
@@ -50,6 +53,13 @@ export function ItemTrendReport() {
     () => items.find((i) => i.id === selectedItemId),
     [items, selectedItemId],
   )
+
+  const hasActiveAlert = useMemo(() => {
+    if (!selectedItemId) return false
+    return notifications.some(
+      (n) => !n.read_at && n.type === 'CONSUMPTION_ALERT' && n.item_id === selectedItemId,
+    )
+  }, [notifications, selectedItemId])
 
   useEffect(() => {
     if (items.length > 0 && !selectedItemId) {
@@ -132,7 +142,14 @@ export function ItemTrendReport() {
     <Card>
       <CardHeader className="flex flex-col xl:flex-row items-start xl:items-center justify-between pb-4 gap-4">
         <div className="space-y-1">
-          <CardTitle className="text-lg">Tendência de Consumo</CardTitle>
+          <CardTitle className="text-lg flex flex-wrap items-center gap-2">
+            Tendência de Consumo
+            {hasActiveAlert && (
+              <Badge variant="destructive" className="text-xs font-medium">
+                Alerta Ativo
+              </Badge>
+            )}
+          </CardTitle>
           <CardDescription>
             Visualize o histórico de saídas de um material específico.
           </CardDescription>
@@ -158,24 +175,31 @@ export function ItemTrendReport() {
                 <CommandList>
                   <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
                   <CommandGroup>
-                    {items.map((item) => (
-                      <CommandItem
-                        key={item.id}
-                        value={item.name}
-                        onSelect={() => {
-                          setSelectedItemId(item.id)
-                          setOpen(false)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            'mr-2 h-4 w-4',
-                            selectedItemId === item.id ? 'opacity-100' : 'opacity-0',
-                          )}
-                        />
-                        {item.name}
-                      </CommandItem>
-                    ))}
+                    {items.map((item) => {
+                      const isAlert = notifications.some(
+                        (n) =>
+                          !n.read_at && n.type === 'CONSUMPTION_ALERT' && n.item_id === item.id,
+                      )
+                      return (
+                        <CommandItem
+                          key={item.id}
+                          value={item.name}
+                          onSelect={() => {
+                            setSelectedItemId(item.id)
+                            setOpen(false)
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              'mr-2 h-4 w-4',
+                              selectedItemId === item.id ? 'opacity-100' : 'opacity-0',
+                            )}
+                          />
+                          {item.name}
+                          {isAlert && <div className="ml-2 h-2 w-2 rounded-full bg-destructive" />}
+                        </CommandItem>
+                      )
+                    })}
                   </CommandGroup>
                 </CommandList>
               </Command>

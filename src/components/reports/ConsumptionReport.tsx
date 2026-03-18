@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +17,7 @@ import {
 import { DatePickerWithRange } from '@/components/ui/date-range-picker'
 import { DateRange } from 'react-day-picker'
 import { cn } from '@/lib/utils'
+import { useNotificationStore } from '@/stores/useNotificationStore'
 
 interface ConsumptionData {
   id: string
@@ -30,6 +31,8 @@ interface ConsumptionData {
 
 export function ConsumptionReport() {
   const { toast } = useToast()
+  const { notifications } = useNotificationStore()
+
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const to = new Date()
     const from = new Date()
@@ -38,6 +41,14 @@ export function ConsumptionReport() {
   })
   const [data, setData] = useState<ConsumptionData[]>([])
   const [loading, setLoading] = useState(false)
+
+  const activeAlerts = useMemo(() => {
+    return new Set(
+      notifications
+        .filter((n) => !n.read_at && n.type === 'CONSUMPTION_ALERT')
+        .map((n) => n.item_id),
+    )
+  }, [notifications])
 
   const fetchData = useCallback(async () => {
     if (!dateRange?.from || !dateRange?.to) return
@@ -168,7 +179,19 @@ export function ConsumptionReport() {
             ) : (
               data.map((row) => (
                 <TableRow key={row.id}>
-                  <TableCell className="font-medium">{row.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {row.name}
+                      {activeAlerts.has(row.id) && (
+                        <Badge
+                          variant="destructive"
+                          className="text-[10px] h-5 px-1.5 py-0 font-medium"
+                        >
+                          Alerta de Consumo
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="font-normal">
                       {row.category}

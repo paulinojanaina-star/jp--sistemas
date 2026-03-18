@@ -3,9 +3,8 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from './AppSidebar'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useAuth } from '@/hooks/use-auth'
-import { Bell, Search, LogOut, Loader2 } from 'lucide-react'
+import { Search, LogOut, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +12,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { NotificationCenter } from './NotificationCenter'
 
 export default function Layout() {
-  const { items, loading } = useInventoryStore()
+  const { loading } = useInventoryStore()
   const { user, signOut } = useAuth()
 
-  const lowStockItems = items.filter((i) => i.current_quantity < i.min_quantity)
   const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
   const userInitials = userName.substring(0, 2).toUpperCase()
 
@@ -40,41 +39,7 @@ export default function Layout() {
             </div>
 
             <div className="flex items-center gap-5">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="relative outline-none hover:bg-muted p-2 rounded-full transition-colors">
-                  <Bell className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-                  {lowStockItems.length > 0 && (
-                    <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center border-2 border-card">
-                      {lowStockItems.length}
-                    </span>
-                  )}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-72">
-                  <div className="p-3 border-b font-medium text-sm">Alertas de Estoque</div>
-                  {loading ? (
-                    <div className="p-4 text-center text-muted-foreground">Carregando...</div>
-                  ) : lowStockItems.length === 0 ? (
-                    <div className="p-4 text-sm text-center text-muted-foreground">
-                      Estoque regularizado.
-                    </div>
-                  ) : (
-                    <div className="max-h-64 overflow-y-auto">
-                      {lowStockItems.map((item) => (
-                        <DropdownMenuItem
-                          key={item.id}
-                          className="flex flex-col items-start gap-1 p-3 border-b last:border-0 cursor-default"
-                        >
-                          <span className="font-semibold text-sm">{item.name}</span>
-                          <span className="text-xs text-destructive font-medium flex items-center gap-1">
-                            Abaixo do mínimo: {item.current_quantity} / {item.min_quantity}{' '}
-                            {item.unit_type}
-                          </span>
-                        </DropdownMenuItem>
-                      ))}
-                    </div>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <NotificationCenter />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
