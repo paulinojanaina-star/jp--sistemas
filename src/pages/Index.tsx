@@ -1,6 +1,7 @@
 import { DashboardMetrics } from '@/components/DashboardMetrics'
 import { DashboardChart } from '@/components/DashboardChart'
 import { DashboardRecentActivity } from '@/components/DashboardRecentActivity'
+import { DashboardTopItemsChart } from '@/components/DashboardTopItemsChart'
 
 export default function Index() {
   return (
@@ -19,6 +20,10 @@ export default function Index() {
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         <DashboardChart />
         <DashboardRecentActivity />
+      </div>
+
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        <DashboardTopItemsChart />
       </div>
     </div>
   )
