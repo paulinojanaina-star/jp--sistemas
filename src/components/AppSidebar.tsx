@@ -31,7 +31,7 @@ export function AppSidebar() {
               <div className="bg-primary/10 p-2 rounded-lg text-primary">
                 <HeartPulse className="h-5 w-5" />
               </div>
-              <span>SGE Saúde</span>
+              <span>JP Sistemas</span>
             </Link>
           </div>
           <SidebarMenu>
