@@ -108,6 +108,44 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_id: string | null
+          message: string
+          read_at: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_id?: string | null
+          message: string
+          read_at?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_id?: string | null
+          message?: string
+          read_at?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_item_id_fkey'
+            columns: ['item_id']
+            isOneToOne: false
+            referencedRelation: 'items'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -298,6 +336,14 @@ export const Constants = {
 //   current_quantity: numeric (nullable, default: 0)
 //   unit_type: text (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
+// Table: notifications
+//   id: uuid (not null, default: gen_random_uuid())
+//   item_id: uuid (nullable)
+//   title: text (not null)
+//   message: text (not null)
+//   type: text (not null)
+//   read_at: timestamp with time zone (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
 // Table: profiles
 //   id: uuid (not null)
 //   email: text (not null)
@@ -315,6 +361,9 @@ export const Constants = {
 //   CHECK inventory_movements_type_check: CHECK ((type = ANY (ARRAY['IN'::text, 'OUT'::text])))
 // Table: items
 //   PRIMARY KEY items_pkey: PRIMARY KEY (id)
+// Table: notifications
+//   FOREIGN KEY notifications_item_id_fkey: FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+//   PRIMARY KEY notifications_pkey: PRIMARY KEY (id)
 // Table: profiles
 //   FOREIGN KEY profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
@@ -338,11 +387,72 @@ export const Constants = {
 //     USING: true
 //   Policy "authenticated_update_items" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
+// Table: notifications
+//   Policy "authenticated_select_notifications" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_update_notifications" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: true
 // Table: profiles
 //   Policy "authenticated_select_profiles" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
 
 // --- DATABASE FUNCTIONS ---
+// FUNCTION analyze_consumption_spike()
+//   CREATE OR REPLACE FUNCTION public.analyze_consumption_spike()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   DECLARE
+//     current_month_total NUMERIC := 0;
+//     prev_month_total NUMERIC := 0;
+//     increase_pct NUMERIC := 0;
+//     v_item_name TEXT;
+//     existing_alert UUID;
+//   BEGIN
+//     IF NEW.type = 'OUT' THEN
+//       SELECT name INTO v_item_name FROM public.items WHERE id = NEW.item_id;
+//
+//       SELECT COALESCE(SUM(quantity), 0) INTO current_month_total
+//       FROM public.inventory_movements
+//       WHERE item_id = NEW.item_id
+//         AND type = 'OUT'
+//         AND date_trunc('month', created_at) = date_trunc('month', NOW());
+//
+//       SELECT COALESCE(SUM(quantity), 0) INTO prev_month_total
+//       FROM public.inventory_movements
+//       WHERE item_id = NEW.item_id
+//         AND type = 'OUT'
+//         AND date_trunc('month', created_at) = date_trunc('month', NOW() - INTERVAL '1 month');
+//
+//       IF prev_month_total > 0 THEN
+//         increase_pct := ((current_month_total - prev_month_total) / prev_month_total) * 100;
+//
+//         IF increase_pct > 20 THEN
+//           SELECT id INTO existing_alert
+//           FROM public.notifications
+//           WHERE item_id = NEW.item_id
+//             AND type = 'CONSUMPTION_ALERT'
+//             AND date_trunc('month', created_at) = date_trunc('month', NOW())
+//           LIMIT 1;
+//
+//           IF existing_alert IS NULL THEN
+//             INSERT INTO public.notifications (item_id, title, message, type)
+//             VALUES (
+//               NEW.item_id,
+//               'Alerta de Consumo Elevado',
+//               'O item ' || v_item_name || ' teve um aumento de ' || TRUNC(increase_pct, 1) || '% no consumo este mês comparado ao mês anterior.',
+//               'CONSUMPTION_ALERT'
+//             );
+//           END IF;
+//         END IF;
+//       END IF;
+//     END IF;
+//
+//     RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION handle_new_user()
 //   CREATE OR REPLACE FUNCTION public.handle_new_user()
 //    RETURNS trigger
@@ -384,6 +494,7 @@ export const Constants = {
 
 // --- TRIGGERS ---
 // Table: inventory_movements
+//   trigger_consumption_spike: CREATE TRIGGER trigger_consumption_spike AFTER INSERT ON public.inventory_movements FOR EACH ROW EXECUTE FUNCTION analyze_consumption_spike()
 //   trigger_process_movement: CREATE TRIGGER trigger_process_movement BEFORE INSERT ON public.inventory_movements FOR EACH ROW EXECUTE FUNCTION process_inventory_movement()
 
 // --- INDEXES ---
