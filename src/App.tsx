@@ -12,6 +12,7 @@ import Index from './pages/Index'
 import Items from './pages/Items'
 import Movements from './pages/Movements'
 import History from './pages/History'
+import Reports from './pages/Reports'
 import NotFound from './pages/NotFound'
 import { Loader2 } from 'lucide-react'
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/itens" element={<Items />} />
               <Route path="/movimentacoes" element={<Movements />} />
               <Route path="/historico" element={<History />} />
+              <Route path="/relatorios" element={<Reports />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

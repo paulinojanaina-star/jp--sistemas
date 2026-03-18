@@ -1,5 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Package, ArrowRightLeft, History, HeartPulse } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Package,
+  ArrowRightLeft,
+  History,
+  HeartPulse,
+  FileBarChart,
+} from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +24,7 @@ export function AppSidebar() {
     { title: 'Itens', url: '/itens', icon: Package },
     { title: 'Movimentações', url: '/movimentacoes', icon: ArrowRightLeft },
     { title: 'Histórico', url: '/historico', icon: History },
+    { title: 'Relatórios', url: '/relatorios', icon: FileBarChart },
   ]
 
   return (
