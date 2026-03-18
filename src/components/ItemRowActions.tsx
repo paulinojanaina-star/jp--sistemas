@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { Item } from '@/types/inventory'
+import { Item, ITEM_CATEGORIES, ITEM_UNITS } from '@/types/inventory'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { MoreHorizontal, Edit, Trash, Loader2 } from 'lucide-react'
@@ -174,9 +174,11 @@ export function ItemRowActions({ item }: { item: Item }) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Medicação">Medicação</SelectItem>
-                          <SelectItem value="EPI">EPI</SelectItem>
-                          <SelectItem value="Consumíveis">Consumíveis</SelectItem>
+                          {ITEM_CATEGORIES.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -197,12 +199,11 @@ export function ItemRowActions({ item }: { item: Item }) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Caixa">Caixa</SelectItem>
-                          <SelectItem value="Unidade">Unidade</SelectItem>
-                          <SelectItem value="Rolo">Rolo</SelectItem>
-                          <SelectItem value="Litro">Litro</SelectItem>
-                          <SelectItem value="Frasco">Frasco</SelectItem>
-                          <SelectItem value="Par">Par</SelectItem>
+                          {ITEM_UNITS.map((unit) => (
+                            <SelectItem key={unit} value={unit}>
+                              {unit}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
