@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
-import { Search, AlertCircle, FileText, Loader2 } from 'lucide-react'
-import { supabase } from '@/lib/supabase/client'
+import { Search, FileText, Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { exportStockReportPdf } from '@/utils/exportPdf'
 import {
   Table,
   TableBody,
@@ -23,174 +25,36 @@ export default function Items() {
   const { items } = useInventoryStore()
   const { toast } = useToast()
   const [search, setSearch] = useState('')
+  const [stockFilter, setStockFilter] = useState('all')
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const filteredItems = items.filter(
-    (item) =>
+  const filteredItems = items.filter((item) => {
+    const matchesSearch =
       item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.category.toLowerCase().includes(search.toLowerCase()),
-  )
+      item.category.toLowerCase().includes(search.toLowerCase())
+    if (!matchesSearch) return false
+
+    if (stockFilter === 'critical')
+      return item.current_quantity > 0 && item.current_quantity <= item.min_quantity
+    if (stockFilter === 'zero') return item.current_quantity === 0
+    return true
+  })
 
   const handleExportPDF = async () => {
     setIsGenerating(true)
-
-    // Fetch the most recent data from the database
-    const { data: latestItems, error } = await supabase.from('items').select('*').order('name')
-
+    const { error } = await exportStockReportPdf()
     setIsGenerating(false)
 
-    if (error || !latestItems) {
+    if (error) {
       toast({
-        title: 'Erro ao gerar relatório',
-        description: 'Não foi possível buscar os dados mais recentes do estoque.',
+        title: error.message === 'Popup blocked' ? 'Erro de Pop-up' : 'Erro ao gerar relatório',
+        description:
+          error.message === 'Popup blocked'
+            ? 'Por favor, permita a abertura de pop-ups para exportar o relatório PDF.'
+            : 'Não foi possível buscar os dados mais recentes do estoque.',
         variant: 'destructive',
       })
-      return
     }
-
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) {
-      toast({
-        title: 'Erro de Pop-up',
-        description: 'Por favor, permita a abertura de pop-ups para exportar o relatório PDF.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    const now = new Date()
-    const formattedDate = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
-
-    const html = `
-      <!DOCTYPE html>
-      <html lang="pt-BR">
-        <head>
-          <meta charset="UTF-8">
-          <title>JP Sistemas - Relatório de Estoque Atual</title>
-          <style>
-            body {
-              font-family: system-ui, -apple-system, sans-serif;
-              padding: 40px;
-              color: #1e293b;
-              line-height: 1.5;
-            }
-            .header {
-              text-align: center;
-              margin-bottom: 30px;
-              border-bottom: 2px solid #e2e8f0;
-              padding-bottom: 20px;
-            }
-            h1 {
-              color: #0f172a;
-              margin: 0 0 10px 0;
-              font-size: 24px;
-            }
-            .meta {
-              color: #64748b;
-              font-size: 14px;
-              margin: 0;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 20px;
-            }
-            th, td {
-              border: 1px solid #cbd5e1;
-              padding: 12px;
-              text-align: left;
-              font-size: 14px;
-            }
-            th {
-              background-color: #f8fafc;
-              font-weight: 600;
-              color: #334155;
-            }
-            .text-right {
-              text-align: right;
-            }
-            .low-stock {
-              color: #dc2626;
-              font-weight: 700;
-              background-color: #fef2f2;
-            }
-            .low-stock-label {
-              display: inline-block;
-              padding: 2px 6px;
-              background-color: #dc2626;
-              color: white;
-              border-radius: 4px;
-              font-size: 10px;
-              font-weight: bold;
-              margin-left: 8px;
-            }
-            @media print {
-              body { padding: 0; }
-              .header { margin-bottom: 20px; }
-              .low-stock {
-                color: #dc2626 !important;
-                background-color: #fef2f2 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              .low-stock-label {
-                background-color: #dc2626 !important;
-                color: white !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>JP Sistemas - Relatório de Estoque Atual</h1>
-            <p class="meta">Data de emissão: ${formattedDate}</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Nome do Item</th>
-                <th>Categoria</th>
-                <th>Unidade</th>
-                <th class="text-right">Quantidade Atual</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${latestItems
-                .map((item) => {
-                  const currentQty = item.current_quantity ?? 0
-                  const minQty = item.min_quantity ?? 0
-                  const isLow = currentQty <= minQty
-                  return `
-                      <tr class="${isLow ? 'low-stock' : ''}">
-                        <td>
-                          ${item.name}
-                          ${isLow ? '<span class="low-stock-label">ESTOQUE BAIXO</span>' : ''}
-                        </td>
-                        <td>${item.category || '-'}</td>
-                        <td>${item.unit_type || '-'}</td>
-                        <td class="text-right">
-                          ${currentQty}
-                        </td>
-                      </tr>
-                    `
-                })
-                .join('')}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `
-
-    printWindow.document.write(html)
-    printWindow.document.close()
-
-    // Short delay to ensure the content is rendered before printing
-    setTimeout(() => {
-      printWindow.print()
-      printWindow.close()
-    }, 300)
   }
 
   return (
@@ -210,7 +74,7 @@ export default function Items() {
             disabled={isGenerating}
           >
             {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText size={16} />}
-            {isGenerating ? 'Gerando...' : 'Gerar Relatório de Estoque'}
+            {isGenerating ? 'Gerando...' : 'Gerar Relatório'}
           </Button>
           <div className="w-full sm:w-auto">
             <ItemFormModal />
@@ -220,16 +84,23 @@ export default function Items() {
 
       <Card>
         <CardContent className="p-0">
-          <div className="p-4 border-b">
-            <div className="relative max-w-sm">
+          <div className="p-4 border-b flex flex-col md:flex-row gap-4 justify-between">
+            <div className="relative w-full md:max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Pesquisar por nome ou categoria..."
-                className="pl-9"
+                className="pl-9 w-full"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+            <Tabs value={stockFilter} onValueChange={setStockFilter} className="w-full md:w-auto">
+              <TabsList className="grid w-full grid-cols-3 md:w-[350px]">
+                <TabsTrigger value="all">Todos</TabsTrigger>
+                <TabsTrigger value="critical">Crítico</TabsTrigger>
+                <TabsTrigger value="zero">Zerado</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
 
           <Table>
@@ -246,12 +117,18 @@ export default function Items() {
               {filteredItems.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                    Nenhum item encontrado.
+                    {stockFilter === 'critical'
+                      ? 'Nenhum item com estoque crítico encontrado.'
+                      : stockFilter === 'zero'
+                        ? 'Nenhum item com estoque zerado encontrado.'
+                        : 'Nenhum item encontrado.'}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredItems.map((item) => {
-                  const isLow = item.current_quantity < item.min_quantity
+                  const isZero = item.current_quantity === 0
+                  const isCritical =
+                    item.current_quantity > 0 && item.current_quantity <= item.min_quantity
                   const percentage = Math.min(
                     100,
                     Math.max(0, (item.current_quantity / (item.min_quantity * 2 || 1)) * 100),
@@ -260,12 +137,27 @@ export default function Items() {
                   return (
                     <TableRow
                       key={item.id}
-                      className={isLow ? 'bg-red-50/30 dark:bg-red-950/10 hover:bg-red-50/50' : ''}
+                      className={cn(
+                        isZero && 'bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50/80',
+                        isCritical && 'bg-amber-50/30 dark:bg-amber-950/10 hover:bg-amber-50/50',
+                      )}
                     >
                       <TableCell>
-                        <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
                           {item.name}
-                          {isLow && <AlertCircle className="h-4 w-4 text-destructive" />}
+                          {isZero && (
+                            <Badge
+                              variant="destructive"
+                              className="h-5 px-1.5 text-[10px] uppercase"
+                            >
+                              Zerado
+                            </Badge>
+                          )}
+                          {isCritical && (
+                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent">
+                              Crítico
+                            </Badge>
+                          )}
                         </div>
                         <div className="text-xs text-muted-foreground">{item.unit_type}</div>
                       </TableCell>
@@ -276,7 +168,11 @@ export default function Items() {
                       </TableCell>
                       <TableCell className="text-right">
                         <span
-                          className={`font-mono text-base ${isLow ? 'text-destructive font-bold' : 'font-medium'}`}
+                          className={cn(
+                            'font-mono text-base font-medium',
+                            isZero && 'text-destructive font-bold',
+                            isCritical && 'text-amber-600 dark:text-amber-500 font-bold',
+                          )}
                         >
                           {item.current_quantity}
                         </span>
@@ -289,7 +185,13 @@ export default function Items() {
                           </div>
                           <Progress
                             value={percentage}
-                            className={`h-1.5 ${isLow ? 'bg-red-100 dark:bg-red-950 [&>div]:bg-destructive' : '[&>div]:bg-emerald-500'}`}
+                            className={cn(
+                              'h-1.5',
+                              isZero && 'bg-red-100 dark:bg-red-950 [&>div]:bg-destructive',
+                              isCritical &&
+                                'bg-amber-100 dark:bg-amber-950/30 [&>div]:bg-amber-500',
+                              !isZero && !isCritical && '[&>div]:bg-emerald-500',
+                            )}
                           />
                         </div>
                       </TableCell>

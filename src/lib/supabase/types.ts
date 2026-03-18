@@ -316,6 +316,10 @@ export const Constants = {
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
 
 // --- ROW LEVEL SECURITY POLICIES ---
+// Table: Janaina Paulino
+//   Policy "authenticated_all_janaina" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: true
+//     WITH CHECK: true
 // Table: inventory_movements
 //   Policy "authenticated_insert_movements" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: true
@@ -333,13 +337,6 @@ export const Constants = {
 // Table: profiles
 //   Policy "authenticated_select_profiles" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
-
-// --- WARNING: TABLES WITH RLS ENABLED BUT NO POLICIES ---
-// These tables have Row Level Security enabled but NO policies defined.
-// This means ALL queries (SELECT, INSERT, UPDATE, DELETE) will return ZERO rows
-// for non-superuser roles (including the anon and authenticated roles used by the app).
-// You MUST create RLS policies for these tables to allow data access.
-//   - Janaina Paulino
 
 // --- DATABASE FUNCTIONS ---
 // FUNCTION handle_new_user()
@@ -384,3 +381,7 @@ export const Constants = {
 // --- TRIGGERS ---
 // Table: inventory_movements
 //   trigger_process_movement: CREATE TRIGGER trigger_process_movement BEFORE INSERT ON public.inventory_movements FOR EACH ROW EXECUTE FUNCTION process_inventory_movement()
+
+// --- INDEXES ---
+// Table: inventory_movements
+//   CREATE INDEX idx_inventory_movements_item_type_date ON public.inventory_movements USING btree (item_id, type, created_at DESC)
