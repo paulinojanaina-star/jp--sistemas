@@ -1,5 +1,5 @@
 export type ItemCategory = 'Medicação' | 'EPI' | 'Consumíveis' | string
-export type ItemUnit = 'Unidade' | 'Frasco' | 'Rolo' | 'Par' | 'Litro' | string
+export type ItemUnit = 'caixa' | 'unidade' | 'rolo' | 'litro' | 'frasco' | 'par' | string
 export type MovementType = 'IN' | 'OUT'
 
 export interface Item {

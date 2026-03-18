@@ -197,11 +197,12 @@ export function ItemRowActions({ item }: { item: Item }) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Unidade">Unidade</SelectItem>
-                          <SelectItem value="Frasco">Frasco</SelectItem>
-                          <SelectItem value="Rolo">Rolo</SelectItem>
-                          <SelectItem value="Par">Par</SelectItem>
-                          <SelectItem value="Litro">Litro</SelectItem>
+                          <SelectItem value="caixa">caixa</SelectItem>
+                          <SelectItem value="unidade">unidade</SelectItem>
+                          <SelectItem value="rolo">rolo</SelectItem>
+                          <SelectItem value="litro">litro</SelectItem>
+                          <SelectItem value="frasco">frasco</SelectItem>
+                          <SelectItem value="par">par</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
