@@ -6,7 +6,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Search, AlertCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
+import { Search, AlertCircle, FileText } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -18,6 +20,7 @@ import {
 
 export default function Items() {
   const { items } = useInventoryStore()
+  const { toast } = useToast()
   const [search, setSearch] = useState('')
 
   const filteredItems = items.filter(
@@ -25,6 +28,122 @@ export default function Items() {
       item.name.toLowerCase().includes(search.toLowerCase()) ||
       item.category.toLowerCase().includes(search.toLowerCase()),
   )
+
+  const handleExportPDF = () => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      toast({
+        title: 'Erro de Pop-up',
+        description: 'Por favor, permita a abertura de pop-ups para exportar o relatório PDF.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const now = new Date().toLocaleString('pt-BR')
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <title>JP_Sistemas_Relatorio_Estoque</title>
+          <style>
+            body {
+              font-family: system-ui, -apple-system, sans-serif;
+              padding: 40px;
+              color: #1e293b;
+              line-height: 1.5;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              border-bottom: 2px solid #e2e8f0;
+              padding-bottom: 20px;
+            }
+            h1 {
+              color: #0f172a;
+              margin: 0 0 10px 0;
+              font-size: 24px;
+            }
+            .meta {
+              color: #64748b;
+              font-size: 14px;
+              margin: 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            th, td {
+              border: 1px solid #cbd5e1;
+              padding: 12px;
+              text-align: left;
+              font-size: 14px;
+            }
+            th {
+              background-color: #f8fafc;
+              font-weight: 600;
+              color: #334155;
+            }
+            .text-right {
+              text-align: right;
+            }
+            .low-stock {
+              color: #dc2626;
+              font-weight: 700;
+            }
+            @media print {
+              body { padding: 0; }
+              .header { margin-bottom: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>JP Sistemas - Relatório de Estoque Atual</h1>
+            <p class="meta">Gerado em: ${now}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome do Item</th>
+                <th>Categoria</th>
+                <th>Unidade</th>
+                <th class="text-right">Quantidade Atual</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items
+                .map(
+                  (item) => `
+                <tr>
+                  <td>${item.name}</td>
+                  <td>${item.category || '-'}</td>
+                  <td>${item.unit_type || '-'}</td>
+                  <td class="text-right ${item.current_quantity < item.min_quantity ? 'low-stock' : ''}">
+                    ${item.current_quantity}
+                  </td>
+                </tr>
+              `,
+                )
+                .join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `
+
+    printWindow.document.write(html)
+    printWindow.document.close()
+
+    // Short delay to ensure the content is rendered before printing
+    setTimeout(() => {
+      printWindow.print()
+      printWindow.close()
+    }, 300)
+  }
 
   return (
     <div className="space-y-6">
@@ -35,7 +154,18 @@ export default function Items() {
             Gerencie todos os materiais e medicamentos da unidade.
           </p>
         </div>
-        <ItemFormModal />
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+          <Button
+            onClick={handleExportPDF}
+            variant="outline"
+            className="w-full sm:w-auto gap-2 bg-white dark:bg-slate-950"
+          >
+            <FileText size={16} /> Exportar PDF
+          </Button>
+          <div className="w-full sm:w-auto">
+            <ItemFormModal />
+          </div>
+        </div>
       </div>
 
       <Card>

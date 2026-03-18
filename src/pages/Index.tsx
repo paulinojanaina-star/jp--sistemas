@@ -7,7 +7,7 @@ export default function Index() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-          Visão Geral
+          Visão Geral - JP Sistemas
         </h2>
         <p className="text-muted-foreground">
           Bem-vindo ao painel de controle de estoque da unidade.

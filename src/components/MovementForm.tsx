@@ -31,8 +31,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 const movementSchema = z.object({
   item_id: z.string().min(1, 'Selecione um item'),
   type: z.enum(['IN', 'OUT']),
-  quantity: z.coerce.number().min(1, 'A quantidade deve ser maior que zero'),
-  health_unit_name: z.string().min(2, 'Especifique a origem ou destino'),
+  quantity: z.coerce.number().positive('A quantidade deve ser maior que zero'),
+  health_unit_name: z.string().min(2, 'Especifique a origem ou destino').trim(),
   observations: z.string().optional(),
 })
 
@@ -46,7 +46,6 @@ export function MovementForm() {
     resolver: zodResolver(movementSchema),
     defaultValues: {
       type: 'OUT',
-      quantity: 1,
       health_unit_name: '',
       observations: '',
     },
@@ -83,10 +82,18 @@ export function MovementForm() {
     }
 
     setSubmitting(true)
-    const { error } = await addMovement({
-      ...values,
+
+    // Ensure strict payload formatting to match database constraints perfectly
+    const movementPayload = {
+      item_id: values.item_id,
+      type: values.type.toUpperCase() as 'IN' | 'OUT',
+      quantity: Number(values.quantity),
+      health_unit_name: values.health_unit_name.trim(),
+      observations: values.observations?.trim() || undefined,
       responsible_id: session.user.id,
-    })
+    }
+
+    const { error } = await addMovement(movementPayload)
     setSubmitting(false)
 
     if (error) {
@@ -218,7 +225,7 @@ export function MovementForm() {
                         {isOutbound ? 'Unidade de Destino' : 'Origem / Fornecedor'}
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: UTI, Posto de Enfermagem..." {...field} />
+                        <Input placeholder="Ex: UTI, Almoxarifado Central..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

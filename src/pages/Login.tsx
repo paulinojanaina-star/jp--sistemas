@@ -36,7 +36,7 @@ export default function Login() {
           <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-2">
             <HeartPulse className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Acesso ao Sistema</CardTitle>
+          <CardTitle className="text-2xl font-bold">JP Sistemas</CardTitle>
           <CardDescription>Controle de Estoque de Unidades de Saúde</CardDescription>
         </CardHeader>
         <CardContent>
