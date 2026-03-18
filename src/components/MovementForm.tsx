@@ -5,8 +5,17 @@ import * as z from 'zod'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
-import { AlertCircle, ArrowDownToLine, ArrowUpFromLine, Save, Loader2 } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Save,
+  Loader2,
+  Check,
+  ChevronsUpDown,
+} from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +35,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
@@ -43,10 +61,11 @@ export function MovementForm() {
   const { session } = useAuth()
   const { toast } = useToast()
   const [submitting, setSubmitting] = useState(false)
+  const [openItemPopover, setOpenItemPopover] = useState(false)
 
   const form = useForm<z.infer<typeof movementSchema>>({
     resolver: zodResolver(movementSchema),
-    defaultValues: { type: 'OUT', health_unit_name: '', observations: '' },
+    defaultValues: { type: 'OUT', health_unit_name: '', observations: '', item_id: '' },
   })
 
   const selectedItemId = form.watch('item_id')
@@ -163,25 +182,68 @@ export function MovementForm() {
               control={form.control}
               name="item_id"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Item</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pesquise e selecione o item" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {items.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>
-                          {item.name}{' '}
-                          <span className="text-muted-foreground text-xs ml-2">
-                            (Saldo: {item.current_quantity})
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={openItemPopover} onOpenChange={setOpenItemPopover}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openItemPopover}
+                          className={cn(
+                            'w-full justify-between font-normal',
+                            !field.value && 'text-muted-foreground',
+                          )}
+                        >
+                          {field.value
+                            ? (() => {
+                                const item = items.find((i) => i.id === field.value)
+                                return item
+                                  ? `${item.name} (Saldo: ${item.current_quantity})`
+                                  : 'Selecione o item'
+                              })()
+                            : 'Pesquise e selecione o item'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="p-0"
+                      style={{ width: 'var(--radix-popover-trigger-width)' }}
+                      align="start"
+                    >
+                      <Command>
+                        <CommandInput placeholder="Buscar item..." />
+                        <CommandList>
+                          <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {items.map((item) => (
+                              <CommandItem
+                                value={`${item.name} ${item.id}`}
+                                key={item.id}
+                                onSelect={() => {
+                                  form.setValue('item_id', item.id, { shouldValidate: true })
+                                  setOpenItemPopover(false)
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    item.id === field.value ? 'opacity-100' : 'opacity-0',
+                                  )}
+                                />
+                                {item.name}
+                                <span className="text-muted-foreground text-xs ml-2">
+                                  (Saldo: {item.current_quantity})
+                                </span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
