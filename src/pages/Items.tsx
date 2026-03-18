@@ -8,7 +8,8 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
-import { Search, AlertCircle, FileText } from 'lucide-react'
+import { Search, AlertCircle, FileText, Loader2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase/client'
 import {
   Table,
   TableBody,
@@ -22,6 +23,7 @@ export default function Items() {
   const { items } = useInventoryStore()
   const { toast } = useToast()
   const [search, setSearch] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const filteredItems = items.filter(
     (item) =>
@@ -29,7 +31,23 @@ export default function Items() {
       item.category.toLowerCase().includes(search.toLowerCase()),
   )
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    setIsGenerating(true)
+
+    // Fetch the most recent data from the database
+    const { data: latestItems, error } = await supabase.from('items').select('*').order('name')
+
+    setIsGenerating(false)
+
+    if (error || !latestItems) {
+      toast({
+        title: 'Erro ao gerar relatório',
+        description: 'Não foi possível buscar os dados mais recentes do estoque.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       toast({
@@ -40,14 +58,15 @@ export default function Items() {
       return
     }
 
-    const now = new Date().toLocaleString('pt-BR')
+    const now = new Date()
+    const formattedDate = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
 
     const html = `
       <!DOCTYPE html>
       <html lang="pt-BR">
         <head>
           <meta charset="UTF-8">
-          <title>JP_Sistemas_Relatorio_Estoque</title>
+          <title>JP Sistemas - Relatório de Estoque Atual</title>
           <style>
             body {
               font-family: system-ui, -apple-system, sans-serif;
@@ -93,17 +112,40 @@ export default function Items() {
             .low-stock {
               color: #dc2626;
               font-weight: 700;
+              background-color: #fef2f2;
+            }
+            .low-stock-label {
+              display: inline-block;
+              padding: 2px 6px;
+              background-color: #dc2626;
+              color: white;
+              border-radius: 4px;
+              font-size: 10px;
+              font-weight: bold;
+              margin-left: 8px;
             }
             @media print {
               body { padding: 0; }
               .header { margin-bottom: 20px; }
+              .low-stock {
+                color: #dc2626 !important;
+                background-color: #fef2f2 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              .low-stock-label {
+                background-color: #dc2626 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
             }
           </style>
         </head>
         <body>
           <div class="header">
             <h1>JP Sistemas - Relatório de Estoque Atual</h1>
-            <p class="meta">Gerado em: ${now}</p>
+            <p class="meta">Data de emissão: ${formattedDate}</p>
           </div>
           <table>
             <thead>
@@ -115,19 +157,25 @@ export default function Items() {
               </tr>
             </thead>
             <tbody>
-              ${items
-                .map(
-                  (item) => `
-                <tr>
-                  <td>${item.name}</td>
-                  <td>${item.category || '-'}</td>
-                  <td>${item.unit_type || '-'}</td>
-                  <td class="text-right ${item.current_quantity < item.min_quantity ? 'low-stock' : ''}">
-                    ${item.current_quantity}
-                  </td>
-                </tr>
-              `,
-                )
+              ${latestItems
+                .map((item) => {
+                  const currentQty = item.current_quantity ?? 0
+                  const minQty = item.min_quantity ?? 0
+                  const isLow = currentQty <= minQty
+                  return `
+                      <tr class="${isLow ? 'low-stock' : ''}">
+                        <td>
+                          ${item.name}
+                          ${isLow ? '<span class="low-stock-label">ESTOQUE BAIXO</span>' : ''}
+                        </td>
+                        <td>${item.category || '-'}</td>
+                        <td>${item.unit_type || '-'}</td>
+                        <td class="text-right">
+                          ${currentQty}
+                        </td>
+                      </tr>
+                    `
+                })
                 .join('')}
             </tbody>
           </table>
@@ -159,8 +207,10 @@ export default function Items() {
             onClick={handleExportPDF}
             variant="outline"
             className="w-full sm:w-auto gap-2 bg-white dark:bg-slate-950"
+            disabled={isGenerating}
           >
-            <FileText size={16} /> Exportar PDF
+            {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText size={16} />}
+            {isGenerating ? 'Gerando...' : 'Gerar Relatório de Estoque'}
           </Button>
           <div className="w-full sm:w-auto">
             <ItemFormModal />
