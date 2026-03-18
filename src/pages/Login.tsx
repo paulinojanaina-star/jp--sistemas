@@ -71,11 +71,6 @@ export default function Login() {
               {loading ? 'Entrando...' : 'Entrar no Sistema'}
             </Button>
           </form>
-
-          <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground space-y-1">
-            <p>Dados de demonstração:</p>
-            <p className="font-mono bg-muted py-1 rounded">admin@saude.gov.br / Admin123!</p>
-          </div>
         </CardContent>
       </Card>
     </div>
