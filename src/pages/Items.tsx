@@ -143,9 +143,11 @@ export default function Items() {
                   let isExpired = false
                   let isExpiringSoon = false
                   let nearestExpiry = null
+                  let nearestBatch = null
 
                   if (nearest) {
                     nearestExpiry = nearest.date
+                    nearestBatch = nearest.batch
                     const diffDays =
                       (nearestExpiry.getTime() - today.getTime()) / (1000 * 3600 * 24)
 
@@ -205,7 +207,8 @@ export default function Items() {
                                 isExpired ? 'text-red-600' : isExpiringSoon ? 'text-amber-600' : ''
                               }
                             >
-                              Vencimento (Lote Ativo): {format(nearestExpiry, 'dd/MM/yyyy')}
+                              {nearestBatch ? `Lote: ${nearestBatch} • ` : ''}Validade (Lote Ativo):{' '}
+                              {format(nearestExpiry, 'dd/MM/yyyy')}
                             </span>
                           </div>
                         )}

@@ -29,14 +29,24 @@ export function getNearestExpiry(item: Item, movements: Movement[]) {
 
   const expiries = batchesWithExpiry
     .map((m) => {
-      const [y, mo, d] = m.expiry_date!.split('-')
+      if (!m.expiry_date) return null
+      const parts = m.expiry_date.split('-')
+      if (parts.length !== 3) return null
+
+      const [y, mo, d] = parts
       return {
         date: new Date(Number(y), Number(mo) - 1, Number(d)),
         batch: m.batch_number,
         movement_id: m.id,
       }
     })
-    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .filter(Boolean) as Array<{
+    date: Date
+    batch: string | null | undefined
+    movement_id: string
+  }>
 
-  return expiries[0] // Nearest expiry among active stock
+  if (expiries.length === 0) return null
+
+  return expiries.sort((a, b) => a.date.getTime() - b.date.getTime())[0] // Nearest expiry among active stock
 }
