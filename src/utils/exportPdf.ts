@@ -1,12 +1,13 @@
 import { supabase } from '@/lib/supabase/client'
+import { formatItemDisplay } from '@/utils/itemFormat'
 
 export const exportStockReportPdf = async (): Promise<{ error?: any }> => {
   const { data: latestItems, error } = await supabase.from('items').select('*')
 
   if (error || !latestItems) return { error: error || new Error('No data') }
 
-  // Ensure alphabetical sorting by the new item name format
-  latestItems.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+  // Ensure alphabetical sorting by the new formatted name
+  latestItems.sort((a, b) => formatItemDisplay(a).localeCompare(formatItemDisplay(b), 'pt-BR'))
 
   const printWindow = window.open('', '_blank')
   if (!printWindow) return { error: new Error('Popup blocked') }
@@ -58,7 +59,7 @@ export const exportStockReportPdf = async (): Promise<{ error?: any }> => {
                 const isLow = (item.current_quantity ?? 0) <= (item.min_quantity ?? 0)
                 return `
                   <tr class="${isLow ? 'low-stock' : ''}">
-                    <td>${item.name} ${isLow ? '<span class="low-stock-label">ESTOQUE BAIXO</span>' : ''}</td>
+                    <td>${formatItemDisplay(item)} ${isLow ? '<span class="low-stock-label">ESTOQUE BAIXO</span>' : ''}</td>
                     <td>${item.unit_type || '-'}</td>
                     <td class="text-right">${item.current_quantity ?? 0}</td>
                   </tr>

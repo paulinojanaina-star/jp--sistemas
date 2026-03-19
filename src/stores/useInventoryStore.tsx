@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Item, Movement } from '@/types/inventory'
 import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
+import { formatItemDisplay } from '@/utils/itemFormat'
 
 interface InventoryContextType {
   items: Item[]
@@ -30,8 +31,10 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   const fetchItems = async () => {
     const { data, error } = await supabase.from('items').select('*')
     if (!error && data) {
-      // Ensure strict alphabetical sorting by name across all lists and dropdowns
-      const sortedData = data.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+      // Ensure strict alphabetical sorting by the new formatted name (NAME + CODE)
+      const sortedData = data.sort((a, b) =>
+        formatItemDisplay(a).localeCompare(formatItemDisplay(b), 'pt-BR'),
+      )
       setItems(sortedData)
     }
   }

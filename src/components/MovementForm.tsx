@@ -18,6 +18,7 @@ import {
 import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
+import { formatItemDisplay } from '@/utils/itemFormat'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -228,7 +229,7 @@ export function MovementForm() {
                             ? (() => {
                                 const item = items.find((i) => i.id === field.value)
                                 return item
-                                  ? `${item.name} (Saldo: ${item.current_quantity})`
+                                  ? `${formatItemDisplay(item)} (Saldo: ${item.current_quantity})`
                                   : 'Selecione o item'
                               })()
                             : 'Pesquise e selecione o item'}
@@ -248,7 +249,7 @@ export function MovementForm() {
                           <CommandGroup>
                             {items.map((item) => (
                               <CommandItem
-                                value={`${item.name} ${item.id}`}
+                                value={`${formatItemDisplay(item)} ${item.id}`}
                                 key={item.id}
                                 onSelect={() => {
                                   form.setValue('item_id', item.id, { shouldValidate: true })
@@ -261,7 +262,7 @@ export function MovementForm() {
                                     item.id === field.value ? 'opacity-100' : 'opacity-0',
                                   )}
                                 />
-                                {item.name}
+                                {formatItemDisplay(item)}
                                 <span className="text-muted-foreground text-xs ml-2">
                                   (Saldo: {item.current_quantity})
                                 </span>

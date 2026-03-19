@@ -11,33 +11,42 @@ export type Database = {
     Tables: {
       inventory_movements: {
         Row: {
+          batch_number: string | null
           created_at: string | null
           document_url: string | null
+          expiry_date: string | null
           health_unit_name: string
           id: string
           item_id: string
+          manufacturing_date: string | null
           observations: string | null
           quantity: number
           responsible_id: string
           type: string
         }
         Insert: {
+          batch_number?: string | null
           created_at?: string | null
           document_url?: string | null
+          expiry_date?: string | null
           health_unit_name: string
           id?: string
           item_id: string
+          manufacturing_date?: string | null
           observations?: string | null
           quantity: number
           responsible_id: string
           type: string
         }
         Update: {
+          batch_number?: string | null
           created_at?: string | null
           document_url?: string | null
+          expiry_date?: string | null
           health_unit_name?: string
           id?: string
           item_id?: string
+          manufacturing_date?: string | null
           observations?: string | null
           quantity?: number
           responsible_id?: string
@@ -324,6 +333,9 @@ export const Constants = {
 //   observations: text (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   document_url: text (nullable)
+//   batch_number: text (nullable)
+//   manufacturing_date: date (nullable)
+//   expiry_date: date (nullable)
 // Table: items
 //   id: uuid (not null, default: gen_random_uuid())
 //   name: text (not null)

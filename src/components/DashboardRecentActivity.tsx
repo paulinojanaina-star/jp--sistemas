@@ -2,6 +2,7 @@ import { useInventoryStore } from '@/stores/useInventoryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
+import { formatItemDisplay } from '@/utils/itemFormat'
 
 export function DashboardRecentActivity() {
   const { movements } = useInventoryStore()
@@ -35,7 +36,9 @@ export function DashboardRecentActivity() {
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm leading-tight mb-1 truncate">
-                        {m.items?.name || 'Item Excluído'}
+                        {m.items
+                          ? formatItemDisplay({ name: m.items.name, id: m.item_id })
+                          : 'Item Excluído'}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {new Date(m.created_at).toLocaleDateString('pt-BR')} •{' '}

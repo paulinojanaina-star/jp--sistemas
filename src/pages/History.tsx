@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Search, Download, ArrowDownToLine, ArrowUpFromLine, FileText } from 'lucide-react'
+import { formatItemDisplay } from '@/utils/itemFormat'
 import {
   Table,
   TableBody,
@@ -30,7 +31,9 @@ export default function History() {
   const [filterType, setFilterType] = useState<string>('TODOS')
 
   const filteredMovements = movements.filter((m) => {
-    const itemName = m.items?.name.toLowerCase() || ''
+    const itemName = m.items
+      ? formatItemDisplay({ name: m.items.name, id: m.item_id }).toLowerCase()
+      : ''
     const respName = m.profiles?.full_name?.toLowerCase() || m.profiles?.email?.toLowerCase() || ''
     const matchSearch =
       itemName.includes(search.toLowerCase()) || respName.includes(search.toLowerCase())
@@ -132,7 +135,11 @@ export default function History() {
                           </span>
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium">{m.items?.name || 'Excluído'}</TableCell>
+                      <TableCell className="font-medium">
+                        {m.items
+                          ? formatItemDisplay({ name: m.items.name, id: m.item_id })
+                          : 'Excluído'}
+                      </TableCell>
                       <TableCell
                         className={`text-right font-mono font-bold ${isEntry ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-300'}`}
                       >

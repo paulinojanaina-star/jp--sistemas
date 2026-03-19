@@ -13,6 +13,8 @@ import { Search, FileText, Loader2, CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { exportStockReportPdf } from '@/utils/exportPdf'
+import { formatItemDisplay } from '@/utils/itemFormat'
+import { getNearestExpiry } from '@/utils/expiryLogic'
 import {
   Table,
   TableBody,
@@ -30,7 +32,8 @@ export default function Items() {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const filteredItems = items.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase())
+    const formattedName = formatItemDisplay(item).toLowerCase()
+    const matchesSearch = formattedName.includes(search.toLowerCase())
     if (!matchesSearch) return false
 
     if (stockFilter === 'critical')
@@ -90,7 +93,7 @@ export default function Items() {
             <div className="relative w-full md:max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Pesquisar por nome..."
+                placeholder="Pesquisar por nome ou código..."
                 className="pl-9 w-full"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -135,23 +138,14 @@ export default function Items() {
                     Math.max(0, (item.current_quantity / (item.min_quantity * 2 || 1)) * 100),
                   )
 
-                  // Expiry Logic
-                  const itemInMovements = movements.filter(
-                    (m) => m.item_id === item.id && m.type === 'IN' && m.expiry_date,
-                  )
-                  let nearestExpiry: Date | null = null
+                  // Expiry Logic using active batches
+                  const nearest = getNearestExpiry(item, movements)
                   let isExpired = false
                   let isExpiringSoon = false
+                  let nearestExpiry = null
 
-                  if (itemInMovements.length > 0) {
-                    const expiries = itemInMovements
-                      .map((m) => {
-                        const [y, mo, d] = m.expiry_date!.split('-')
-                        return new Date(Number(y), Number(mo) - 1, Number(d))
-                      })
-                      .sort((a, b) => a.getTime() - b.getTime())
-
-                    nearestExpiry = expiries[0]
+                  if (nearest) {
+                    nearestExpiry = nearest.date
                     const diffDays =
                       (nearestExpiry.getTime() - today.getTime()) / (1000 * 3600 * 24)
 
@@ -172,7 +166,7 @@ export default function Items() {
                     >
                       <TableCell>
                         <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
-                          {item.name}
+                          {formatItemDisplay(item)}
                           {isZero && (
                             <Badge
                               variant="destructive"
@@ -195,7 +189,7 @@ export default function Items() {
                             </Badge>
                           )}
                           {isExpiringSoon && (
-                            <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent">
+                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent">
                               Vencimento Próximo
                             </Badge>
                           )}
@@ -204,14 +198,14 @@ export default function Items() {
                         {nearestExpiry && item.current_quantity > 0 && (
                           <div className="text-xs mt-1 text-muted-foreground flex items-center gap-1 font-medium">
                             <CalendarIcon
-                              className={`h-3 w-3 ${isExpired ? 'text-red-500' : isExpiringSoon ? 'text-yellow-500' : ''}`}
+                              className={`h-3 w-3 ${isExpired ? 'text-red-500' : isExpiringSoon ? 'text-amber-500' : ''}`}
                             />
                             <span
                               className={
-                                isExpired ? 'text-red-600' : isExpiringSoon ? 'text-yellow-600' : ''
+                                isExpired ? 'text-red-600' : isExpiringSoon ? 'text-amber-600' : ''
                               }
                             >
-                              Vencimento mais próximo: {format(nearestExpiry, 'dd/MM/yyyy')}
+                              Vencimento (Lote Ativo): {format(nearestExpiry, 'dd/MM/yyyy')}
                             </span>
                           </div>
                         )}

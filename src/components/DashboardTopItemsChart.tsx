@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase/client'
+import { formatItemDisplay } from '@/utils/itemFormat'
 
 type ChartData = {
   name: string
@@ -24,7 +25,7 @@ export function DashboardTopItemsChart() {
 
         const { data: movements, error } = await supabase
           .from('inventory_movements')
-          .select('quantity, items(name)')
+          .select('item_id, quantity, items(name)')
           .eq('type', 'OUT')
           .gte('created_at', thirtyDaysAgo.toISOString())
 
@@ -37,8 +38,10 @@ export function DashboardTopItemsChart() {
           const itemTotals = new Map<string, number>()
 
           movements.forEach((m) => {
-            const itemName = (m.items as any)?.name || 'Desconhecido'
-            itemTotals.set(itemName, (itemTotals.get(itemName) || 0) + m.quantity)
+            const id = m.item_id
+            const name = (m.items as any)?.name || 'Desconhecido'
+            const formatted = formatItemDisplay({ name, id })
+            itemTotals.set(formatted, (itemTotals.get(formatted) || 0) + m.quantity)
           })
 
           const aggregatedData = Array.from(itemTotals.entries())

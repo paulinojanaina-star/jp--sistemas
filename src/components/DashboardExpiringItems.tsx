@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AlertTriangle, CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
+import { formatItemDisplay } from '@/utils/itemFormat'
+import { getNearestExpiry } from '@/utils/expiryLogic'
 
 export function DashboardExpiringItems() {
   const { items, movements } = useInventoryStore()
@@ -12,22 +14,9 @@ export function DashboardExpiringItems() {
 
   const expiringList = items
     .map((item) => {
-      if (item.current_quantity <= 0) return null
+      const nearest = getNearestExpiry(item, movements)
+      if (!nearest) return null
 
-      const itemInMovements = movements.filter(
-        (m) => m.item_id === item.id && m.type === 'IN' && m.expiry_date,
-      )
-      if (itemInMovements.length === 0) return null
-
-      const expiries = itemInMovements
-        .map((m) => {
-          const [y, mo, d] = m.expiry_date!.split('-')
-          const date = new Date(Number(y), Number(mo) - 1, Number(d))
-          return { date, batch: m.batch_number }
-        })
-        .sort((a, b) => a.date.getTime() - b.date.getTime())
-
-      const nearest = expiries[0]
       const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
 
       if (diffDays <= 180) {
@@ -57,15 +46,15 @@ export function DashboardExpiringItems() {
     <Card className="col-span-1 lg:col-span-1 flex flex-col">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-yellow-500" />
-          Alertas de Vencimento
+          <AlertTriangle className="h-5 w-5 text-amber-500" />
+          Alertas de Validade
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <div className="space-y-4">
           {displayList.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Nenhum item próximo ao vencimento ou vencido.
+              Nenhum item com lote ativo próximo ao vencimento ou vencido.
             </p>
           ) : (
             displayList.map((data, index) => {
@@ -78,12 +67,14 @@ export function DashboardExpiringItems() {
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     <div
-                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isExpired ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'}`}
+                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isExpired ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}
                     >
                       <CalendarIcon size={14} />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-sm leading-tight mb-1 truncate">{item.name}</p>
+                      <p className="font-medium text-sm leading-tight mb-1 truncate">
+                        {formatItemDisplay(item)}
+                      </p>
                       <p className="text-xs text-muted-foreground truncate">
                         Vence: {format(nearestExpiry, 'dd/MM/yyyy')}
                         {batch && ` • Lote: ${batch}`}
@@ -92,7 +83,7 @@ export function DashboardExpiringItems() {
                   </div>
                   <Badge
                     variant={isExpired ? 'destructive' : 'default'}
-                    className={`shrink-0 ml-2 ${!isExpired ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : ''}`}
+                    className={`shrink-0 ml-2 ${!isExpired ? 'bg-amber-500 hover:bg-amber-600 text-white' : ''}`}
                   >
                     {isExpired ? 'Vencido' : 'Próximo'}
                   </Badge>
