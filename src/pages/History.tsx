@@ -5,7 +5,14 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Search, Download, ArrowDownToLine, ArrowUpFromLine, FileText } from 'lucide-react'
+import {
+  Search,
+  Download,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  FileText,
+  CalendarIcon,
+} from 'lucide-react'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import {
   Table,
@@ -48,6 +55,12 @@ export default function History() {
     })
   }
 
+  const formatBatchDate = (dateStr: string) => {
+    const parts = dateStr.split('-')
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
+    return dateStr
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -57,7 +70,7 @@ export default function History() {
             Auditoria completa de entradas e saídas do banco de dados.
           </p>
         </div>
-        <Button onClick={handleExport} variant="outline" className="bg-white">
+        <Button onClick={handleExport} variant="outline" className="bg-white dark:bg-slate-950">
           <Download className="mr-2 h-4 w-4" /> Exportar Relatório
         </Button>
       </div>
@@ -93,6 +106,7 @@ export default function History() {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Item</TableHead>
                 <TableHead className="text-right">Qtd</TableHead>
+                <TableHead>Lote / Validade</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Unidade Origem/Destino</TableHead>
                 <TableHead className="text-center">Anexo</TableHead>
@@ -101,7 +115,7 @@ export default function History() {
             <TableBody>
               {filteredMovements.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                     Nenhum registro encontrado.
                   </TableCell>
                 </TableRow>
@@ -123,7 +137,7 @@ export default function History() {
                       <TableCell>
                         <Badge
                           variant={isEntry ? 'outline' : 'default'}
-                          className={`uppercase text-[10px] tracking-wider ${isEntry ? 'text-emerald-600 border-emerald-200 bg-emerald-50' : ''}`}
+                          className={`uppercase text-[10px] tracking-wider ${isEntry ? 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30' : ''}`}
                         >
                           <span className="flex items-center gap-1">
                             {isEntry ? (
@@ -145,6 +159,25 @@ export default function History() {
                       >
                         {isEntry ? '+' : '-'}
                         {m.quantity}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {m.batch_number || m.expiry_date ? (
+                          <div className="flex flex-col gap-0.5">
+                            {m.batch_number && (
+                              <span className="font-medium text-slate-700 dark:text-slate-300">
+                                Lote: {m.batch_number}
+                              </span>
+                            )}
+                            {m.expiry_date && (
+                              <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                                <CalendarIcon className="h-3 w-3" />
+                                Vence: {formatBatchDate(m.expiry_date)}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell
                         className="text-sm truncate max-w-[150px]"
