@@ -31,7 +31,6 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   const fetchItems = async () => {
     const { data, error } = await supabase.from('items').select('*')
     if (!error && data) {
-      // Ensure strict alphabetical sorting by the new formatted name (NAME + CODE)
       const sortedData = data.sort((a, b) =>
         formatItemDisplay(a).localeCompare(formatItemDisplay(b), 'pt-BR'),
       )
@@ -54,20 +53,19 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    if (session) {
+    if (session?.user?.id) {
       refreshData()
     } else {
       setItems([])
       setMovements([])
     }
-  }, [session])
+  }, [session?.user?.id])
 
   const addItem = async (
     item: Omit<Item, 'id' | 'created_at' | 'current_quantity'>,
     initialQty: number,
   ) => {
     let formattedName = item.name
-    // Intercept manual "CODE NAME" entries and format them automatically
     const match = formattedName.match(/^(\d+)\s+(.*)$/)
     if (match) {
       formattedName = `${match[2].trim()} (${match[1]})`
@@ -107,7 +105,6 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   const updateItem = async (id: string, updates: Partial<Item>) => {
     const payload = { ...updates }
     if (payload.name) {
-      // Intercept manual "CODE NAME" updates and format them automatically
       const match = payload.name.match(/^(\d+)\s+(.*)$/)
       if (match) {
         payload.name = `${match[2].trim()} (${match[1]})`
@@ -132,8 +129,6 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     const { error } = await supabase.from('inventory_movements').insert(movement)
     if (error) return { error }
-
-    // Refresh data to reflect new stock amounts and history
     await refreshData()
     return {}
   }

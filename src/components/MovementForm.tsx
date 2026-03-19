@@ -51,17 +51,43 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Calendar } from '@/components/ui/calendar'
 
-const movementSchema = z.object({
-  item_id: z.string().min(1, 'Selecione um item'),
-  type: z.enum(['IN', 'OUT']),
-  quantity: z.coerce.number().positive('A quantidade deve ser maior que zero'),
-  health_unit_name: z.string().min(2, 'Especifique a origem ou destino').trim(),
-  observations: z.string().optional(),
-  file: z.any().optional(),
-  batch_number: z.string().optional(),
-  manufacturing_date: z.date().optional(),
-  expiry_date: z.date().optional(),
-})
+const movementSchema = z
+  .object({
+    item_id: z.string().min(1, 'Selecione um item'),
+    type: z.enum(['IN', 'OUT']),
+    quantity: z.coerce.number().positive('A quantidade deve ser maior que zero'),
+    health_unit_name: z.string().min(2, 'Especifique a origem ou destino').trim(),
+    observations: z.string().optional(),
+    file: z.any().optional(),
+    batch_number: z.string().optional(),
+    manufacturing_date: z.date().optional(),
+    expiry_date: z.date().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type === 'IN') {
+      if (!data.batch_number || data.batch_number.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'O lote é obrigatório para entradas',
+          path: ['batch_number'],
+        })
+      }
+      if (!data.manufacturing_date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'A data de fabricação é obrigatória para entradas',
+          path: ['manufacturing_date'],
+        })
+      }
+      if (!data.expiry_date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'A data de validade é obrigatória para entradas',
+          path: ['expiry_date'],
+        })
+      }
+    }
+  })
 
 export function MovementForm() {
   const { items, addMovement } = useInventoryStore()
@@ -329,9 +355,9 @@ export function MovementForm() {
                   name="batch_number"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lote (Opcional)</FormLabel>
+                      <FormLabel>Lote *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: L202305A" {...field} />
+                        <Input placeholder="Ex: L202305A" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -343,7 +369,7 @@ export function MovementForm() {
                   name="manufacturing_date"
                   render={({ field }) => (
                     <FormItem className="flex flex-col mt-2 md:mt-0">
-                      <FormLabel className="mb-1">Data de Fabricação (Opcional)</FormLabel>
+                      <FormLabel className="mb-1">Data de Fabricação *</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -384,7 +410,7 @@ export function MovementForm() {
                   name="expiry_date"
                   render={({ field }) => (
                     <FormItem className="flex flex-col mt-2 md:mt-0">
-                      <FormLabel className="mb-1">Data de Validade (Opcional)</FormLabel>
+                      <FormLabel className="mb-1">Data de Validade *</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,10 +8,17 @@ import { HeartPulse, Loader2 } from 'lucide-react'
 
 export default function Login() {
   const { signIn, session, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (session) {
+      navigate('/', { replace: true })
+    }
+  }, [session, navigate])
 
   if (authLoading) {
     return (
@@ -19,10 +26,6 @@ export default function Login() {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
-  }
-
-  if (session) {
-    return <Navigate to="/" replace />
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -35,7 +38,7 @@ export default function Login() {
       setError('Credenciais inválidas. Tente novamente.')
       setLoading(false)
     }
-    // If no error, we keep loading as true to avoid button flashing before the redirect occurs
+    // If no error, we keep loading as true to avoid button flashing before the redirect occurs via useEffect
   }
 
   return (
