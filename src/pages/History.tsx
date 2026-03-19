@@ -106,7 +106,7 @@ export default function History() {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Item</TableHead>
                 <TableHead className="text-right">Qtd</TableHead>
-                <TableHead>Lote / Validade</TableHead>
+                <TableHead>Lote / Fab / Val</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Unidade Origem/Destino</TableHead>
                 <TableHead className="text-center">Anexo</TableHead>
@@ -161,17 +161,23 @@ export default function History() {
                         {m.quantity}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {m.batch_number || m.expiry_date ? (
+                        {m.batch_number || m.manufacturing_date || m.expiry_date ? (
                           <div className="flex flex-col gap-0.5">
                             {m.batch_number && (
                               <span className="font-medium text-slate-700 dark:text-slate-300">
                                 Lote: {m.batch_number}
                               </span>
                             )}
+                            {m.manufacturing_date && (
+                              <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                                <CalendarIcon className="h-3 w-3" />
+                                Fab: {formatBatchDate(m.manufacturing_date)}
+                              </span>
+                            )}
                             {m.expiry_date && (
                               <span className="text-muted-foreground flex items-center gap-1 text-xs">
                                 <CalendarIcon className="h-3 w-3" />
-                                Vence: {formatBatchDate(m.expiry_date)}
+                                Val: {formatBatchDate(m.expiry_date)}
                               </span>
                             )}
                           </div>

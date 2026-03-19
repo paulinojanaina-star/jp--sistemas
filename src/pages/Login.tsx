@@ -37,8 +37,9 @@ export default function Login() {
     if (error) {
       setError('Credenciais inválidas. Tente novamente.')
       setLoading(false)
+    } else {
+      navigate('/', { replace: true })
     }
-    // If no error, we keep loading as true to avoid button flashing before the redirect occurs via useEffect
   }
 
   return (
