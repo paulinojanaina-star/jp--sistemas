@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
-import { Search, FileText, Loader2 } from 'lucide-react'
+import { Search, FileText, Loader2, CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 import { exportStockReportPdf } from '@/utils/exportPdf'
 import {
   Table,
@@ -22,7 +23,7 @@ import {
 } from '@/components/ui/table'
 
 export default function Items() {
-  const { items } = useInventoryStore()
+  const { items, movements } = useInventoryStore()
   const { toast } = useToast()
   const [search, setSearch] = useState('')
   const [stockFilter, setStockFilter] = useState('all')
@@ -54,6 +55,9 @@ export default function Items() {
       })
     }
   }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
   return (
     <div className="space-y-6">
@@ -131,6 +135,33 @@ export default function Items() {
                     Math.max(0, (item.current_quantity / (item.min_quantity * 2 || 1)) * 100),
                   )
 
+                  // Expiry Logic
+                  const itemInMovements = movements.filter(
+                    (m) => m.item_id === item.id && m.type === 'IN' && m.expiry_date,
+                  )
+                  let nearestExpiry: Date | null = null
+                  let isExpired = false
+                  let isExpiringSoon = false
+
+                  if (itemInMovements.length > 0) {
+                    const expiries = itemInMovements
+                      .map((m) => {
+                        const [y, mo, d] = m.expiry_date!.split('-')
+                        return new Date(Number(y), Number(mo) - 1, Number(d))
+                      })
+                      .sort((a, b) => a.getTime() - b.getTime())
+
+                    nearestExpiry = expiries[0]
+                    const diffDays =
+                      (nearestExpiry.getTime() - today.getTime()) / (1000 * 3600 * 24)
+
+                    if (diffDays < 0) {
+                      isExpired = true
+                    } else if (diffDays <= 180) {
+                      isExpiringSoon = true
+                    }
+                  }
+
                   return (
                     <TableRow
                       key={item.id}
@@ -155,8 +186,35 @@ export default function Items() {
                               Crítico
                             </Badge>
                           )}
+                          {isExpired && (
+                            <Badge
+                              variant="destructive"
+                              className="h-5 px-1.5 text-[10px] uppercase border-red-700 bg-red-600"
+                            >
+                              Vencido
+                            </Badge>
+                          )}
+                          {isExpiringSoon && (
+                            <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent">
+                              Vencimento Próximo
+                            </Badge>
+                          )}
                         </div>
                         <div className="text-xs text-muted-foreground">{item.unit_type}</div>
+                        {nearestExpiry && item.current_quantity > 0 && (
+                          <div className="text-xs mt-1 text-muted-foreground flex items-center gap-1 font-medium">
+                            <CalendarIcon
+                              className={`h-3 w-3 ${isExpired ? 'text-red-500' : isExpiringSoon ? 'text-yellow-500' : ''}`}
+                            />
+                            <span
+                              className={
+                                isExpired ? 'text-red-600' : isExpiringSoon ? 'text-yellow-600' : ''
+                              }
+                            >
+                              Vencimento mais próximo: {format(nearestExpiry, 'dd/MM/yyyy')}
+                            </span>
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <span

@@ -2,6 +2,7 @@ import { DashboardMetrics } from '@/components/DashboardMetrics'
 import { DashboardChart } from '@/components/DashboardChart'
 import { DashboardRecentActivity } from '@/components/DashboardRecentActivity'
 import { DashboardTopItemsChart } from '@/components/DashboardTopItemsChart'
+import { DashboardExpiringItems } from '@/components/DashboardExpiringItems'
 
 export default function Index() {
   return (
@@ -24,6 +25,7 @@ export default function Index() {
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         <DashboardTopItemsChart />
+        <DashboardExpiringItems />
       </div>
     </div>
   )

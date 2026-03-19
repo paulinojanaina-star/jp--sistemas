@@ -1,0 +1,107 @@
+import { useInventoryStore } from '@/stores/useInventoryStore'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { AlertTriangle, CalendarIcon } from 'lucide-react'
+import { format } from 'date-fns'
+
+export function DashboardExpiringItems() {
+  const { items, movements } = useInventoryStore()
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const expiringList = items
+    .map((item) => {
+      if (item.current_quantity <= 0) return null
+
+      const itemInMovements = movements.filter(
+        (m) => m.item_id === item.id && m.type === 'IN' && m.expiry_date,
+      )
+      if (itemInMovements.length === 0) return null
+
+      const expiries = itemInMovements
+        .map((m) => {
+          const [y, mo, d] = m.expiry_date!.split('-')
+          const date = new Date(Number(y), Number(mo) - 1, Number(d))
+          return { date, batch: m.batch_number }
+        })
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+
+      const nearest = expiries[0]
+      const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
+
+      if (diffDays <= 180) {
+        return {
+          item,
+          nearestExpiry: nearest.date,
+          batch: nearest.batch,
+          diffDays,
+          isExpired: diffDays < 0,
+        }
+      }
+      return null
+    })
+    .filter(Boolean) as Array<{
+    item: any
+    nearestExpiry: Date
+    batch: string | null | undefined
+    diffDays: number
+    isExpired: boolean
+  }>
+
+  expiringList.sort((a, b) => a.nearestExpiry.getTime() - b.nearestExpiry.getTime())
+
+  const displayList = expiringList.slice(0, 5)
+
+  return (
+    <Card className="col-span-1 lg:col-span-1 flex flex-col">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-yellow-500" />
+          Alertas de Vencimento
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1">
+        <div className="space-y-4">
+          {displayList.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Nenhum item próximo ao vencimento ou vencido.
+            </p>
+          ) : (
+            displayList.map((data, index) => {
+              const { item, nearestExpiry, batch, isExpired } = data
+
+              return (
+                <div
+                  key={`${item.id}-${index}`}
+                  className="flex items-center justify-between border-b border-border/50 pb-3 last:border-0 last:pb-0"
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div
+                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isExpired ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'}`}
+                    >
+                      <CalendarIcon size={14} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm leading-tight mb-1 truncate">{item.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        Vence: {format(nearestExpiry, 'dd/MM/yyyy')}
+                        {batch && ` • Lote: ${batch}`}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge
+                    variant={isExpired ? 'destructive' : 'default'}
+                    className={`shrink-0 ml-2 ${!isExpired ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : ''}`}
+                  >
+                    {isExpired ? 'Vencido' : 'Próximo'}
+                  </Badge>
+                </div>
+              )
+            })
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

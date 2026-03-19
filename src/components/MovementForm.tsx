@@ -13,9 +13,11 @@ import {
   Loader2,
   Check,
   ChevronsUpDown,
+  CalendarIcon,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,6 +48,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Calendar } from '@/components/ui/calendar'
 
 const movementSchema = z.object({
   item_id: z.string().min(1, 'Selecione um item'),
@@ -54,6 +57,9 @@ const movementSchema = z.object({
   health_unit_name: z.string().min(2, 'Especifique a origem ou destino').trim(),
   observations: z.string().optional(),
   file: z.any().optional(),
+  batch_number: z.string().optional(),
+  manufacturing_date: z.date().optional(),
+  expiry_date: z.date().optional(),
 })
 
 export function MovementForm() {
@@ -65,7 +71,13 @@ export function MovementForm() {
 
   const form = useForm<z.infer<typeof movementSchema>>({
     resolver: zodResolver(movementSchema),
-    defaultValues: { type: 'OUT', health_unit_name: '', observations: '', item_id: '' },
+    defaultValues: {
+      type: 'OUT',
+      health_unit_name: '',
+      observations: '',
+      item_id: '',
+      batch_number: '',
+    },
   })
 
   const selectedItemId = form.watch('item_id')
@@ -119,6 +131,13 @@ export function MovementForm() {
       observations: values.observations?.trim() || undefined,
       responsible_id: session.user.id,
       document_url: documentUrl,
+      ...(values.type === 'IN' && {
+        batch_number: values.batch_number?.trim() || null,
+        manufacturing_date: values.manufacturing_date
+          ? format(values.manufacturing_date, 'yyyy-MM-dd')
+          : null,
+        expiry_date: values.expiry_date ? format(values.expiry_date, 'yyyy-MM-dd') : null,
+      }),
     }
 
     const { error } = await addMovement(movementPayload)
@@ -131,7 +150,16 @@ export function MovementForm() {
       title: isOutbound ? 'Saída registrada' : 'Entrada registrada',
       description: `Movimentação salva com sucesso.`,
     })
-    form.reset({ ...form.getValues(), item_id: '', quantity: 1, observations: '', file: undefined })
+    form.reset({
+      ...form.getValues(),
+      item_id: '',
+      quantity: 1,
+      observations: '',
+      file: undefined,
+      batch_number: '',
+      manufacturing_date: undefined,
+      expiry_date: undefined,
+    })
     const fileInput = document.getElementById('file-upload') as HTMLInputElement
     if (fileInput) fileInput.value = ''
   }
@@ -291,6 +319,103 @@ export function MovementForm() {
                 )}
               />
             </div>
+
+            {!isOutbound && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 rounded-md border border-emerald-100 bg-emerald-50/30 dark:border-emerald-900/50 dark:bg-emerald-950/10">
+                <FormField
+                  control={form.control}
+                  name="batch_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lote (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: L202305A" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="manufacturing_date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col mt-2 md:mt-0">
+                      <FormLabel className="mb-1">Data de Fabricação (Opcional)</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground',
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, 'dd/MM/yyyy')
+                              ) : (
+                                <span>Selecione a data</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => date > new Date()}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="expiry_date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col mt-2 md:mt-0">
+                      <FormLabel className="mb-1">Data de Validade (Opcional)</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground',
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, 'dd/MM/yyyy')
+                              ) : (
+                                <span>Selecione a data</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             {isOutbound && (
               <FormField

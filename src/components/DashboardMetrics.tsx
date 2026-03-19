@@ -1,6 +1,13 @@
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Clock } from 'lucide-react'
+import {
+  Package,
+  AlertTriangle,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Clock,
+  CalendarClock,
+} from 'lucide-react'
 
 export function DashboardMetrics() {
   const { items, movements } = useInventoryStore()
@@ -40,8 +47,27 @@ export function DashboardMetrics() {
     return days >= 30
   }).length
 
+  // Calculate Expiring Items (<= 180 days)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const itemsExpiringCount = items.filter((item) => {
+    if (item.current_quantity <= 0) return false
+    const itemMovements = movements.filter(
+      (m) => m.item_id === item.id && m.type === 'IN' && m.expiry_date,
+    )
+    if (itemMovements.length === 0) return false
+
+    return itemMovements.some((m) => {
+      const [y, mo, d] = m.expiry_date!.split('-')
+      const exp = new Date(Number(y), Number(mo) - 1, Number(d))
+      const diffDays = (exp.getTime() - today.getTime()) / (1000 * 3600 * 24)
+      return diffDays <= 180
+    })
+  }).length
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6">
+    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 mb-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total de Itens</CardTitle>
@@ -73,6 +99,33 @@ export function DashboardMetrics() {
             {criticalStock}
           </div>
           <p className="text-xs text-muted-foreground mt-1">Abaixo do nível mínimo</p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className={
+          itemsExpiringCount > 0 ? 'border-yellow-500/50 bg-yellow-500/5 dark:bg-yellow-500/10' : ''
+        }
+      >
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle
+            className={`text-sm font-medium ${itemsExpiringCount > 0 ? 'text-yellow-600 dark:text-yellow-500 font-bold' : ''}`}
+          >
+            Vencimento Próximo
+          </CardTitle>
+          <CalendarClock
+            className={`h-4 w-4 ${itemsExpiringCount > 0 ? 'text-yellow-600 dark:text-yellow-500' : 'text-muted-foreground'}`}
+          />
+        </CardHeader>
+        <CardContent>
+          <div
+            className={`text-2xl font-bold ${itemsExpiringCount > 0 ? 'text-yellow-600 dark:text-yellow-500' : ''}`}
+          >
+            {itemsExpiringCount}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Itens com lotes a vencer &le; 180 dias
+          </p>
         </CardContent>
       </Card>
 

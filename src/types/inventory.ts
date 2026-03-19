@@ -23,6 +23,9 @@ export interface Movement {
   responsible_id: string
   observations?: string
   document_url?: string
+  batch_number?: string | null
+  manufacturing_date?: string | null
+  expiry_date?: string | null
 
   // Joined fields from Supabase
   items?: { name: string }
