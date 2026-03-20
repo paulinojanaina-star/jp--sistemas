@@ -12,6 +12,11 @@ interface InventoryContextType {
   addItem: (
     item: Omit<Item, 'id' | 'created_at' | 'current_quantity'>,
     initialQty: number,
+    movementData?: {
+      batch_number?: string | null
+      manufacturing_date?: string | null
+      expiry_date?: string | null
+    },
   ) => Promise<{ error?: any }>
   updateItem: (id: string, updates: Partial<Item>) => Promise<{ error?: any }>
   deleteItem: (id: string) => Promise<{ error?: any }>
@@ -64,6 +69,11 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   const addItem = async (
     item: Omit<Item, 'id' | 'created_at' | 'current_quantity'>,
     initialQty: number,
+    movementData?: {
+      batch_number?: string | null
+      manufacturing_date?: string | null
+      expiry_date?: string | null
+    },
   ) => {
     let formattedName = item.name
     const match = formattedName.match(/^(\d+)\s+(.*)$/)
@@ -93,6 +103,9 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         health_unit_name: 'Estoque Inicial',
         responsible_id: session.user.id,
         observations: 'Cadastro inicial',
+        batch_number: movementData?.batch_number,
+        manufacturing_date: movementData?.manufacturing_date,
+        expiry_date: movementData?.expiry_date,
       })
       if (moveError) return { error: moveError }
     } else {

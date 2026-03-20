@@ -4,12 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus, Loader2, CalendarIcon } from 'lucide-react'
 import { Item, ITEM_UNITS } from '@/types/inventory'
+import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Form,
   FormControl,
@@ -41,6 +45,9 @@ const itemSchema = z.object({
   }),
   min_quantity: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
   current_quantity: z.coerce.number().min(0, 'Saldo inicial não pode ser negativo'),
+  batch_number: z.string().optional(),
+  manufacturing_date: z.date().optional(),
+  expiry_date: z.date().optional(),
 })
 
 interface ItemFormModalProps {
@@ -76,8 +83,11 @@ export function ItemFormModal({
       unit_type: (item?.unit_type as any) || undefined,
       min_quantity: item?.min_quantity || 10,
       current_quantity: item?.current_quantity || 0,
+      batch_number: '',
     },
   })
+
+  const currentQty = form.watch('current_quantity')
 
   useEffect(() => {
     if (open) {
@@ -96,6 +106,9 @@ export function ItemFormModal({
           unit_type: undefined,
           min_quantity: 10,
           current_quantity: 0,
+          batch_number: '',
+          manufacturing_date: undefined,
+          expiry_date: undefined,
         })
       }
     }
@@ -105,7 +118,8 @@ export function ItemFormModal({
     setSubmitting(true)
 
     if (isEditing && item) {
-      const { current_quantity, ...itemData } = values
+      const { current_quantity, batch_number, manufacturing_date, expiry_date, ...itemData } =
+        values
       const { error } = await updateItem(item.id, itemData)
       setSubmitting(false)
 
@@ -120,8 +134,16 @@ export function ItemFormModal({
 
       toast({ title: 'Sucesso!', description: 'Item atualizado com sucesso.' })
     } else {
-      const { current_quantity, ...itemData } = values
-      const { error } = await addItem(itemData, current_quantity)
+      const { current_quantity, batch_number, manufacturing_date, expiry_date, ...itemData } =
+        values
+
+      const movementData = {
+        batch_number: batch_number?.trim() || null,
+        manufacturing_date: manufacturing_date ? format(manufacturing_date, 'yyyy-MM-dd') : null,
+        expiry_date: expiry_date ? format(expiry_date, 'yyyy-MM-dd') : null,
+      }
+
+      const { error } = await addItem(itemData, current_quantity, movementData)
       setSubmitting(false)
 
       if (error) {
@@ -150,7 +172,7 @@ export function ItemFormModal({
           )}
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Editar Item' : 'Cadastrar Novo Item'}</DialogTitle>
         </DialogHeader>
@@ -212,19 +234,124 @@ export function ItemFormModal({
             </div>
 
             {!isEditing && (
-              <FormField
-                control={form.control}
-                name="current_quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Saldo Inicial</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <>
+                <FormField
+                  control={form.control}
+                  name="current_quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Saldo Inicial</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {currentQty > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-md border border-emerald-100 bg-emerald-50/30 dark:border-emerald-900/50 dark:bg-emerald-950/10">
+                    <FormField
+                      control={form.control}
+                      name="batch_number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lote (Opcional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Ex: L202305A"
+                              {...field}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="manufacturing_date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col mt-2 md:mt-0">
+                          <FormLabel className="mb-1">Fabricação (Opcional)</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  type="button"
+                                  variant={'outline'}
+                                  className={cn(
+                                    'w-full pl-3 text-left font-normal px-2',
+                                    !field.value && 'text-muted-foreground',
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, 'dd/MM/yyyy')
+                                  ) : (
+                                    <span className="text-xs">Selecionar</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date > new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="expiry_date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col mt-2 md:mt-0">
+                          <FormLabel className="mb-1">Validade (Opcional)</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  type="button"
+                                  variant={'outline'}
+                                  className={cn(
+                                    'w-full pl-3 text-left font-normal px-2',
+                                    !field.value && 'text-muted-foreground',
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, 'dd/MM/yyyy')
+                                  ) : (
+                                    <span className="text-xs">Selecionar</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 )}
-              />
+              </>
             )}
 
             <FormField

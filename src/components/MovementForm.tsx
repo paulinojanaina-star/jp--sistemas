@@ -329,7 +329,7 @@ export function MovementForm() {
                   name="batch_number"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lote</FormLabel>
+                      <FormLabel>Lote (Opcional)</FormLabel>
                       <FormControl>
                         <Input placeholder="Ex: L202305A" {...field} value={field.value || ''} />
                       </FormControl>
@@ -343,7 +343,7 @@ export function MovementForm() {
                   name="manufacturing_date"
                   render={({ field }) => (
                     <FormItem className="flex flex-col mt-2 md:mt-0">
-                      <FormLabel className="mb-1">Data de Fabricação</FormLabel>
+                      <FormLabel className="mb-1">Fabricação (Opcional)</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -384,7 +384,7 @@ export function MovementForm() {
                   name="expiry_date"
                   render={({ field }) => (
                     <FormItem className="flex flex-col mt-2 md:mt-0">
-                      <FormLabel className="mb-1">Data de Validade</FormLabel>
+                      <FormLabel className="mb-1">Validade (Opcional)</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
