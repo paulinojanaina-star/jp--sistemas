@@ -84,7 +84,7 @@ export default function Items() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Catálogo de Itens</h2>
+          <h2 className="text-2xl font-medium tracking-tight">Catálogo de Itens</h2>
           <p className="text-muted-foreground">
             Gerencie todos os materiais e medicamentos da unidade.
           </p>
@@ -93,10 +93,14 @@ export default function Items() {
           <Button
             onClick={handleExportPDF}
             variant="outline"
-            className="w-full sm:w-auto gap-2 bg-white dark:bg-slate-950"
+            className="w-full sm:w-auto gap-2 bg-background"
             disabled={isGenerating}
           >
-            {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText size={16} />}
+            {isGenerating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileText size={16} strokeWidth={1.5} />
+            )}
             {isGenerating ? 'Gerando...' : 'Gerar Relatório'}
           </Button>
           <div className="w-full sm:w-auto">
@@ -185,41 +189,41 @@ export default function Items() {
                   }
 
                   const rowHighlightClass = isZero
-                    ? 'bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50/80'
+                    ? 'bg-destructive/5 hover:bg-destructive/10'
                     : isExpired
-                      ? 'bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50/80'
+                      ? 'bg-destructive/5 hover:bg-destructive/10'
                       : isCritical || isExpiringSoon
-                        ? 'bg-amber-50/30 dark:bg-amber-950/10 hover:bg-amber-50/50'
+                        ? 'bg-amber-500/5 hover:bg-amber-500/10'
                         : ''
 
                   return (
                     <TableRow key={item.id} className={rowHighlightClass}>
                       <TableCell>
-                        <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
+                        <div className="font-medium text-foreground flex items-center gap-2 flex-wrap">
                           {formatItemDisplay(item)}
                           {isZero && (
                             <Badge
                               variant="destructive"
-                              className="h-5 px-1.5 text-[10px] uppercase"
+                              className="h-5 px-1.5 text-[10px] uppercase font-semibold"
                             >
                               Zerado
                             </Badge>
                           )}
                           {isCritical && (
-                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent">
+                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
                               Crítico
                             </Badge>
                           )}
                           {isExpired && (
                             <Badge
                               variant="destructive"
-                              className="h-5 px-1.5 text-[10px] uppercase border-red-700 bg-red-600"
+                              className="h-5 px-1.5 text-[10px] uppercase font-semibold border-destructive bg-destructive"
                             >
                               Vencido
                             </Badge>
                           )}
                           {isExpiringSoon && !isExpired && (
-                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent">
+                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
                               Vencimento Próximo
                             </Badge>
                           )}
@@ -233,13 +237,13 @@ export default function Items() {
                               className={cn(
                                 'font-medium flex items-center gap-1',
                                 isExpired
-                                  ? 'text-red-600'
+                                  ? 'text-destructive'
                                   : isExpiringSoon
                                     ? 'text-amber-600'
-                                    : 'text-slate-700 dark:text-slate-300',
+                                    : 'text-foreground',
                               )}
                             >
-                              <CalendarIcon className="h-3.5 w-3.5" />
+                              <CalendarIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
                               {format(nearestExpiry, 'dd/MM/yyyy')}
                             </span>
                             {nearestBatch && (
@@ -257,7 +261,7 @@ export default function Items() {
                           className={cn(
                             'font-mono text-base font-medium',
                             isZero && 'text-destructive font-bold',
-                            isCritical && 'text-amber-600 dark:text-amber-500 font-bold',
+                            isCritical && 'text-amber-600 font-bold',
                           )}
                         >
                           {item.current_quantity}
@@ -272,11 +276,10 @@ export default function Items() {
                           <Progress
                             value={percentage}
                             className={cn(
-                              'h-1.5',
-                              isZero && 'bg-red-100 dark:bg-red-950 [&>div]:bg-destructive',
-                              isCritical &&
-                                'bg-amber-100 dark:bg-amber-950/30 [&>div]:bg-amber-500',
-                              !isZero && !isCritical && '[&>div]:bg-emerald-500',
+                              'h-1.5 bg-muted',
+                              isZero && '[&>div]:bg-destructive',
+                              isCritical && '[&>div]:bg-amber-500',
+                              !isZero && !isCritical && '[&>div]:bg-secondary',
                             )}
                           />
                         </div>

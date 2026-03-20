@@ -65,13 +65,13 @@ export default function History() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Histórico de Movimentações</h2>
+          <h2 className="text-2xl font-medium tracking-tight">Histórico de Movimentações</h2>
           <p className="text-muted-foreground">
             Auditoria completa de entradas e saídas do banco de dados.
           </p>
         </div>
-        <Button onClick={handleExport} variant="outline" className="bg-white dark:bg-slate-950">
-          <Download className="mr-2 h-4 w-4" /> Exportar Relatório
+        <Button onClick={handleExport} variant="outline" className="bg-background">
+          <Download className="mr-2 h-4 w-4" strokeWidth={1.5} /> Exportar Relatório
         </Button>
       </div>
 
@@ -79,7 +79,10 @@ export default function History() {
         <CardContent className="p-0">
           <div className="p-4 border-b flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                strokeWidth={1.5}
+              />
               <Input
                 placeholder="Filtrar por item ou responsável..."
                 className="pl-9"
@@ -137,13 +140,13 @@ export default function History() {
                       <TableCell>
                         <Badge
                           variant={isEntry ? 'outline' : 'default'}
-                          className={`uppercase text-[10px] tracking-wider ${isEntry ? 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30' : ''}`}
+                          className={`uppercase text-[10px] tracking-wider font-semibold ${isEntry ? 'text-secondary border-secondary/30 bg-secondary/10' : ''}`}
                         >
                           <span className="flex items-center gap-1">
                             {isEntry ? (
-                              <ArrowDownToLine size={12} />
+                              <ArrowDownToLine size={12} strokeWidth={1.5} />
                             ) : (
-                              <ArrowUpFromLine size={12} />
+                              <ArrowUpFromLine size={12} strokeWidth={1.5} />
                             )}
                             {isEntry ? 'ENTRADA' : 'SAÍDA'}
                           </span>
@@ -155,7 +158,7 @@ export default function History() {
                           : 'Excluído'}
                       </TableCell>
                       <TableCell
-                        className={`text-right font-mono font-bold ${isEntry ? 'text-emerald-600' : 'text-slate-700 dark:text-slate-300'}`}
+                        className={`text-right font-mono font-bold ${isEntry ? 'text-secondary' : 'text-foreground'}`}
                       >
                         {isEntry ? '+' : '-'}
                         {m.quantity}
@@ -164,19 +167,19 @@ export default function History() {
                         {m.batch_number || m.manufacturing_date || m.expiry_date ? (
                           <div className="flex flex-col gap-0.5">
                             {m.batch_number && (
-                              <span className="font-medium text-slate-700 dark:text-slate-300">
+                              <span className="font-medium text-foreground">
                                 Lote: {m.batch_number}
                               </span>
                             )}
                             {m.manufacturing_date && (
                               <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                                <CalendarIcon className="h-3 w-3" />
+                                <CalendarIcon className="h-3 w-3" strokeWidth={1.5} />
                                 Fab: {formatBatchDate(m.manufacturing_date)}
                               </span>
                             )}
                             {m.expiry_date && (
                               <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                                <CalendarIcon className="h-3 w-3" />
+                                <CalendarIcon className="h-3 w-3" strokeWidth={1.5} />
                                 Val: {formatBatchDate(m.expiry_date)}
                               </span>
                             )}
@@ -201,7 +204,7 @@ export default function History() {
                         {m.document_url && (
                           <Button variant="ghost" size="icon" asChild title="Ver Anexo">
                             <a href={m.document_url} target="_blank" rel="noopener noreferrer">
-                              <FileText className="h-4 w-4 text-primary" />
+                              <FileText className="h-4 w-4 text-primary" strokeWidth={1.5} />
                             </a>
                           </Button>
                         )}

@@ -64,7 +64,7 @@ export function DashboardMetrics() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total de Itens</CardTitle>
-          <Package className="h-4 w-4 text-muted-foreground" />
+          <Package className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalItems}</div>
@@ -72,11 +72,7 @@ export function DashboardMetrics() {
         </CardContent>
       </Card>
 
-      <Card
-        className={
-          criticalStock > 0 ? 'border-destructive/50 bg-destructive/5 dark:bg-destructive/10' : ''
-        }
-      >
+      <Card className={criticalStock > 0 ? 'border-destructive/30 bg-destructive/5' : ''}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle
             className={`text-sm font-medium ${criticalStock > 0 ? 'text-destructive font-bold' : ''}`}
@@ -85,6 +81,7 @@ export function DashboardMetrics() {
           </CardTitle>
           <AlertTriangle
             className={`h-4 w-4 ${criticalStock > 0 ? 'text-destructive' : 'text-muted-foreground'}`}
+            strokeWidth={1.5}
           />
         </CardHeader>
         <CardContent>
@@ -95,48 +92,40 @@ export function DashboardMetrics() {
         </CardContent>
       </Card>
 
-      <Card
-        className={
-          itemsExpiringCount > 0 ? 'border-amber-500/50 bg-amber-500/5 dark:bg-amber-500/10' : ''
-        }
-      >
+      <Card className={itemsExpiringCount > 0 ? 'border-amber-500/30 bg-amber-500/5' : ''}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle
-            className={`text-sm font-medium ${itemsExpiringCount > 0 ? 'text-amber-600 dark:text-amber-500 font-bold' : ''}`}
+            className={`text-sm font-medium ${itemsExpiringCount > 0 ? 'text-amber-600 font-bold' : ''}`}
           >
             Vencimento Próximo
           </CardTitle>
           <CalendarClock
-            className={`h-4 w-4 ${itemsExpiringCount > 0 ? 'text-amber-600 dark:text-amber-500' : 'text-muted-foreground'}`}
+            className={`h-4 w-4 ${itemsExpiringCount > 0 ? 'text-amber-600' : 'text-muted-foreground'}`}
+            strokeWidth={1.5}
           />
         </CardHeader>
         <CardContent>
-          <div
-            className={`text-2xl font-bold ${itemsExpiringCount > 0 ? 'text-amber-600 dark:text-amber-500' : ''}`}
-          >
+          <div className={`text-2xl font-bold ${itemsExpiringCount > 0 ? 'text-amber-600' : ''}`}>
             {itemsExpiringCount}
           </div>
           <p className="text-xs text-muted-foreground mt-1">Lotes ativos a vencer &le; 180 dias</p>
         </CardContent>
       </Card>
 
-      <Card
-        className={staleItems > 0 ? 'border-amber-500/50 bg-amber-500/5 dark:bg-amber-500/10' : ''}
-      >
+      <Card className={staleItems > 0 ? 'border-amber-500/30 bg-amber-500/5' : ''}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle
-            className={`text-sm font-medium ${staleItems > 0 ? 'text-amber-600 dark:text-amber-500 font-bold' : ''}`}
+            className={`text-sm font-medium ${staleItems > 0 ? 'text-amber-600 font-bold' : ''}`}
           >
             Itens Ociosos
           </CardTitle>
           <Clock
-            className={`h-4 w-4 ${staleItems > 0 ? 'text-amber-600 dark:text-amber-500' : 'text-muted-foreground'}`}
+            className={`h-4 w-4 ${staleItems > 0 ? 'text-amber-600' : 'text-muted-foreground'}`}
+            strokeWidth={1.5}
           />
         </CardHeader>
         <CardContent>
-          <div
-            className={`text-2xl font-bold ${staleItems > 0 ? 'text-amber-600 dark:text-amber-500' : ''}`}
-          >
+          <div className={`text-2xl font-bold ${staleItems > 0 ? 'text-amber-600' : ''}`}>
             {staleItems}
           </div>
           <p className="text-xs text-muted-foreground mt-1">Sem saída há &gt; 30 dias</p>
@@ -146,12 +135,10 @@ export function DashboardMetrics() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Entradas (Mês)</CardTitle>
-          <ArrowDownToLine className="h-4 w-4 text-emerald-500" />
+          <ArrowDownToLine className="h-4 w-4 text-secondary" strokeWidth={1.5} />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {monthlyIn}
-          </div>
+          <div className="text-2xl font-bold text-secondary">{monthlyIn}</div>
           <p className="text-xs text-muted-foreground mt-1">Unidades recebidas</p>
         </CardContent>
       </Card>
@@ -159,7 +146,7 @@ export function DashboardMetrics() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Saídas (Mês)</CardTitle>
-          <ArrowUpFromLine className="h-4 w-4 text-primary" />
+          <ArrowUpFromLine className="h-4 w-4 text-primary" strokeWidth={1.5} />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-primary">{monthlyOut}</div>

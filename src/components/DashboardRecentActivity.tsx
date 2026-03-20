@@ -30,9 +30,13 @@ export function DashboardRecentActivity() {
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     <div
-                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isEntry ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-primary'}`}
+                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isEntry ? 'bg-secondary/15 text-secondary' : 'bg-primary/10 text-primary'}`}
                     >
-                      {isEntry ? <ArrowDownToLine size={14} /> : <ArrowUpFromLine size={14} />}
+                      {isEntry ? (
+                        <ArrowDownToLine size={14} strokeWidth={1.5} />
+                      ) : (
+                        <ArrowUpFromLine size={14} strokeWidth={1.5} />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm leading-tight mb-1 truncate">
@@ -48,7 +52,7 @@ export function DashboardRecentActivity() {
                   </div>
                   <Badge
                     variant={isEntry ? 'outline' : 'default'}
-                    className={`font-mono shrink-0 ml-2 ${isEntry ? 'text-emerald-600 border-emerald-200' : ''}`}
+                    className={`font-mono shrink-0 ml-2 ${isEntry ? 'text-secondary border-secondary/30' : ''}`}
                   >
                     {isEntry ? '+' : '-'}
                     {m.quantity}

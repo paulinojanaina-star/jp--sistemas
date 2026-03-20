@@ -1,12 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import {
-  LayoutDashboard,
-  Package,
-  ArrowRightLeft,
-  History,
-  HeartPulse,
-  FileBarChart,
-} from 'lucide-react'
+import { LayoutDashboard, Package, ArrowRightLeft, History, FileBarChart, Leaf } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -28,18 +21,18 @@ export function AppSidebar() {
   ]
 
   return (
-    <Sidebar className="border-r border-border shadow-sm">
+    <Sidebar className="border-r border-border/60 shadow-sm">
       <SidebarContent>
         <SidebarGroup>
           <div className="p-4 mb-4 mt-2">
             <Link
               to="/"
-              className="flex items-center gap-2 text-primary font-bold text-xl hover:opacity-90 transition-opacity"
+              className="flex items-center gap-3 text-primary hover:opacity-80 transition-opacity"
             >
-              <div className="bg-primary/10 p-2 rounded-lg text-primary">
-                <HeartPulse className="h-5 w-5" />
+              <div className="bg-accent p-2.5 rounded-xl text-accent-foreground shadow-sm">
+                <Leaf className="h-5 w-5" strokeWidth={1.5} />
               </div>
-              <span>JP Sistemas</span>
+              <span className="font-light tracking-tight text-xl">JP Sistemas</span>
             </Link>
           </div>
           <SidebarMenu>
@@ -48,10 +41,10 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   asChild
                   isActive={location.pathname === item.url}
-                  className="font-medium mb-1"
+                  className="font-medium mb-1 tracking-wide"
                 >
                   <Link to={item.url}>
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-4 w-4" strokeWidth={1.5} />
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
