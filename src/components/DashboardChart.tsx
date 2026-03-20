@@ -19,7 +19,7 @@ export function DashboardChart() {
       const formatted = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
       const totalOut = movements
         .filter((m) => m.type === 'OUT' && m.created_at.startsWith(dayStr))
-        .reduce((sum, m) => sum + m.quantity, 0)
+        .reduce((sum, m) => sum + Number(m.quantity), 0)
 
       return { date: formatted, saidas: totalOut }
     })

@@ -14,7 +14,9 @@ export function DashboardMetrics() {
   const { items, movements } = useInventoryStore()
 
   const totalItems = items.length
-  const criticalStock = items.filter((i) => i.current_quantity < i.min_quantity).length
+  const criticalStock = items.filter(
+    (i) => Number(i.current_quantity) < Number(i.min_quantity),
+  ).length
 
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
@@ -26,15 +28,15 @@ export function DashboardMetrics() {
 
   const monthlyIn = monthlyMovements
     .filter((m) => m.type === 'IN')
-    .reduce((sum, m) => sum + m.quantity, 0)
+    .reduce((sum, m) => sum + Number(m.quantity), 0)
   const monthlyOut = monthlyMovements
     .filter((m) => m.type === 'OUT')
-    .reduce((sum, m) => sum + m.quantity, 0)
+    .reduce((sum, m) => sum + Number(m.quantity), 0)
 
   // Calculate Stale Items (> 30 days without OUT movements)
   const now = new Date()
   const staleItems = items.filter((item) => {
-    if (item.current_quantity <= 0) return false
+    if (Number(item.current_quantity) <= 0) return false
     const outs = movements.filter((m) => m.item_id === item.id && m.type === 'OUT')
     let lastDateStr = item.created_at
     if (outs.length > 0) {

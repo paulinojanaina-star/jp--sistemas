@@ -40,10 +40,13 @@ export default function Items() {
     if (!matchesSearch) return false
 
     if (stockFilter === 'critical')
-      return item.current_quantity > 0 && item.current_quantity <= item.min_quantity
-    if (stockFilter === 'zero') return item.current_quantity === 0
+      return (
+        Number(item.current_quantity) > 0 &&
+        Number(item.current_quantity) <= Number(item.min_quantity)
+      )
+    if (stockFilter === 'zero') return Number(item.current_quantity) === 0
     if (stockFilter === 'expiring') {
-      if (item.current_quantity === 0) return false
+      if (Number(item.current_quantity) === 0) return false
       const nearest = getNearestExpiry(item, movements)
       if (!nearest) return false
       const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
@@ -160,12 +163,16 @@ export default function Items() {
                 </TableRow>
               ) : (
                 filteredItems.map((item) => {
-                  const isZero = item.current_quantity === 0
+                  const isZero = Number(item.current_quantity) === 0
                   const isCritical =
-                    item.current_quantity > 0 && item.current_quantity <= item.min_quantity
+                    Number(item.current_quantity) > 0 &&
+                    Number(item.current_quantity) <= Number(item.min_quantity)
                   const percentage = Math.min(
                     100,
-                    Math.max(0, (item.current_quantity / (item.min_quantity * 2 || 1)) * 100),
+                    Math.max(
+                      0,
+                      (Number(item.current_quantity) / (Number(item.min_quantity) * 2 || 1)) * 100,
+                    ),
                   )
 
                   // Expiry Logic using active batches
@@ -175,7 +182,7 @@ export default function Items() {
                   let nearestExpiry = null
                   let nearestBatch = null
 
-                  if (nearest && item.current_quantity > 0) {
+                  if (nearest && Number(item.current_quantity) > 0) {
                     nearestExpiry = nearest.date
                     nearestBatch = nearest.batch
                     const diffDays =

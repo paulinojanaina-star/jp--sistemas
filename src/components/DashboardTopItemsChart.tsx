@@ -41,7 +41,7 @@ export function DashboardTopItemsChart() {
             const id = m.item_id
             const name = (m.items as any)?.name || 'Desconhecido'
             const formatted = formatItemDisplay({ name, id })
-            itemTotals.set(formatted, (itemTotals.get(formatted) || 0) + m.quantity)
+            itemTotals.set(formatted, (itemTotals.get(formatted) || 0) + Number(m.quantity))
           })
 
           const aggregatedData = Array.from(itemTotals.entries())

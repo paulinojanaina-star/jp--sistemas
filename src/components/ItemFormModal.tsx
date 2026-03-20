@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Plus, Loader2, CalendarIcon } from 'lucide-react'
 import { Item, ITEM_UNITS } from '@/types/inventory'
 import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
@@ -346,6 +347,7 @@ export function ItemFormModal({
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date) => date > new Date()}
+                          locale={ptBR}
                           initialFocus
                         />
                       </PopoverContent>
@@ -386,6 +388,7 @@ export function ItemFormModal({
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
+                          locale={ptBR}
                           initialFocus
                         />
                       </PopoverContent>

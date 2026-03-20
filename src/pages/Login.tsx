@@ -22,8 +22,8 @@ export default function Login() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+        <Loader2 className="h-8 w-8 animate-spin text-primary relative z-10" />
       </div>
     )
   }
@@ -43,25 +43,29 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
-      <Card className="w-full max-w-md shadow-2xl shadow-primary/5 border-border/60">
-        <CardHeader className="space-y-4 text-center pb-8 pt-8">
-          <div className="mx-auto bg-accent p-4 rounded-full w-fit mb-2 shadow-sm text-accent-foreground">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      {/* Subtle decorative elements for elegant feel */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/20 via-background to-background pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-secondary/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+      <Card className="w-full max-w-md shadow-elevation border-border/40 relative z-10 bg-card/95 backdrop-blur-sm">
+        <CardHeader className="space-y-5 text-center pb-8 pt-10">
+          <div className="mx-auto bg-primary/5 p-4 rounded-2xl w-fit mb-2 text-primary border border-primary/10">
             <Leaf className="h-8 w-8" strokeWidth={1.5} />
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-3xl font-light tracking-tight text-primary">
+          <div className="space-y-1.5">
+            <CardTitle className="text-3xl font-light tracking-tight text-foreground">
               JP Sistemas
             </CardTitle>
-            <CardDescription className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
+            <CardDescription className="text-xs font-medium tracking-[0.2em] uppercase text-primary/70">
               Gestão em Saúde
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="pb-8">
-          <form onSubmit={handleLogin} className="space-y-5">
+        <CardContent className="pb-10">
+          <form onSubmit={handleLogin} className="space-y-6">
             {error && (
-              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md text-center border border-destructive/20">
+              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md text-center border border-destructive/20 animate-fade-in-up">
                 {error}
               </div>
             )}
@@ -73,7 +77,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-background focus-visible:ring-1"
+                className="bg-background/50 focus-visible:ring-1 border-border/60"
               />
             </div>
             <div className="space-y-2">
@@ -83,7 +87,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-background focus-visible:ring-1"
+                className="bg-background/50 focus-visible:ring-1 border-border/60"
               />
             </div>
             <Button

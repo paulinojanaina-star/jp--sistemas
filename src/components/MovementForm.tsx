@@ -19,6 +19,7 @@ import {
 import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { formatItemDisplay } from '@/utils/itemFormat'
 
 import { Button } from '@/components/ui/button'
@@ -109,6 +110,11 @@ export function MovementForm() {
 
     if (isOutbound && values.file && values.file.length > 0) {
       const file = values.file[0] as File
+      if (file.size > 5 * 1024 * 1024) {
+        setSubmitting(false)
+        return form.setError('file', { message: 'O arquivo deve ter no máximo 5MB' })
+      }
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
       const filePath = `${session.user.id}/${fileName}`
@@ -377,6 +383,7 @@ export function MovementForm() {
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date) => date > new Date()}
+                          locale={ptBR}
                           initialFocus
                         />
                       </PopoverContent>
@@ -417,6 +424,7 @@ export function MovementForm() {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
+                          locale={ptBR}
                           initialFocus
                         />
                       </PopoverContent>
