@@ -72,6 +72,8 @@ export function MovementForm() {
   const location = useLocation()
   const [submitting, setSubmitting] = useState(false)
   const [openItemPopover, setOpenItemPopover] = useState(false)
+  const [popoverFabOpen, setPopoverFabOpen] = useState(false)
+  const [popoverValOpen, setPopoverValOpen] = useState(false)
 
   const defaultItemId = (location.state as any)?.itemId || ''
 
@@ -357,7 +359,7 @@ export function MovementForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col mt-2 md:mt-0">
                     <FormLabel className="mb-1">Fabricação</FormLabel>
-                    <Popover>
+                    <Popover open={popoverFabOpen} onOpenChange={setPopoverFabOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -381,7 +383,10 @@ export function MovementForm() {
                         <Calendar
                           mode="single"
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(val) => {
+                            field.onChange(val)
+                            setPopoverFabOpen(false)
+                          }}
                           disabled={(date) => date > new Date()}
                           locale={ptBR}
                           initialFocus
@@ -399,7 +404,7 @@ export function MovementForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col mt-2 md:mt-0">
                     <FormLabel className="mb-1">Validade</FormLabel>
-                    <Popover>
+                    <Popover open={popoverValOpen} onOpenChange={setPopoverValOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -423,7 +428,10 @@ export function MovementForm() {
                         <Calendar
                           mode="single"
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(val) => {
+                            field.onChange(val)
+                            setPopoverValOpen(false)
+                          }}
                           locale={ptBR}
                           initialFocus
                         />

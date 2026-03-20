@@ -176,22 +176,45 @@ export default function Items() {
                   )
 
                   // Expiry Logic using active batches
-                  const nearest = getNearestExpiry(item, movements)
+                  let nearest = getNearestExpiry(item, movements)
                   let isExpired = false
                   let isExpiringSoon = false
                   let nearestExpiry = null
                   let nearestBatch = null
 
-                  if (nearest && Number(item.current_quantity) > 0) {
+                  // Fallback to latest IN movement if no active batches found (so the info still displays)
+                  if (!nearest && movements) {
+                    const latestInWithExpiry = movements
+                      .filter((m) => m.item_id === item.id && m.type === 'IN' && m.expiry_date)
+                      .sort(
+                        (a, b) =>
+                          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+                      )[0]
+
+                    if (latestInWithExpiry && latestInWithExpiry.expiry_date) {
+                      const parts = latestInWithExpiry.expiry_date.split('-')
+                      if (parts.length === 3) {
+                        nearest = {
+                          date: new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])),
+                          batch: latestInWithExpiry.batch_number,
+                          movement_id: latestInWithExpiry.id,
+                        }
+                      }
+                    }
+                  }
+
+                  if (nearest) {
                     nearestExpiry = nearest.date
                     nearestBatch = nearest.batch
-                    const diffDays =
-                      (nearestExpiry.getTime() - today.getTime()) / (1000 * 3600 * 24)
-
-                    if (diffDays < 0) {
-                      isExpired = true
-                    } else if (diffDays <= 180) {
-                      isExpiringSoon = true
+                    // Only apply expiration styling if there is actual stock
+                    if (Number(item.current_quantity) > 0) {
+                      const diffDays =
+                        (nearestExpiry.getTime() - today.getTime()) / (1000 * 3600 * 24)
+                      if (diffDays < 0) {
+                        isExpired = true
+                      } else if (diffDays <= 180) {
+                        isExpiringSoon = true
+                      }
                     }
                   }
 
@@ -247,7 +270,9 @@ export default function Items() {
                                   ? 'text-destructive'
                                   : isExpiringSoon
                                     ? 'text-amber-600'
-                                    : 'text-foreground',
+                                    : isZero
+                                      ? 'text-muted-foreground/70'
+                                      : 'text-foreground',
                               )}
                             >
                               <CalendarIcon className="h-3.5 w-3.5" strokeWidth={1.5} />

@@ -65,6 +65,8 @@ export function ItemFormModal({
   trigger,
 }: ItemFormModalProps) {
   const [internalOpen, setInternalOpen] = useState(false)
+  const [popoverFabOpen, setPopoverFabOpen] = useState(false)
+  const [popoverValOpen, setPopoverValOpen] = useState(false)
 
   const isControlled = controlledOpen !== undefined
   const open = isControlled ? controlledOpen : internalOpen
@@ -75,6 +77,14 @@ export function ItemFormModal({
   const { toast } = useToast()
 
   const isEditing = !!item
+
+  const latestInMovement = item
+    ? movements
+        .filter((m) => m.item_id === item.id && m.type === 'IN')
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+    : null
+
+  const hasInMovement = !isEditing || !!latestInMovement
 
   const form = useForm<z.infer<typeof itemSchema>>({
     resolver: zodResolver(itemSchema),
@@ -91,10 +101,6 @@ export function ItemFormModal({
   useEffect(() => {
     if (open) {
       if (item) {
-        const latestInMovement = movements
-          .filter((m) => m.item_id === item.id && m.type === 'IN')
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
-
         form.reset({
           name: item.name,
           description: item.description || '',
@@ -143,23 +149,27 @@ export function ItemFormModal({
         return
       }
 
-      const { error: batchError } = await updateItemBatchInfo(item.id, {
-        batch_number: batch_number?.trim() || null,
-        manufacturing_date: manufacturing_date ? format(manufacturing_date, 'yyyy-MM-dd') : null,
-        expiry_date: expiry_date ? format(expiry_date, 'yyyy-MM-dd') : null,
-      })
-
-      setSubmitting(false)
-
-      if (batchError && (batch_number || manufacturing_date || expiry_date)) {
-        toast({
-          title: 'Atenção',
-          description: `Item salvo, mas não foi possível atualizar o lote: ${batchError.message}`,
-          variant: 'destructive',
+      if (hasInMovement) {
+        const { error: batchError } = await updateItemBatchInfo(item.id, {
+          batch_number: batch_number?.trim() || null,
+          manufacturing_date: manufacturing_date ? format(manufacturing_date, 'yyyy-MM-dd') : null,
+          expiry_date: expiry_date ? format(expiry_date, 'yyyy-MM-dd') : null,
         })
+
+        if (batchError && (batch_number || manufacturing_date || expiry_date)) {
+          toast({
+            title: 'Atenção',
+            description: `Item salvo, mas não foi possível atualizar o lote: ${batchError.message}`,
+            variant: 'destructive',
+          })
+        } else {
+          toast({ title: 'Sucesso!', description: 'Item atualizado com sucesso.' })
+        }
       } else {
         toast({ title: 'Sucesso!', description: 'Item atualizado com sucesso.' })
       }
+
+      setSubmitting(false)
     } else {
       const { current_quantity, batch_number, manufacturing_date, expiry_date, ...itemData } =
         values
@@ -290,7 +300,12 @@ export function ItemFormModal({
                 <h4 className="text-sm font-medium text-foreground">
                   Rastreabilidade de Lote e Validade (Opcional)
                 </h4>
-                {isEditing ? (
+                {!hasInMovement ? (
+                  <p className="text-xs text-destructive mt-1 font-medium">
+                    Nenhuma entrada registrada. Registre uma movimentação de entrada no estoque para
+                    definir lote e validade.
+                  </p>
+                ) : isEditing ? (
                   <p className="text-xs text-muted-foreground mt-1">
                     Atualiza os dados da última entrada deste item.
                   </p>
@@ -308,7 +323,12 @@ export function ItemFormModal({
                   <FormItem>
                     <FormLabel>Lote</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: L202305A" {...field} value={field.value || ''} />
+                      <Input
+                        placeholder="Ex: L202305A"
+                        {...field}
+                        value={field.value || ''}
+                        disabled={!hasInMovement}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -321,7 +341,7 @@ export function ItemFormModal({
                 render={({ field }) => (
                   <FormItem className="flex flex-col mt-2 md:mt-0">
                     <FormLabel className="mb-1">Fabricação</FormLabel>
-                    <Popover>
+                    <Popover open={popoverFabOpen} onOpenChange={setPopoverFabOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -331,6 +351,7 @@ export function ItemFormModal({
                               'w-full pl-3 text-left font-normal px-2',
                               !field.value && 'text-muted-foreground',
                             )}
+                            disabled={!hasInMovement}
                           >
                             {field.value ? (
                               format(field.value, 'dd/MM/yyyy')
@@ -345,7 +366,10 @@ export function ItemFormModal({
                         <Calendar
                           mode="single"
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(val) => {
+                            field.onChange(val)
+                            setPopoverFabOpen(false)
+                          }}
                           disabled={(date) => date > new Date()}
                           locale={ptBR}
                           initialFocus
@@ -363,7 +387,7 @@ export function ItemFormModal({
                 render={({ field }) => (
                   <FormItem className="flex flex-col mt-2 md:mt-0">
                     <FormLabel className="mb-1">Validade</FormLabel>
-                    <Popover>
+                    <Popover open={popoverValOpen} onOpenChange={setPopoverValOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -373,6 +397,7 @@ export function ItemFormModal({
                               'w-full pl-3 text-left font-normal px-2',
                               !field.value && 'text-muted-foreground',
                             )}
+                            disabled={!hasInMovement}
                           >
                             {field.value ? (
                               format(field.value, 'dd/MM/yyyy')
@@ -387,7 +412,10 @@ export function ItemFormModal({
                         <Calendar
                           mode="single"
                           selected={field.value}
-                          onSelect={field.onChange}
+                          onSelect={(val) => {
+                            field.onChange(val)
+                            setPopoverValOpen(false)
+                          }}
                           locale={ptBR}
                           initialFocus
                         />
