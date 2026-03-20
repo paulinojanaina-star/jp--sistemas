@@ -5,6 +5,7 @@ import * as z from 'zod'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
+import { useLocation } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowDownToLine,
@@ -67,8 +68,11 @@ export function MovementForm() {
   const { items, addMovement } = useInventoryStore()
   const { session } = useAuth()
   const { toast } = useToast()
+  const location = useLocation()
   const [submitting, setSubmitting] = useState(false)
   const [openItemPopover, setOpenItemPopover] = useState(false)
+
+  const defaultItemId = (location.state as any)?.itemId || ''
 
   const form = useForm<z.infer<typeof movementSchema>>({
     resolver: zodResolver(movementSchema),
@@ -76,7 +80,7 @@ export function MovementForm() {
       type: 'OUT',
       health_unit_name: '',
       observations: '',
-      item_id: '',
+      item_id: defaultItemId,
       batch_number: '',
     },
   })
@@ -132,13 +136,11 @@ export function MovementForm() {
       observations: values.observations?.trim() || undefined,
       responsible_id: session.user.id,
       document_url: documentUrl,
-      ...(values.type === 'IN' && {
-        batch_number: values.batch_number?.trim() || null,
-        manufacturing_date: values.manufacturing_date
-          ? format(values.manufacturing_date, 'yyyy-MM-dd')
-          : null,
-        expiry_date: values.expiry_date ? format(values.expiry_date, 'yyyy-MM-dd') : null,
-      }),
+      batch_number: values.batch_number?.trim() || null,
+      manufacturing_date: values.manufacturing_date
+        ? format(values.manufacturing_date, 'yyyy-MM-dd')
+        : null,
+      expiry_date: values.expiry_date ? format(values.expiry_date, 'yyyy-MM-dd') : null,
     }
 
     const { error } = await addMovement(movementPayload)
@@ -322,104 +324,108 @@ export function MovementForm() {
               />
             </div>
 
-            {!isOutbound && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 rounded-md border border-emerald-100 bg-emerald-50/30 dark:border-emerald-900/50 dark:bg-emerald-950/10">
-                <FormField
-                  control={form.control}
-                  name="batch_number"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Lote (Opcional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: L202305A" {...field} value={field.value || ''} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="manufacturing_date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col mt-2 md:mt-0">
-                      <FormLabel className="mb-1">Fabricação (Opcional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              type="button"
-                              variant={'outline'}
-                              className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground',
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'dd/MM/yyyy')
-                              ) : (
-                                <span>Selecione a data</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date > new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="expiry_date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col mt-2 md:mt-0">
-                      <FormLabel className="mb-1">Validade (Opcional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              type="button"
-                              variant={'outline'}
-                              className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground',
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'dd/MM/yyyy')
-                              ) : (
-                                <span>Selecione a data</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 rounded-md border bg-muted/30">
+              <div className="col-span-1 md:col-span-3 pb-2 border-b mb-2 flex items-center justify-between">
+                <h4 className="text-sm font-medium text-foreground">
+                  Rastreabilidade de Lote e Validade (Opcional)
+                </h4>
               </div>
-            )}
+
+              <FormField
+                control={form.control}
+                name="batch_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lote</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: L202305A" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="manufacturing_date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col mt-2 md:mt-0">
+                    <FormLabel className="mb-1">Fabricação</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            type="button"
+                            variant={'outline'}
+                            className={cn(
+                              'w-full pl-3 text-left font-normal',
+                              !field.value && 'text-muted-foreground',
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, 'dd/MM/yyyy')
+                            ) : (
+                              <span>Selecione a data</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => date > new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="expiry_date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col mt-2 md:mt-0">
+                    <FormLabel className="mb-1">Validade</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            type="button"
+                            variant={'outline'}
+                            className={cn(
+                              'w-full pl-3 text-left font-normal',
+                              !field.value && 'text-muted-foreground',
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, 'dd/MM/yyyy')
+                            ) : (
+                              <span>Selecione a data</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {isOutbound && (
               <FormField

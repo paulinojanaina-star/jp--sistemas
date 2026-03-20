@@ -1,31 +1,12 @@
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { Item, ITEM_UNITS } from '@/types/inventory'
+import { useState } from 'react'
+import { Item } from '@/types/inventory'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
-import { MoreHorizontal, Edit, Trash, Loader2 } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash, Loader2, ArrowRightLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ItemFormModal } from '@/components/ItemFormModal'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,60 +24,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-const editSchema = z.object({
-  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  description: z.string().optional(),
-  unit_type: z.enum(['Caixa', 'Unidade', 'Rolo', 'Litro', 'Frasco', 'Par', 'Pacote'], {
-    errorMap: () => ({ message: 'Selecione uma unidade de medida válida' }),
-  }),
-  min_quantity: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
-})
-
 export function ItemRowActions({ item }: { item: Item }) {
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { updateItem, deleteItem } = useInventoryStore()
+  const { deleteItem } = useInventoryStore()
   const { toast } = useToast()
-
-  const form = useForm<z.infer<typeof editSchema>>({
-    resolver: zodResolver(editSchema),
-    defaultValues: {
-      name: item.name,
-      description: item.description || '',
-      unit_type: (item.unit_type as any) || undefined,
-      min_quantity: item.min_quantity,
-    },
-  })
-
-  useEffect(() => {
-    if (editOpen) {
-      form.reset({
-        name: item.name,
-        description: item.description || '',
-        unit_type: (item.unit_type as any) || undefined,
-        min_quantity: item.min_quantity,
-      })
-    }
-  }, [editOpen, item, form])
-
-  const onEdit = async (values: z.infer<typeof editSchema>) => {
-    setLoading(true)
-    const { error } = await updateItem(item.id, values)
-    setLoading(false)
-
-    if (error) {
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar o item.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    toast({ title: 'Sucesso!', description: 'Item atualizado com sucesso.' })
-    setEditOpen(false)
-  }
+  const navigate = useNavigate()
 
   const onDelete = async () => {
     setLoading(true)
@@ -126,8 +60,13 @@ export function ItemRowActions({ item }: { item: Item }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            onClick={() => navigate('/movimentacoes', { state: { itemId: item.id } })}
+          >
+            <ArrowRightLeft className="mr-2 h-4 w-4" /> Registrar Movimentação
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setEditOpen(true)}>
-            <Edit className="mr-2 h-4 w-4" /> Editar
+            <Edit className="mr-2 h-4 w-4" /> Editar Item / Validade
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setDeleteOpen(true)}
@@ -138,99 +77,7 @@ export function ItemRowActions({ item }: { item: Item }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Editar Item</DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onEdit)} className="space-y-4 mt-2">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome do Item</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="unit_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unidade de Medida</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || undefined}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {ITEM_UNITS.map((unit) => (
-                            <SelectItem key={unit} value={unit}>
-                              {unit}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="min_quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Estoque Mínimo</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Descrição / Observações</FormLabel>
-                    <FormControl>
-                      <Textarea className="resize-none" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end pt-4 gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setEditOpen(false)}
-                  disabled={loading}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <ItemFormModal item={item} open={editOpen} onOpenChange={setEditOpen} />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>

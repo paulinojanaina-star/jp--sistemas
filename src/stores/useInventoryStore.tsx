@@ -19,6 +19,14 @@ interface InventoryContextType {
     },
   ) => Promise<{ error?: any }>
   updateItem: (id: string, updates: Partial<Item>) => Promise<{ error?: any }>
+  updateItemBatchInfo: (
+    itemId: string,
+    batchData: {
+      batch_number?: string | null
+      manufacturing_date?: string | null
+      expiry_date?: string | null
+    },
+  ) => Promise<{ error?: any }>
   deleteItem: (id: string) => Promise<{ error?: any }>
   addMovement: (
     movement: Omit<Movement, 'id' | 'created_at' | 'items' | 'profiles'>,
@@ -130,6 +138,41 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     return {}
   }
 
+  const updateItemBatchInfo = async (
+    itemId: string,
+    batchData: {
+      batch_number?: string | null
+      manufacturing_date?: string | null
+      expiry_date?: string | null
+    },
+  ) => {
+    const { data, error } = await supabase
+      .from('inventory_movements')
+      .select('id')
+      .eq('item_id', itemId)
+      .eq('type', 'IN')
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (error) return { error }
+
+    if (data && data.length > 0) {
+      const { error: updateError } = await supabase
+        .from('inventory_movements')
+        .update(batchData)
+        .eq('id', data[0].id)
+      if (updateError) return { error: updateError }
+      await refreshData()
+      return {}
+    }
+
+    return {
+      error: new Error(
+        'Registre uma movimentação de entrada para este item antes de definir o lote.',
+      ),
+    }
+  }
+
   const deleteItem = async (id: string) => {
     const { error } = await supabase.from('items').delete().eq('id', id)
     if (error) return { error }
@@ -155,6 +198,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         refreshData,
         addItem,
         updateItem,
+        updateItemBatchInfo,
         deleteItem,
         addMovement,
       }}
