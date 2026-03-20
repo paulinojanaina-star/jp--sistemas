@@ -1,8 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Clock, TrendingDown, TrendingUp } from 'lucide-react'
+import { Clock, TrendingDown, TrendingUp, PackageSearch } from 'lucide-react'
 import { StaleItemsReport } from '@/components/reports/StaleItemsReport'
 import { ConsumptionReport } from '@/components/reports/ConsumptionReport'
 import { ItemTrendReport } from '@/components/reports/ItemTrendReport'
+import { StockPositionReport } from '@/components/reports/StockPositionReport'
 
 export default function Reports() {
   return (
@@ -10,12 +11,17 @@ export default function Reports() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Relatórios Gerenciais</h2>
         <p className="text-muted-foreground">
-          Gere análises e visualize o consumo médio e o status do estoque.
+          Gere análises, exporte posições de estoque e visualize o consumo médio.
         </p>
       </div>
 
-      <Tabs defaultValue="consumption" className="space-y-4">
-        <TabsList className="grid w-full lg:w-[600px] grid-cols-3 h-auto min-h-10">
+      <Tabs defaultValue="stock" className="space-y-4">
+        <TabsList className="grid w-full lg:w-[800px] grid-cols-4 h-auto min-h-10">
+          <TabsTrigger value="stock" className="gap-2 text-xs sm:text-sm py-2">
+            <PackageSearch className="h-4 w-4 hidden sm:block" />
+            <span className="hidden sm:inline">Posição Atual</span>
+            <span className="sm:hidden">Posição</span>
+          </TabsTrigger>
           <TabsTrigger value="consumption" className="gap-2 text-xs sm:text-sm py-2">
             <TrendingDown className="h-4 w-4 hidden sm:block" />
             <span className="hidden sm:inline">Consumo Médio</span>
@@ -32,6 +38,10 @@ export default function Reports() {
             <span className="sm:hidden">Inativos</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="stock" className="space-y-4">
+          <StockPositionReport />
+        </TabsContent>
 
         <TabsContent value="consumption" className="space-y-4">
           <ConsumptionReport />
