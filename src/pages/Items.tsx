@@ -31,6 +31,9 @@ export default function Items() {
   const [stockFilter, setStockFilter] = useState('all')
   const [isGenerating, setIsGenerating] = useState(false)
 
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const filteredItems = items.filter((item) => {
     const formattedName = formatItemDisplay(item).toLowerCase()
     const matchesSearch = formattedName.includes(search.toLowerCase())
@@ -39,8 +42,26 @@ export default function Items() {
     if (stockFilter === 'critical')
       return item.current_quantity > 0 && item.current_quantity <= item.min_quantity
     if (stockFilter === 'zero') return item.current_quantity === 0
+    if (stockFilter === 'expiring') {
+      if (item.current_quantity === 0) return false
+      const nearest = getNearestExpiry(item, movements)
+      if (!nearest) return false
+      const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
+      return diffDays <= 180
+    }
     return true
   })
+
+  // If filtering by expiring, sort by nearest expiry
+  if (stockFilter === 'expiring') {
+    filteredItems.sort((a, b) => {
+      const nearestA = getNearestExpiry(a, movements)
+      const nearestB = getNearestExpiry(b, movements)
+      if (!nearestA) return 1
+      if (!nearestB) return -1
+      return nearestA.date.getTime() - nearestB.date.getTime()
+    })
+  }
 
   const handleExportPDF = async () => {
     setIsGenerating(true)
@@ -58,9 +79,6 @@ export default function Items() {
       })
     }
   }
-
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
 
   return (
     <div className="space-y-6">
@@ -89,8 +107,8 @@ export default function Items() {
 
       <Card>
         <CardContent className="p-0">
-          <div className="p-4 border-b flex flex-col md:flex-row gap-4 justify-between">
-            <div className="relative w-full md:max-w-sm">
+          <div className="p-4 border-b flex flex-col xl:flex-row gap-4 justify-between">
+            <div className="relative w-full xl:max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Pesquisar por nome ou código..."
@@ -99,11 +117,16 @@ export default function Items() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Tabs value={stockFilter} onValueChange={setStockFilter} className="w-full md:w-auto">
-              <TabsList className="grid w-full grid-cols-3 md:w-[350px]">
+            <Tabs
+              value={stockFilter}
+              onValueChange={setStockFilter}
+              className="w-full xl:w-auto overflow-x-auto"
+            >
+              <TabsList className="grid w-full min-w-[400px] grid-cols-4">
                 <TabsTrigger value="all">Todos</TabsTrigger>
                 <TabsTrigger value="critical">Crítico</TabsTrigger>
                 <TabsTrigger value="zero">Zerado</TabsTrigger>
+                <TabsTrigger value="expiring">Vencimento</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -112,6 +135,7 @@ export default function Items() {
             <TableHeader>
               <TableRow className="bg-muted/30">
                 <TableHead>Item</TableHead>
+                <TableHead>Lote / Validade</TableHead>
                 <TableHead className="text-right">Estoque Atual</TableHead>
                 <TableHead className="w-[200px]">Nível de Estoque</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
@@ -120,12 +144,14 @@ export default function Items() {
             <TableBody>
               {filteredItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                     {stockFilter === 'critical'
                       ? 'Nenhum item com estoque crítico encontrado.'
                       : stockFilter === 'zero'
                         ? 'Nenhum item com estoque zerado encontrado.'
-                        : 'Nenhum item encontrado.'}
+                        : stockFilter === 'expiring'
+                          ? 'Nenhum item próximo ao vencimento encontrado.'
+                          : 'Nenhum item encontrado.'}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -145,7 +171,7 @@ export default function Items() {
                   let nearestExpiry = null
                   let nearestBatch = null
 
-                  if (nearest) {
+                  if (nearest && item.current_quantity > 0) {
                     nearestExpiry = nearest.date
                     nearestBatch = nearest.batch
                     const diffDays =
@@ -158,14 +184,16 @@ export default function Items() {
                     }
                   }
 
+                  const rowHighlightClass = isZero
+                    ? 'bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50/80'
+                    : isExpired
+                      ? 'bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50/80'
+                      : isCritical || isExpiringSoon
+                        ? 'bg-amber-50/30 dark:bg-amber-950/10 hover:bg-amber-50/50'
+                        : ''
+
                   return (
-                    <TableRow
-                      key={item.id}
-                      className={cn(
-                        isZero && 'bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50/80',
-                        isCritical && 'bg-amber-50/30 dark:bg-amber-950/10 hover:bg-amber-50/50',
-                      )}
-                    >
+                    <TableRow key={item.id} className={rowHighlightClass}>
                       <TableCell>
                         <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
                           {formatItemDisplay(item)}
@@ -190,27 +218,38 @@ export default function Items() {
                               Vencido
                             </Badge>
                           )}
-                          {isExpiringSoon && (
+                          {isExpiringSoon && !isExpired && (
                             <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent">
                               Vencimento Próximo
                             </Badge>
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground">{item.unit_type}</div>
-                        {nearestExpiry && item.current_quantity > 0 && (
-                          <div className="text-xs mt-1 text-muted-foreground flex items-center gap-1 font-medium">
-                            <CalendarIcon
-                              className={`h-3 w-3 ${isExpired ? 'text-red-500' : isExpiringSoon ? 'text-amber-500' : ''}`}
-                            />
+                      </TableCell>
+                      <TableCell>
+                        {nearestExpiry ? (
+                          <div className="flex flex-col gap-1">
                             <span
-                              className={
-                                isExpired ? 'text-red-600' : isExpiringSoon ? 'text-amber-600' : ''
-                              }
+                              className={cn(
+                                'font-medium flex items-center gap-1',
+                                isExpired
+                                  ? 'text-red-600'
+                                  : isExpiringSoon
+                                    ? 'text-amber-600'
+                                    : 'text-slate-700 dark:text-slate-300',
+                              )}
                             >
-                              {nearestBatch ? `Lote: ${nearestBatch} • ` : ''}Validade (Lote Ativo):{' '}
+                              <CalendarIcon className="h-3.5 w-3.5" />
                               {format(nearestExpiry, 'dd/MM/yyyy')}
                             </span>
+                            {nearestBatch && (
+                              <span className="text-xs text-muted-foreground">
+                                Lote: {nearestBatch}
+                              </span>
+                            )}
                           </div>
+                        ) : (
+                          <span className="text-muted-foreground text-xs italic">N/A</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
