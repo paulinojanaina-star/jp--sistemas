@@ -41,7 +41,7 @@ export function StaleItemsReport() {
       )
       return { ...item, daysStale: days }
     })
-    .filter((item) => item.daysStale >= 30 && Number(item.current_quantity) > 0)
+    .filter((item) => item.daysStale >= 90 && Number(item.current_quantity) > 0)
     .sort((a, b) => b.daysStale - a.daysStale)
 
   const handleExport = async (format: 'pdf' | 'excel') => {
@@ -62,7 +62,7 @@ export function StaleItemsReport() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg">Itens sem Movimentação (&gt; 30 dias)</CardTitle>
+        <CardTitle className="text-lg">Itens sem Movimentação (&gt; 90 dias)</CardTitle>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
