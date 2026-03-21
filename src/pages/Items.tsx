@@ -9,7 +9,16 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
-import { Search, FileText, Loader2, CalendarIcon } from 'lucide-react'
+import {
+  Search,
+  FileText,
+  Loader2,
+  CalendarIcon,
+  AlertTriangle,
+  PackageX,
+  Clock,
+  TrendingDown,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { exportStockReportPdf } from '@/utils/exportPdf'
@@ -51,7 +60,7 @@ export default function Items() {
       const nearest = getNearestExpiry(item, movements)
       if (!nearest) return false
       const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
-      return diffDays <= 180
+      return diffDays <= 60
     }
     if (stockFilter === 'stockout') {
       if (Number(item.current_quantity) === 0) return false
@@ -61,7 +70,7 @@ export default function Items() {
     return true
   })
 
-  // If filtering by expiring, sort by nearest expiry
+  // Sort logically based on active filter
   if (stockFilter === 'expiring') {
     filteredItems.sort((a, b) => {
       const nearestA = getNearestExpiry(a, movements)
@@ -72,7 +81,6 @@ export default function Items() {
     })
   }
 
-  // If filtering by stockout, sort by days until stockout
   if (stockFilter === 'stockout') {
     filteredItems.sort((a, b) => {
       const riskA = calculateConsumption(a, movements).daysUntilStockout
@@ -81,9 +89,33 @@ export default function Items() {
     })
   }
 
+  // Dashboard calculations
+  const criticalItemsCount = items.filter(
+    (item) =>
+      Number(item.current_quantity) > 0 &&
+      Number(item.current_quantity) <= Number(item.min_quantity),
+  ).length
+
+  const zeroItemsCount = items.filter((item) => Number(item.current_quantity) === 0).length
+
+  const expiringSoonItemsCount = items.filter((item) => {
+    if (Number(item.current_quantity) === 0) return false
+    const nearest = getNearestExpiry(item, movements)
+    if (!nearest) return false
+    const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
+    return diffDays >= 0 && diffDays <= 60
+  }).length
+
+  const stockoutRiskItemsCount = items.filter((item) => {
+    if (Number(item.current_quantity) === 0) return false
+    return calculateConsumption(item, movements).isStockoutRisk
+  }).length
+
   const handleExportPDF = async () => {
     setIsGenerating(true)
-    const { error } = await exportStockReportPdf()
+    const { error } = await exportStockReportPdf(
+      stockFilter === 'critical' || stockFilter === 'zero' ? stockFilter : 'all',
+    )
     setIsGenerating(false)
 
     if (error) {
@@ -91,8 +123,8 @@ export default function Items() {
         title: error.message === 'Popup blocked' ? 'Erro de Pop-up' : 'Erro ao gerar relatório',
         description:
           error.message === 'Popup blocked'
-            ? 'Por favor, permita a abertura de pop-ups para exportar o relatório PDF.'
-            : 'Não foi possível buscar os dados mais recentes do estoque.',
+            ? 'Por favor, permita a abertura de pop-ups para exportar o relatório.'
+            : 'Não foi possível buscar os dados do estoque.',
         variant: 'destructive',
       })
     }
@@ -125,6 +157,54 @@ export default function Items() {
             <ItemFormModal />
           </div>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-amber-500/10 border-amber-500/20">
+          <CardContent className="p-4 flex flex-col gap-1">
+            <div className="flex justify-between items-center text-amber-700">
+              <span className="text-sm font-semibold uppercase tracking-wider">
+                Estoque Crítico
+              </span>
+              <AlertTriangle className="h-4 w-4" />
+            </div>
+            <span className="text-2xl font-bold text-amber-700">{criticalItemsCount}</span>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-destructive/10 border-destructive/20">
+          <CardContent className="p-4 flex flex-col gap-1">
+            <div className="flex justify-between items-center text-destructive">
+              <span className="text-sm font-semibold uppercase tracking-wider">Estoque Zerado</span>
+              <PackageX className="h-4 w-4" />
+            </div>
+            <span className="text-2xl font-bold text-destructive">{zeroItemsCount}</span>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-orange-500/10 border-orange-500/20">
+          <CardContent className="p-4 flex flex-col gap-1">
+            <div className="flex justify-between items-center text-orange-700">
+              <span className="text-sm font-semibold uppercase tracking-wider">
+                Vence em ≤ 60 dias
+              </span>
+              <Clock className="h-4 w-4" />
+            </div>
+            <span className="text-2xl font-bold text-orange-700">{expiringSoonItemsCount}</span>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-purple-500/10 border-purple-500/20">
+          <CardContent className="p-4 flex flex-col gap-1">
+            <div className="flex justify-between items-center text-purple-700">
+              <span className="text-sm font-semibold uppercase tracking-wider">
+                Risco de Ruptura
+              </span>
+              <TrendingDown className="h-4 w-4" />
+            </div>
+            <span className="text-2xl font-bold text-purple-700">{stockoutRiskItemsCount}</span>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
@@ -173,7 +253,7 @@ export default function Items() {
                       : stockFilter === 'zero'
                         ? 'Nenhum item com estoque zerado encontrado.'
                         : stockFilter === 'expiring'
-                          ? 'Nenhum item próximo ao vencimento encontrado.'
+                          ? 'Nenhum item com validade próxima encontrado.'
                           : stockFilter === 'stockout'
                             ? 'Nenhum item com risco de ruptura encontrado.'
                             : 'Nenhum item encontrado.'}
@@ -196,14 +276,13 @@ export default function Items() {
                   const { isStockoutRisk, daysUntilStockout, monthlyConsumption } =
                     calculateConsumption(item, movements)
 
-                  // Expiry Logic using active batches
                   let nearest = getNearestExpiry(item, movements)
                   let isExpired = false
                   let isExpiringSoon = false
                   let nearestExpiry = null
                   let nearestBatch = null
 
-                  // Fallback to latest IN movement if no active batches found (so the info still displays)
+                  // Robust fallback: if item has 0 qty or no active batches but had IN movements with dates
                   if (!nearest && movements) {
                     const latestInWithExpiry = movements
                       .filter((m) => m.item_id === item.id && m.type === 'IN' && m.expiry_date)
@@ -228,13 +307,13 @@ export default function Items() {
                   if (nearest) {
                     nearestExpiry = nearest.date
                     nearestBatch = nearest.batch
-                    // Only apply expiration styling if there is actual stock
+                    // Only apply severe expiration styling if there is actual stock
                     if (Number(item.current_quantity) > 0) {
                       const diffDays =
                         (nearestExpiry.getTime() - today.getTime()) / (1000 * 3600 * 24)
                       if (diffDays < 0) {
                         isExpired = true
-                      } else if (diffDays <= 180) {
+                      } else if (diffDays <= 60) {
                         isExpiringSoon = true
                       }
                     }
@@ -244,10 +323,10 @@ export default function Items() {
                     ? 'bg-destructive/5 hover:bg-destructive/10'
                     : isExpired
                       ? 'bg-destructive/5 hover:bg-destructive/10'
-                      : isCritical || isExpiringSoon
-                        ? 'bg-amber-500/5 hover:bg-amber-500/10'
-                        : isStockoutRisk
-                          ? 'bg-purple-500/5 hover:bg-purple-500/10'
+                      : isStockoutRisk
+                        ? 'bg-purple-500/5 hover:bg-purple-500/10'
+                        : isExpiringSoon || isCritical
+                          ? 'bg-amber-500/5 hover:bg-amber-500/10'
                           : ''
 
                   return (
@@ -263,12 +342,7 @@ export default function Items() {
                               Zerado
                             </Badge>
                           )}
-                          {isCritical && (
-                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
-                              Crítico
-                            </Badge>
-                          )}
-                          {isExpired && (
+                          {isExpired && !isZero && (
                             <Badge
                               variant="destructive"
                               className="h-5 px-1.5 text-[10px] uppercase font-semibold border-destructive bg-destructive"
@@ -276,16 +350,25 @@ export default function Items() {
                               Vencido
                             </Badge>
                           )}
-                          {isExpiringSoon && !isExpired && (
-                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
-                              Vencimento Próximo
-                            </Badge>
-                          )}
-                          {isStockoutRisk && !isZero && (
+                          {isStockoutRisk && !isZero && !isExpired && (
                             <Badge className="bg-purple-500 hover:bg-purple-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
                               Risco de Ruptura
                             </Badge>
                           )}
+                          {isCritical && !isZero && !isExpired && !isStockoutRisk && (
+                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
+                              Crítico
+                            </Badge>
+                          )}
+                          {isExpiringSoon &&
+                            !isZero &&
+                            !isExpired &&
+                            !isStockoutRisk &&
+                            !isCritical && (
+                              <Badge className="bg-orange-500 hover:bg-orange-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
+                                Vence em Breve
+                              </Badge>
+                            )}
                         </div>
                         <div className="text-xs text-muted-foreground">{item.unit_type}</div>
                       </TableCell>
@@ -295,10 +378,10 @@ export default function Items() {
                             <span
                               className={cn(
                                 'font-medium flex items-center gap-1',
-                                isExpired
+                                isExpired && !isZero
                                   ? 'text-destructive'
-                                  : isExpiringSoon
-                                    ? 'text-amber-600'
+                                  : isExpiringSoon && !isZero
+                                    ? 'text-orange-600'
                                     : isZero
                                       ? 'text-muted-foreground/70'
                                       : 'text-foreground',
@@ -322,8 +405,8 @@ export default function Items() {
                           className={cn(
                             'font-mono text-base font-medium',
                             isZero && 'text-destructive font-bold',
-                            isCritical && 'text-amber-600 font-bold',
-                            isStockoutRisk && !isZero && !isCritical && 'text-purple-600 font-bold',
+                            isStockoutRisk && !isZero && 'text-purple-600 font-bold',
+                            isCritical && !isZero && !isStockoutRisk && 'text-amber-600 font-bold',
                           )}
                         >
                           {item.current_quantity}
@@ -336,7 +419,7 @@ export default function Items() {
                         </div>
                         {isStockoutRisk && (
                           <div className="text-[10px] text-purple-600 font-bold mt-0.5 leading-tight">
-                            Acaba em ~{Math.round(daysUntilStockout)} dias
+                            Ruptura em ~{Math.round(daysUntilStockout)} dias
                           </div>
                         )}
                       </TableCell>
@@ -351,8 +434,8 @@ export default function Items() {
                             className={cn(
                               'h-1.5 bg-muted',
                               isZero && '[&>div]:bg-destructive',
-                              isCritical && '[&>div]:bg-amber-500',
-                              isStockoutRisk && !isZero && !isCritical && '[&>div]:bg-purple-500',
+                              isStockoutRisk && !isZero && '[&>div]:bg-purple-500',
+                              isCritical && !isZero && !isStockoutRisk && '[&>div]:bg-amber-500',
                               !isZero && !isCritical && !isStockoutRisk && '[&>div]:bg-secondary',
                             )}
                           />

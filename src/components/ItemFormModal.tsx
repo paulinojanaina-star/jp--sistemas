@@ -156,7 +156,7 @@ export function ItemFormModal({
         if (batchError && (batch_number || manufacturing_date || expiry_date)) {
           toast({
             title: 'Atenção',
-            description: `Item salvo, mas não foi possível atualizar o lote: ${batchError.message}`,
+            description: `Item salvo, mas não foi possível atualizar a validade: ${batchError.message}`,
             variant: 'destructive',
           })
         } else {
@@ -175,7 +175,7 @@ export function ItemFormModal({
         setSubmitting(false)
         form.setError('current_quantity', {
           type: 'manual',
-          message: 'Informe um saldo inicial maior que zero para registrar lote.',
+          message: 'Para registrar lote ou validade, o Saldo Inicial deve ser maior que zero.',
         })
         return
       }
@@ -301,16 +301,17 @@ export function ItemFormModal({
                 </h4>
                 {!hasInMovement ? (
                   <p className="text-xs text-destructive mt-1 font-medium">
-                    Nenhuma entrada registrada. Registre uma movimentação de entrada no estoque para
-                    definir lote e validade.
+                    Nenhuma entrada de estoque registrada. Realize uma movimentação de entrada ou
+                    cadastre saldo inicial para definir a validade.
                   </p>
                 ) : isEditing ? (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Atualiza os dados da última entrada deste item.
+                    Atualiza a validade e o lote da última entrada registrada no estoque.
                   </p>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Para registrar o lote, é necessário preencher o Saldo Inicial maior que zero.
+                    Para registrar lote e validade, é necessário que o Saldo Inicial seja maior que
+                    zero.
                   </p>
                 )}
               </div>
