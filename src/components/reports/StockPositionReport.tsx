@@ -10,6 +10,12 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   Table,
   TableBody,
   TableCell,
@@ -18,8 +24,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Download, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
-import { exportStockReportPdf, ReportFilter } from '@/utils/exportPdf'
+import { Download, AlertCircle, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
+import { exportStockReportPdf, exportStockReportExcel, ReportFilter } from '@/utils/exportPdf'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { useToast } from '@/hooks/use-toast'
 
@@ -41,10 +47,11 @@ export function StockPositionReport() {
     return true
   })
 
-  const handleExport = async () => {
+  const handleExport = async (format: 'pdf' | 'excel') => {
     setIsExporting(true)
     try {
-      const { error } = await exportStockReportPdf(filter)
+      const { error } =
+        format === 'pdf' ? await exportStockReportPdf(filter) : await exportStockReportExcel(filter)
       if (error) throw error
       toast({ title: 'Relatório gerado com sucesso!' })
     } catch (error) {
@@ -59,9 +66,7 @@ export function StockPositionReport() {
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <CardTitle>Posição de Estoque</CardTitle>
-          <CardDescription>
-            Visualize o saldo atual e gere relatórios em PDF filtrados.
-          </CardDescription>
+          <CardDescription>Visualize o saldo atual e gere relatórios filtrados.</CardDescription>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
           <Select value={filter} onValueChange={(v) => setFilter(v as ReportFilter)}>
@@ -74,10 +79,27 @@ export function StockPositionReport() {
               <SelectItem value="zero">Estoque Zerado</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleExport} disabled={isExporting} className="w-full sm:w-auto gap-2">
-            <Download className="h-4 w-4" />
-            {isExporting ? 'Gerando...' : 'Exportar PDF'}
-          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button disabled={isExporting} className="w-full sm:w-auto gap-2">
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {isExporting ? 'Gerando...' : 'Exportar'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                Exportar como PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('excel')}>
+                Exportar como Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
       <CardContent>

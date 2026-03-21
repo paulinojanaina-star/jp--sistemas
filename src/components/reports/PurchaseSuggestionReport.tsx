@@ -5,6 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   Table,
   TableBody,
   TableCell,
@@ -16,7 +22,7 @@ import { Search, Download, ShoppingCart, Loader2, ArrowDownToLine, RefreshCcw } 
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { calculateConsumption } from '@/utils/consumptionLogic'
 import { useToast } from '@/hooks/use-toast'
-import { exportPurchaseSuggestionPdf } from '@/utils/exportPdf'
+import { exportPurchaseSuggestionPdf, exportPurchaseSuggestionExcel } from '@/utils/exportPdf'
 
 export function PurchaseSuggestionReport() {
   const { items, movements } = useInventoryStore()
@@ -74,18 +80,23 @@ export function PurchaseSuggestionReport() {
     })
   }
 
-  const handleExport = async () => {
+  const handleExport = async (format: 'pdf' | 'excel') => {
     setIsExporting(true)
-    const { error } = await exportPurchaseSuggestionPdf(filteredSuggestions)
+    const { error } =
+      format === 'pdf'
+        ? await exportPurchaseSuggestionPdf(filteredSuggestions)
+        : await exportPurchaseSuggestionExcel(filteredSuggestions)
     setIsExporting(false)
 
     if (error) {
       toast({
         title: 'Erro ao exportar',
         description:
-          'Não foi possível gerar o PDF. Verifique se o bloqueador de pop-ups está ativo.',
+          'Não foi possível gerar o arquivo. Verifique se o bloqueador de pop-ups está ativo.',
         variant: 'destructive',
       })
+    } else {
+      toast({ title: 'Exportação concluída!' })
     }
   }
 
@@ -102,19 +113,31 @@ export function PurchaseSuggestionReport() {
             quantidades diferentes antes de exportar.
           </CardDescription>
         </div>
-        <Button
-          onClick={handleExport}
-          disabled={isExporting || filteredSuggestions.length === 0}
-          variant="outline"
-          className="shrink-0"
-        >
-          {isExporting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="mr-2 h-4 w-4" />
-          )}
-          Exportar Lista
-        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              disabled={isExporting || filteredSuggestions.length === 0}
+              variant="outline"
+              className="shrink-0"
+            >
+              {isExporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              Exportar Lista
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleExport('pdf')}>
+              Exportar como PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('excel')}>
+              Exportar como Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       <CardContent className="p-0">
         <div className="p-4 border-b">

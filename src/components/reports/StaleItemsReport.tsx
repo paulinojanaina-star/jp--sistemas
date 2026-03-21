@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -9,9 +10,21 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatItemDisplay } from '@/utils/itemFormat'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Download, Loader2 } from 'lucide-react'
+import { exportStaleItemsPdf, exportStaleItemsExcel } from '@/utils/exportPdf'
+import { useToast } from '@/hooks/use-toast'
 
 export function StaleItemsReport() {
   const { items, movements } = useInventoryStore()
+  const [isExporting, setIsExporting] = useState(false)
+  const { toast } = useToast()
 
   const now = new Date()
   const staleItems = items
@@ -31,10 +44,50 @@ export function StaleItemsReport() {
     .filter((item) => item.daysStale >= 30 && Number(item.current_quantity) > 0)
     .sort((a, b) => b.daysStale - a.daysStale)
 
+  const handleExport = async (format: 'pdf' | 'excel') => {
+    setIsExporting(true)
+    try {
+      const { error } =
+        format === 'pdf'
+          ? await exportStaleItemsPdf(staleItems)
+          : await exportStaleItemsExcel(staleItems)
+      if (error) throw error
+    } catch (e) {
+      toast({ title: 'Erro ao exportar', variant: 'destructive' })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Itens sem Movimentação (&gt; 30 dias)</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-lg">Itens sem Movimentação (&gt; 30 dias)</CardTitle>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isExporting || staleItems.length === 0}
+              className="h-8"
+            >
+              {isExporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">Exportar</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleExport('pdf')}>
+              Exportar como PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('excel')}>
+              Exportar como Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       <CardContent>
         {staleItems.length === 0 ? (
