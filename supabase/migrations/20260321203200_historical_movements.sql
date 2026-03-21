@@ -3,7 +3,6 @@ DECLARE
   v_item_id uuid;
   v_user_id uuid;
   v_record RECORD;
-  v_current_quantity numeric;
 BEGIN
   -- Identifica um usuário existente para atribuir a movimentação, garantindo a integridade referencial.
   SELECT id INTO v_user_id FROM auth.users ORDER BY created_at ASC LIMIT 1;
@@ -95,10 +94,10 @@ BEGIN
   )
   LOOP
     -- Tenta encontrar o item pelo nome exato ou aproximado
-    SELECT id, quantity INTO v_item_id, v_current_quantity FROM public.items WHERE name ILIKE v_record.name LIMIT 1;
+    SELECT id INTO v_item_id FROM public.items WHERE name ILIKE v_record.name LIMIT 1;
     
     IF v_item_id IS NULL THEN
-      SELECT id, quantity INTO v_item_id, v_current_quantity FROM public.items WHERE name ILIKE '%' || v_record.name || '%' LIMIT 1;
+      SELECT id INTO v_item_id FROM public.items WHERE name ILIKE '%' || v_record.name || '%' LIMIT 1;
     END IF;
 
     -- Se o item foi encontrado na base, insere a movimentação histórica
@@ -127,9 +126,6 @@ BEGIN
           END;
         END;
 
-        -- Restaura o saldo do estoque ao valor exato anterior à inserção
-        -- Isso contorna possíveis triggers que descontam a quantidade na tabela items, preservando o estoque atual, conforme solicitado
-        UPDATE public.items SET quantity = v_current_quantity WHERE id = v_item_id;
       END IF;
     END IF;
 
