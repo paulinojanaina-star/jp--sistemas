@@ -1,18 +1,24 @@
 import { useNotificationStore } from '@/stores/useNotificationStore'
-import { Bell, Check, AlertTriangle, PackageOpen } from 'lucide-react'
+import { Bell, Check, AlertTriangle, PackageOpen, TrendingDown } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { calculateConsumption } from '@/utils/consumptionLogic'
 
 export function NotificationCenter() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
-  const { items } = useInventoryStore()
+  const { items, movements } = useInventoryStore()
 
   const lowStockItems = items.filter((i) => i.current_quantity < i.min_quantity)
-  const totalAlerts = unreadCount + lowStockItems.length
+
+  const itemsAtRisk = items
+    .map((item) => ({ item, ...calculateConsumption(item, movements) }))
+    .filter((x) => x.isStockoutRisk)
+
+  const totalAlerts = unreadCount + lowStockItems.length + itemsAtRisk.length
 
   return (
     <Popover>
@@ -57,7 +63,7 @@ export function NotificationCenter() {
               {lowStockItems.length > 0 && (
                 <div className="p-2 border-b">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
-                    Estoque Baixo
+                    Estoque Crítico
                   </p>
                   {lowStockItems.map((item) => (
                     <div
@@ -71,6 +77,29 @@ export function NotificationCenter() {
                       <span className="text-xs text-destructive font-medium ml-6">
                         Saldo: {item.current_quantity} / Mínimo: {item.min_quantity}{' '}
                         {item.unit_type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {itemsAtRisk.length > 0 && (
+                <div className="p-2 border-b bg-purple-500/5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 px-2 py-1.5">
+                    Risco de Ruptura (&le; 60 dias)
+                  </p>
+                  {itemsAtRisk.map(({ item, daysUntilStockout, monthlyConsumption }) => (
+                    <div
+                      key={`risk-${item.id}`}
+                      className="flex flex-col items-start gap-1 p-2.5 rounded-md hover:bg-purple-500/10 cursor-default"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <TrendingDown className="h-4 w-4 text-purple-500 shrink-0" />
+                        <span className="font-medium text-sm truncate">{item.name}</span>
+                      </div>
+                      <span className="text-xs text-purple-600 font-medium ml-6">
+                        Estoque acaba em ~{Math.round(daysUntilStockout)} dias (Saída/mês:{' '}
+                        {monthlyConsumption})
                       </span>
                     </div>
                   ))}

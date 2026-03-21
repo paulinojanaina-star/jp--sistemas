@@ -15,6 +15,7 @@ import { format } from 'date-fns'
 import { exportStockReportPdf } from '@/utils/exportPdf'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { getNearestExpiry, parseDateSafe } from '@/utils/expiryLogic'
+import { calculateConsumption } from '@/utils/consumptionLogic'
 import {
   Table,
   TableBody,
@@ -52,6 +53,11 @@ export default function Items() {
       const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
       return diffDays <= 180
     }
+    if (stockFilter === 'stockout') {
+      if (Number(item.current_quantity) === 0) return false
+      const { isStockoutRisk } = calculateConsumption(item, movements)
+      return isStockoutRisk
+    }
     return true
   })
 
@@ -63,6 +69,15 @@ export default function Items() {
       if (!nearestA) return 1
       if (!nearestB) return -1
       return nearestA.date.getTime() - nearestB.date.getTime()
+    })
+  }
+
+  // If filtering by stockout, sort by days until stockout
+  if (stockFilter === 'stockout') {
+    filteredItems.sort((a, b) => {
+      const riskA = calculateConsumption(a, movements).daysUntilStockout
+      const riskB = calculateConsumption(b, movements).daysUntilStockout
+      return riskA - riskB
     })
   }
 
@@ -129,11 +144,12 @@ export default function Items() {
               onValueChange={setStockFilter}
               className="w-full xl:w-auto overflow-x-auto"
             >
-              <TabsList className="grid w-full min-w-[400px] grid-cols-4">
+              <TabsList className="grid w-full min-w-[500px] grid-cols-5">
                 <TabsTrigger value="all">Todos</TabsTrigger>
                 <TabsTrigger value="critical">Crítico</TabsTrigger>
                 <TabsTrigger value="zero">Zerado</TabsTrigger>
                 <TabsTrigger value="expiring">Vencimento</TabsTrigger>
+                <TabsTrigger value="stockout">Ruptura</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -158,7 +174,9 @@ export default function Items() {
                         ? 'Nenhum item com estoque zerado encontrado.'
                         : stockFilter === 'expiring'
                           ? 'Nenhum item próximo ao vencimento encontrado.'
-                          : 'Nenhum item encontrado.'}
+                          : stockFilter === 'stockout'
+                            ? 'Nenhum item com risco de ruptura encontrado.'
+                            : 'Nenhum item encontrado.'}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -174,6 +192,9 @@ export default function Items() {
                       (Number(item.current_quantity) / (Number(item.min_quantity) * 2 || 1)) * 100,
                     ),
                   )
+
+                  const { isStockoutRisk, daysUntilStockout, monthlyConsumption } =
+                    calculateConsumption(item, movements)
 
                   // Expiry Logic using active batches
                   let nearest = getNearestExpiry(item, movements)
@@ -225,7 +246,9 @@ export default function Items() {
                       ? 'bg-destructive/5 hover:bg-destructive/10'
                       : isCritical || isExpiringSoon
                         ? 'bg-amber-500/5 hover:bg-amber-500/10'
-                        : ''
+                        : isStockoutRisk
+                          ? 'bg-purple-500/5 hover:bg-purple-500/10'
+                          : ''
 
                   return (
                     <TableRow key={item.id} className={rowHighlightClass}>
@@ -256,6 +279,11 @@ export default function Items() {
                           {isExpiringSoon && !isExpired && (
                             <Badge className="bg-amber-500 hover:bg-amber-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
                               Vencimento Próximo
+                            </Badge>
+                          )}
+                          {isStockoutRisk && !isZero && (
+                            <Badge className="bg-purple-500 hover:bg-purple-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
+                              Risco de Ruptura
                             </Badge>
                           )}
                         </div>
@@ -295,10 +323,22 @@ export default function Items() {
                             'font-mono text-base font-medium',
                             isZero && 'text-destructive font-bold',
                             isCritical && 'text-amber-600 font-bold',
+                            isStockoutRisk && !isZero && !isCritical && 'text-purple-600 font-bold',
                           )}
                         >
                           {item.current_quantity}
                         </span>
+                        <div
+                          className="text-[10px] text-muted-foreground mt-0.5"
+                          title="Média de saída mensal"
+                        >
+                          Média: {monthlyConsumption}/mês
+                        </div>
+                        {isStockoutRisk && (
+                          <div className="text-[10px] text-purple-600 font-bold mt-0.5 leading-tight">
+                            Acaba em ~{Math.round(daysUntilStockout)} dias
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1.5">
@@ -312,7 +352,8 @@ export default function Items() {
                               'h-1.5 bg-muted',
                               isZero && '[&>div]:bg-destructive',
                               isCritical && '[&>div]:bg-amber-500',
-                              !isZero && !isCritical && '[&>div]:bg-secondary',
+                              isStockoutRisk && !isZero && !isCritical && '[&>div]:bg-purple-500',
+                              !isZero && !isCritical && !isStockoutRisk && '[&>div]:bg-secondary',
                             )}
                           />
                         </div>

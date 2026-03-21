@@ -1,6 +1,7 @@
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getNearestExpiry } from '@/utils/expiryLogic'
+import { calculateConsumption } from '@/utils/consumptionLogic'
 import {
   Package,
   AlertTriangle,
@@ -8,6 +9,7 @@ import {
   ArrowUpFromLine,
   Clock,
   CalendarClock,
+  TrendingDown,
 } from 'lucide-react'
 
 export function DashboardMetrics() {
@@ -61,8 +63,14 @@ export function DashboardMetrics() {
     return diffDays <= 180
   }).length
 
+  // Calculate Stockout Risk (<= 60 days)
+  const itemsAtRiskCount = items.filter((item) => {
+    const { isStockoutRisk } = calculateConsumption(item, movements)
+    return isStockoutRisk
+  }).length
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 mb-6">
+    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total de Itens</CardTitle>
@@ -91,6 +99,26 @@ export function DashboardMetrics() {
             {criticalStock}
           </div>
           <p className="text-xs text-muted-foreground mt-1">Abaixo do nível mínimo</p>
+        </CardContent>
+      </Card>
+
+      <Card className={itemsAtRiskCount > 0 ? 'border-purple-500/30 bg-purple-500/5' : ''}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle
+            className={`text-sm font-medium ${itemsAtRiskCount > 0 ? 'text-purple-600 font-bold' : ''}`}
+          >
+            Risco de Ruptura
+          </CardTitle>
+          <TrendingDown
+            className={`h-4 w-4 ${itemsAtRiskCount > 0 ? 'text-purple-600' : 'text-muted-foreground'}`}
+            strokeWidth={1.5}
+          />
+        </CardHeader>
+        <CardContent>
+          <div className={`text-2xl font-bold ${itemsAtRiskCount > 0 ? 'text-purple-600' : ''}`}>
+            {itemsAtRiskCount}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Acabam em &le; 60 dias</p>
         </CardContent>
       </Card>
 
