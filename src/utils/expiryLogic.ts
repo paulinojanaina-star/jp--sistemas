@@ -1,5 +1,24 @@
 import { Movement, Item } from '@/types/inventory'
 
+export function parseDateSafe(dateStr: string | null | undefined): Date | null {
+  if (!dateStr) return null
+  try {
+    const datePart = dateStr.split('T')[0]
+    const parts = datePart.split('-')
+    if (parts.length !== 3) return null
+
+    const y = parseInt(parts[0], 10)
+    const m = parseInt(parts[1], 10) - 1
+    const d = parseInt(parts[2].substring(0, 2), 10)
+
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return null
+
+    return new Date(y, m, d)
+  } catch (e) {
+    return null
+  }
+}
+
 export function getActiveBatches(item: Item, movements: Movement[]) {
   const currentQuantity = Number(item.current_quantity) || 0
   if (currentQuantity <= 0) return []
@@ -7,7 +26,7 @@ export function getActiveBatches(item: Item, movements: Movement[]) {
   // Sort newest first to assume FIFO (oldest consumed first, newest are still in stock)
   const inMovements = movements
     .filter((m) => m.item_id === item.id && m.type === 'IN')
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
 
   let remainingStock = currentQuantity
   const activeBatches = []
@@ -29,13 +48,11 @@ export function getNearestExpiry(item: Item, movements: Movement[]) {
 
   const expiries = batchesWithExpiry
     .map((m) => {
-      if (!m.expiry_date) return null
-      const parts = m.expiry_date.split('-')
-      if (parts.length !== 3) return null
+      const parsedDate = parseDateSafe(m.expiry_date)
+      if (!parsedDate) return null
 
-      const [y, mo, d] = parts
       return {
-        date: new Date(Number(y), Number(mo) - 1, Number(d)),
+        date: parsedDate,
         batch: m.batch_number,
         movement_id: m.id,
       }

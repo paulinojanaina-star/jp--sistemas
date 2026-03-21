@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { exportStockReportPdf } from '@/utils/exportPdf'
 import { formatItemDisplay } from '@/utils/itemFormat'
-import { getNearestExpiry } from '@/utils/expiryLogic'
+import { getNearestExpiry, parseDateSafe } from '@/utils/expiryLogic'
 import {
   Table,
   TableBody,
@@ -188,14 +188,15 @@ export default function Items() {
                       .filter((m) => m.item_id === item.id && m.type === 'IN' && m.expiry_date)
                       .sort(
                         (a, b) =>
-                          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+                          new Date(b.created_at || 0).getTime() -
+                          new Date(a.created_at || 0).getTime(),
                       )[0]
 
                     if (latestInWithExpiry && latestInWithExpiry.expiry_date) {
-                      const parts = latestInWithExpiry.expiry_date.split('-')
-                      if (parts.length === 3) {
+                      const parsedDate = parseDateSafe(latestInWithExpiry.expiry_date)
+                      if (parsedDate) {
                         nearest = {
-                          date: new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])),
+                          date: parsedDate,
                           batch: latestInWithExpiry.batch_number,
                           movement_id: latestInWithExpiry.id,
                         }

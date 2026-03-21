@@ -9,6 +9,7 @@ import { Item, ITEM_UNITS } from '@/types/inventory'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { parseDateSafe } from '@/utils/expiryLogic'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -81,7 +82,9 @@ export function ItemFormModal({
   const latestInMovement = item
     ? movements
         .filter((m) => m.item_id === item.id && m.type === 'IN')
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+        .sort(
+          (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
+        )[0]
     : null
 
   const hasInMovement = !isEditing || !!latestInMovement
@@ -108,12 +111,8 @@ export function ItemFormModal({
           min_quantity: item.min_quantity,
           current_quantity: item.current_quantity,
           batch_number: latestInMovement?.batch_number || '',
-          manufacturing_date: latestInMovement?.manufacturing_date
-            ? new Date(latestInMovement.manufacturing_date + 'T12:00:00')
-            : undefined,
-          expiry_date: latestInMovement?.expiry_date
-            ? new Date(latestInMovement.expiry_date + 'T12:00:00')
-            : undefined,
+          manufacturing_date: parseDateSafe(latestInMovement?.manufacturing_date) || undefined,
+          expiry_date: parseDateSafe(latestInMovement?.expiry_date) || undefined,
         })
       } else {
         form.reset({
