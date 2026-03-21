@@ -14,12 +14,9 @@ import {
   Loader2,
   Check,
   ChevronsUpDown,
-  CalendarIcon,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { formatItemDisplay } from '@/utils/itemFormat'
 
 import { Button } from '@/components/ui/button'
@@ -51,7 +48,6 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Calendar } from '@/components/ui/calendar'
 
 const movementSchema = z.object({
   item_id: z.string().min(1, 'Selecione um item'),
@@ -61,8 +57,8 @@ const movementSchema = z.object({
   observations: z.string().optional(),
   file: z.any().optional(),
   batch_number: z.string().optional(),
-  manufacturing_date: z.date().optional(),
-  expiry_date: z.date().optional(),
+  manufacturing_date: z.string().optional(),
+  expiry_date: z.string().optional(),
 })
 
 export function MovementForm() {
@@ -72,8 +68,6 @@ export function MovementForm() {
   const location = useLocation()
   const [submitting, setSubmitting] = useState(false)
   const [openItemPopover, setOpenItemPopover] = useState(false)
-  const [popoverFabOpen, setPopoverFabOpen] = useState(false)
-  const [popoverValOpen, setPopoverValOpen] = useState(false)
 
   const defaultItemId = (location.state as any)?.itemId || ''
 
@@ -85,6 +79,8 @@ export function MovementForm() {
       observations: '',
       item_id: defaultItemId,
       batch_number: '',
+      manufacturing_date: '',
+      expiry_date: '',
     },
   })
 
@@ -145,10 +141,8 @@ export function MovementForm() {
       responsible_id: session.user.id,
       document_url: documentUrl,
       batch_number: values.batch_number?.trim() || null,
-      manufacturing_date: values.manufacturing_date
-        ? format(values.manufacturing_date, 'yyyy-MM-dd')
-        : null,
-      expiry_date: values.expiry_date ? format(values.expiry_date, 'yyyy-MM-dd') : null,
+      manufacturing_date: values.manufacturing_date || null,
+      expiry_date: values.expiry_date || null,
     }
 
     const { error } = await addMovement(movementPayload)
@@ -168,12 +162,14 @@ export function MovementForm() {
       observations: '',
       file: undefined,
       batch_number: '',
-      manufacturing_date: undefined,
-      expiry_date: undefined,
+      manufacturing_date: '',
+      expiry_date: '',
     })
     const fileInput = document.getElementById('file-upload') as HTMLInputElement
     if (fileInput) fileInput.value = ''
   }
+
+  const todayStr = new Date().toISOString().split('T')[0]
 
   return (
     <Card>
@@ -359,40 +355,15 @@ export function MovementForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col mt-2 md:mt-0">
                     <FormLabel className="mb-1">Fabricação</FormLabel>
-                    <Popover open={popoverFabOpen} onOpenChange={setPopoverFabOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            type="button"
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground',
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'dd/MM/yyyy')
-                            ) : (
-                              <span>Selecione a data</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(val) => {
-                            field.onChange(val)
-                            setPopoverFabOpen(false)
-                          }}
-                          disabled={(date) => date > new Date()}
-                          locale={ptBR}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        max={todayStr}
+                        {...field}
+                        value={field.value || ''}
+                        className="w-full text-sm"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -404,39 +375,14 @@ export function MovementForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col mt-2 md:mt-0">
                     <FormLabel className="mb-1">Validade</FormLabel>
-                    <Popover open={popoverValOpen} onOpenChange={setPopoverValOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            type="button"
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground',
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'dd/MM/yyyy')
-                            ) : (
-                              <span>Selecione a data</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(val) => {
-                            field.onChange(val)
-                            setPopoverValOpen(false)
-                          }}
-                          locale={ptBR}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        value={field.value || ''}
+                        className="w-full text-sm"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
