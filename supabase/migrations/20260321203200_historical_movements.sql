@@ -3,10 +3,33 @@ DECLARE
   v_item_id uuid;
   v_user_id uuid;
   v_record RECORD;
+  v_items_table text;
+  v_movements_table text;
+  v_exists boolean;
 BEGIN
   -- Identifica um usuário existente para atribuir a movimentação, garantindo a integridade referencial.
   SELECT id INTO v_user_id FROM auth.users ORDER BY created_at ASC LIMIT 1;
   
+  -- Descobre o nome da tabela de itens
+  IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'items') THEN
+    v_items_table := 'public.items';
+  ELSIF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'inventory_items') THEN
+    v_items_table := 'public.inventory_items';
+  ELSE
+    RAISE EXCEPTION 'Tabela de itens não encontrada.';
+  END IF;
+
+  -- Descobre o nome da tabela de movimentações
+  IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'inventory_movements') THEN
+    v_movements_table := 'public.inventory_movements';
+  ELSIF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'item_movements') THEN
+    v_movements_table := 'public.item_movements';
+  ELSIF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'movements') THEN
+    v_movements_table := 'public.movements';
+  ELSE
+    RAISE EXCEPTION 'Tabela de movimentações não encontrada.';
+  END IF;
+
   -- Itera sobre a lista extraída da imagem fornecida para carga do histórico de saídas.
   FOR v_record IN (
     SELECT * FROM (VALUES 
@@ -93,39 +116,49 @@ BEGIN
     ) AS t(name, quantity)
   )
   LOOP
-    -- Tenta encontrar o item pelo nome exato ou aproximado
-    SELECT id INTO v_item_id FROM public.items WHERE name ILIKE v_record.name LIMIT 1;
+    -- Tenta encontrar o item pelo nome exato ou aproximado usando SQL dinâmico
+    EXECUTE format($$ SELECT id FROM %s WHERE name ILIKE $1 LIMIT 1 $$, v_items_table)
+    INTO v_item_id USING v_record.name;
     
     IF v_item_id IS NULL THEN
-      SELECT id INTO v_item_id FROM public.items WHERE name ILIKE '%' || v_record.name || '%' LIMIT 1;
+      EXECUTE format($$ SELECT id FROM %s WHERE name ILIKE $1 LIMIT 1 $$, v_items_table)
+      INTO v_item_id USING '%' || v_record.name || '%';
     END IF;
 
     -- Se o item foi encontrado na base, insere a movimentação histórica
     IF v_item_id IS NOT NULL THEN
       -- Garante que a migração é idempotente e não insere o mesmo histórico duas vezes
-      IF NOT EXISTS (
-        SELECT 1 FROM public.movements 
-        WHERE item_id = v_item_id AND quantity = v_record.quantity AND notes = 'Carga de Histórico (Importação)'
-      ) THEN
-        
+      EXECUTE format($$
+        SELECT EXISTS (
+          SELECT 1 FROM %s 
+          WHERE item_id = $1 AND quantity = $2 AND notes = 'Carga de Histórico (Importação)'
+        )
+      $$, v_movements_table) INTO v_exists USING v_item_id, v_record.quantity;
+
+      IF NOT v_exists THEN
         -- Tentativa encadeada para lidar com possíveis variações no tipo enumerado da tabela de movimentações ('out', 'OUT', 'saída')
         BEGIN
-          INSERT INTO public.movements (item_id, type, quantity, user_id, notes, created_at)
-          VALUES (v_item_id, 'out', v_record.quantity, v_user_id, 'Carga de Histórico (Importação)', now() - interval '3 months');
+          EXECUTE format($$
+            INSERT INTO %s (item_id, type, quantity, user_id, notes, created_at)
+            VALUES ($1, 'out', $2, $3, 'Carga de Histórico (Importação)', now() - interval '3 months')
+          $$, v_movements_table) USING v_item_id, v_record.quantity, v_user_id;
         EXCEPTION WHEN OTHERS THEN
           BEGIN
-            INSERT INTO public.movements (item_id, type, quantity, user_id, notes, created_at)
-            VALUES (v_item_id, 'OUT', v_record.quantity, v_user_id, 'Carga de Histórico (Importação)', now() - interval '3 months');
+            EXECUTE format($$
+              INSERT INTO %s (item_id, type, quantity, user_id, notes, created_at)
+              VALUES ($1, 'OUT', $2, $3, 'Carga de Histórico (Importação)', now() - interval '3 months')
+            $$, v_movements_table) USING v_item_id, v_record.quantity, v_user_id;
           EXCEPTION WHEN OTHERS THEN
             BEGIN
-              INSERT INTO public.movements (item_id, type, quantity, user_id, notes, created_at)
-              VALUES (v_item_id, 'saída', v_record.quantity, v_user_id, 'Carga de Histórico (Importação)', now() - interval '3 months');
+              EXECUTE format($$
+                INSERT INTO %s (item_id, type, quantity, user_id, notes, created_at)
+                VALUES ($1, 'saída', $2, $3, 'Carga de Histórico (Importação)', now() - interval '3 months')
+              $$, v_movements_table) USING v_item_id, v_record.quantity, v_user_id;
             EXCEPTION WHEN OTHERS THEN
               NULL;
             END;
           END;
         END;
-
       END IF;
     END IF;
 
