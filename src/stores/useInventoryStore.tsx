@@ -83,16 +83,10 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
       expiry_date?: string | null
     },
   ) => {
-    let formattedName = item.name
-    const match = formattedName.match(/^(\d+)\s+(.*)$/)
-    if (match) {
-      formattedName = `${match[2].trim()} (${match[1]})`
-    }
-
     const { data, error } = await supabase
       .from('items')
       .insert({
-        name: formattedName,
+        name: item.name.trim(),
         description: item.description,
         unit_type: item.unit_type,
         min_quantity: item.min_quantity,
@@ -126,10 +120,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   const updateItem = async (id: string, updates: Partial<Item>) => {
     const payload = { ...updates }
     if (payload.name) {
-      const match = payload.name.match(/^(\d+)\s+(.*)$/)
-      if (match) {
-        payload.name = `${match[2].trim()} (${match[1]})`
-      }
+      payload.name = payload.name.trim()
     }
 
     const { error } = await supabase.from('items').update(payload).eq('id', id)
