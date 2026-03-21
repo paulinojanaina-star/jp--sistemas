@@ -232,14 +232,12 @@ export function MovementForm() {
                             !field.value && 'text-muted-foreground',
                           )}
                         >
-                          {field.value
-                            ? (() => {
-                                const item = items.find((i) => i.id === field.value)
-                                return item
-                                  ? `${formatItemDisplay(item)} (Saldo: ${item.current_quantity})`
-                                  : 'Selecione o item'
-                              })()
-                            : 'Pesquise e selecione o item'}
+                          {(() => {
+                            if (!field.value) return 'Pesquise e selecione o item'
+                            const item = items.find((i) => i.id === field.value)
+                            if (!item) return 'Selecione o item'
+                            return `${formatItemDisplay(item)} (Saldo: ${item.current_quantity})`
+                          })()}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
