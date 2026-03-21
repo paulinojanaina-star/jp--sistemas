@@ -127,3 +127,85 @@ export const exportStockReportPdf = async (
 
   return {}
 }
+
+export const exportPurchaseSuggestionPdf = async (
+  suggestions: Array<any>,
+): Promise<{ error?: any }> => {
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) return { error: new Error('Popup blocked') }
+
+  const now = new Date()
+  const formattedDate = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <title>JP Sistemas - Sugestão de Compra</title>
+        <style>
+          body { font-family: system-ui, sans-serif; padding: 40px; color: #1e293b; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
+          h1 { color: #0f172a; margin: 0 0 10px 0; font-size: 24px; }
+          .meta { color: #64748b; font-size: 14px; margin: 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; font-size: 14px; }
+          th { background-color: #f8fafc; font-weight: 600; color: #334155; }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .highlight { background-color: #f0fdf4; color: #15803d; font-weight: bold; }
+          @media print {
+            body { padding: 0; }
+            .header { margin-bottom: 20px; }
+            .highlight { background-color: #f0fdf4 !important; color: #15803d !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>JP Sistemas - Relatório de Sugestão de Compra</h1>
+          <p class="meta">Data de emissão: ${formattedDate}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome do Item</th>
+              <th>Unidade</th>
+              <th class="text-right">Estoque Mínimo</th>
+              <th class="text-right">Média Mensal</th>
+              <th class="text-right">Estoque Atual</th>
+              <th class="text-right">Sugestão</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${suggestions.length === 0 ? '<tr><td colspan="6" class="text-center">Nenhum item com necessidade de compra.</td></tr>' : ''}
+            ${suggestions
+              .map(
+                (item) => `
+                <tr>
+                  <td>${item.formattedName || item.name}</td>
+                  <td>${item.unit_type || '-'}</td>
+                  <td class="text-right">${item.min_quantity}</td>
+                  <td class="text-right">${item.monthlyConsumption}</td>
+                  <td class="text-right">${item.current_quantity}</td>
+                  <td class="text-right highlight">+${item.suggestion}</td>
+                </tr>
+              `,
+              )
+              .join('')}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `
+
+  printWindow.document.write(html)
+  printWindow.document.close()
+
+  setTimeout(() => {
+    printWindow.print()
+    printWindow.close()
+  }, 300)
+
+  return {}
+}
