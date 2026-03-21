@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { ItemFormModal } from '@/components/ItemFormModal'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,6 +19,7 @@ import { exportStockReportPdf } from '@/utils/exportPdf'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { getNearestExpiry } from '@/utils/expiryLogic'
 import { calculateConsumption } from '@/utils/consumptionLogic'
+import { getPotentialDuplicateIds } from '@/utils/duplicateLogic'
 import {
   Table,
   TableBody,
@@ -38,6 +39,8 @@ export default function Items() {
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+
+  const duplicateIds = useMemo(() => getPotentialDuplicateIds(items), [items])
 
   const filteredItems = items.filter((item) => {
     const formattedName = formatItemDisplay(item).toLowerCase()
@@ -254,7 +257,13 @@ export default function Items() {
                 </TableRow>
               ) : (
                 filteredItems.map((item) => (
-                  <ItemTableRow key={item.id} item={item} movements={movements} today={today} />
+                  <ItemTableRow
+                    key={item.id}
+                    item={item}
+                    movements={movements}
+                    today={today}
+                    isDuplicate={duplicateIds.has(item.id)}
+                  />
                 ))
               )}
             </TableBody>

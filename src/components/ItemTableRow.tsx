@@ -1,22 +1,25 @@
 import { TableRow, TableCell } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, Files } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ItemRowActions } from '@/components/ItemRowActions'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { getNearestExpiry, parseDateSafe } from '@/utils/expiryLogic'
 import { calculateConsumption } from '@/utils/consumptionLogic'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export function ItemTableRow({
   item,
   movements,
   today,
+  isDuplicate,
 }: {
   item: any
   movements: any[]
   today: Date
+  isDuplicate?: boolean
 }) {
   const isZero = Number(item.current_quantity) === 0
   const isCritical =
@@ -85,6 +88,24 @@ export function ItemTableRow({
       <TableCell>
         <div className="font-medium text-foreground flex items-center gap-2 flex-wrap">
           {formatItemDisplay(item)}
+
+          {isDuplicate && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="h-5 px-1.5 border-amber-500/30 bg-amber-500/10 text-amber-600 gap-1 cursor-help hover:bg-amber-500/20"
+                >
+                  <Files className="h-3 w-3" />
+                  <span className="text-[10px] uppercase font-semibold">Duplicado?</span>
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Possível duplicidade detectada. Nomes muito similares no estoque.</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
           {isZero && (
             <Badge variant="destructive" className="h-5 px-1.5 text-[10px] uppercase font-semibold">
               Zerado
