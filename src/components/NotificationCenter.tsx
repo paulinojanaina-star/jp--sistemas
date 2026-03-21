@@ -12,11 +12,13 @@ export function NotificationCenter() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
   const { items, movements } = useInventoryStore()
 
-  const lowStockItems = items.filter((i) => i.current_quantity < i.min_quantity)
+  const lowStockItems = items.filter((i) => (i.current_quantity || 0) < (i.min_quantity || 0))
 
   const itemsAtRisk = items
     .map((item) => ({ item, ...calculateConsumption(item, movements) }))
     .filter((x) => x.isStockoutRisk)
+
+  const unreadNotifications = notifications.filter((n) => !n.read_at)
 
   const totalAlerts = unreadCount + lowStockItems.length + itemsAtRisk.length
 
@@ -106,21 +108,19 @@ export function NotificationCenter() {
                 </div>
               )}
 
-              {notifications.length > 0 && (
+              {unreadNotifications.length > 0 && (
                 <div className="p-2">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
                     Alertas de Consumo
                   </p>
-                  {notifications.map((n) => (
+                  {unreadNotifications.map((n) => (
                     <div
                       key={n.id}
-                      onClick={() => !n.read_at && markAsRead(n.id)}
-                      className={`flex flex-col gap-1 p-2.5 rounded-md transition-colors ${!n.read_at ? 'bg-primary/5 cursor-pointer hover:bg-primary/10' : 'opacity-70'}`}
+                      onClick={() => markAsRead(n.id)}
+                      className="flex flex-col gap-1 p-2.5 rounded-md transition-colors bg-primary/5 cursor-pointer hover:bg-primary/10"
                     >
                       <div className="flex items-start gap-2.5">
-                        <AlertTriangle
-                          className={`h-4 w-4 shrink-0 mt-0.5 ${!n.read_at ? 'text-destructive' : 'text-muted-foreground'}`}
-                        />
+                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
                         <div className="flex flex-col gap-1.5 flex-1">
                           <p className="text-sm font-semibold leading-none">{n.title}</p>
                           <p className="text-xs text-muted-foreground leading-relaxed">
@@ -133,9 +133,7 @@ export function NotificationCenter() {
                             })}
                           </span>
                         </div>
-                        {!n.read_at && (
-                          <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1" />
-                        )}
+                        <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1" />
                       </div>
                     </div>
                   ))}
