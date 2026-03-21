@@ -153,11 +153,14 @@ export const exportPurchaseSuggestionPdf = async (
           th { background-color: #f8fafc; font-weight: 600; color: #334155; }
           .text-right { text-align: right; }
           .text-center { text-align: center; }
+          .text-muted { color: #64748b; }
           .highlight { background-color: #f0fdf4; color: #15803d; font-weight: bold; }
+          .edited { background-color: #eff6ff; color: #1d4ed8; font-weight: bold; }
           @media print {
             body { padding: 0; }
             .header { margin-bottom: 20px; }
             .highlight { background-color: #f0fdf4 !important; color: #15803d !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            .edited { background-color: #eff6ff !important; color: #1d4ed8 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
           }
         </style>
       </head>
@@ -174,24 +177,30 @@ export const exportPurchaseSuggestionPdf = async (
               <th class="text-right">Estoque Mínimo</th>
               <th class="text-right">Média Mensal</th>
               <th class="text-right">Estoque Atual</th>
-              <th class="text-right">Sugestão</th>
+              <th class="text-right">Sugestão Original</th>
+              <th class="text-right">Qtd Comprar</th>
             </tr>
           </thead>
           <tbody>
-            ${suggestions.length === 0 ? '<tr><td colspan="6" class="text-center">Nenhum item com necessidade de compra.</td></tr>' : ''}
+            ${suggestions.length === 0 ? '<tr><td colspan="7" class="text-center">Nenhum item com necessidade de compra.</td></tr>' : ''}
             ${suggestions
-              .map(
-                (item) => `
+              .map((item) => {
+                const isEdited = item.finalSuggestion !== item.suggestion
+                const finalQtd = item.finalSuggestion ?? item.suggestion
+                const highlightClass = isEdited ? 'edited' : 'highlight'
+
+                return `
                 <tr>
                   <td>${item.formattedName || item.name}</td>
                   <td>${item.unit_type || '-'}</td>
                   <td class="text-right">${item.min_quantity}</td>
                   <td class="text-right">${item.monthlyConsumption}</td>
                   <td class="text-right">${item.current_quantity}</td>
-                  <td class="text-right highlight">+${item.suggestion}</td>
+                  <td class="text-right text-muted">${item.suggestion}</td>
+                  <td class="text-right ${highlightClass}">+${finalQtd}</td>
                 </tr>
-              `,
-              )
+              `
+              })
               .join('')}
           </tbody>
         </table>

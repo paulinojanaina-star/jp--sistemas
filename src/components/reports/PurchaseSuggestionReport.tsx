@@ -12,8 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Search, Download, ShoppingCart, Loader2, ArrowDownToLine } from 'lucide-react'
+import { Search, Download, ShoppingCart, Loader2, ArrowDownToLine, RefreshCcw } from 'lucide-react'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { calculateConsumption } from '@/utils/consumptionLogic'
 import { useToast } from '@/hooks/use-toast'
@@ -23,9 +22,10 @@ export function PurchaseSuggestionReport() {
   const { items, movements } = useInventoryStore()
   const [search, setSearch] = useState('')
   const [isExporting, setIsExporting] = useState(false)
+  const [customQuantities, setCustomQuantities] = useState<Record<string, string>>({})
   const { toast } = useToast()
 
-  const suggestions = useMemo(() => {
+  const baseSuggestions = useMemo(() => {
     return items
       .map((item) => {
         const { monthlyConsumption } = calculateConsumption(item, movements)
@@ -48,9 +48,31 @@ export function PurchaseSuggestionReport() {
       .sort((a, b) => b.suggestion - a.suggestion)
   }, [items, movements])
 
-  const filteredSuggestions = suggestions.filter((item) =>
-    item.formattedName.toLowerCase().includes(search.toLowerCase()),
-  )
+  const filteredSuggestions = baseSuggestions
+    .map((item) => ({
+      ...item,
+      finalSuggestion:
+        customQuantities[item.id] !== undefined
+          ? Number(customQuantities[item.id])
+          : item.suggestion,
+      customInput:
+        customQuantities[item.id] !== undefined
+          ? customQuantities[item.id]
+          : item.suggestion.toString(),
+    }))
+    .filter((item) => item.formattedName.toLowerCase().includes(search.toLowerCase()))
+
+  const handleQuantityChange = (id: string, value: string) => {
+    setCustomQuantities((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleResetQuantity = (id: string) => {
+    setCustomQuantities((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+  }
 
   const handleExport = async () => {
     setIsExporting(true)
@@ -76,7 +98,8 @@ export function PurchaseSuggestionReport() {
             Sugestão de Compra
           </CardTitle>
           <CardDescription>
-            Quantidades ideais sugeridas com base no estoque mínimo e no consumo médio mensal.
+            Quantidades ideais sugeridas. Você pode editar os valores caso queira comprar
+            quantidades diferentes antes de exportar.
           </CardDescription>
         </div>
         <Button
@@ -105,58 +128,85 @@ export function PurchaseSuggestionReport() {
             />
           </div>
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/30">
-              <TableHead>Item</TableHead>
-              <TableHead className="text-right">Estoque Mínimo</TableHead>
-              <TableHead className="text-right">Média Mensal</TableHead>
-              <TableHead className="text-right">Estoque Atual</TableHead>
-              <TableHead className="text-right">Sugestão</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredSuggestions.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  {search
-                    ? 'Nenhum item encontrado para a busca.'
-                    : 'Estoque adequado. Nenhuma compra sugerida no momento.'}
-                </TableCell>
+        <div className="relative w-full overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead>Item</TableHead>
+                <TableHead className="text-right">Estoque Mínimo</TableHead>
+                <TableHead className="text-right">Média Mensal</TableHead>
+                <TableHead className="text-right">Estoque Atual</TableHead>
+                <TableHead className="text-right min-w-[140px]">Qtd a Comprar</TableHead>
+                <TableHead className="w-[80px]"></TableHead>
               </TableRow>
-            ) : (
-              filteredSuggestions.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">
-                    {item.formattedName}
-                    <div className="text-xs text-muted-foreground mt-0.5">{item.unit_type}</div>
-                  </TableCell>
-                  <TableCell className="text-right">{item.min_quantity}</TableCell>
-                  <TableCell className="text-right text-muted-foreground">
-                    {item.monthlyConsumption}
-                  </TableCell>
-                  <TableCell className="text-right font-medium">{item.current_quantity}</TableCell>
-                  <TableCell className="text-right">
-                    <Badge
-                      variant="default"
-                      className="bg-emerald-500 hover:bg-emerald-600 text-white font-mono text-sm px-2 py-0.5"
-                    >
-                      +{item.suggestion}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Button variant="ghost" size="icon" asChild title="Registrar Entrada">
-                      <Link to="/movimentacoes">
-                        <ArrowDownToLine className="h-4 w-4 text-secondary" strokeWidth={1.5} />
-                      </Link>
-                    </Button>
+            </TableHeader>
+            <TableBody>
+              {filteredSuggestions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                    {search
+                      ? 'Nenhum item encontrado para a busca.'
+                      : 'Estoque adequado. Nenhuma compra sugerida no momento.'}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                filteredSuggestions.map((item) => {
+                  const isEdited = customQuantities[item.id] !== undefined
+
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">
+                        {item.formattedName}
+                        <div className="text-xs text-muted-foreground mt-0.5">{item.unit_type}</div>
+                      </TableCell>
+                      <TableCell className="text-right">{item.min_quantity}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {item.monthlyConsumption}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {item.current_quantity}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {isEdited && (
+                            <div className="flex flex-col items-end mr-2">
+                              <span className="text-[10px] text-muted-foreground leading-tight">
+                                Sugestão: {item.suggestion}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-4 w-4 text-muted-foreground hover:text-foreground mt-0.5"
+                                onClick={() => handleResetQuantity(item.id)}
+                                title="Restaurar sugestão original"
+                              >
+                                <RefreshCcw className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <Input
+                            type="number"
+                            min="0"
+                            className={`w-20 text-right h-8 font-mono text-sm ${isEdited ? 'border-primary bg-primary/5' : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800'}`}
+                            value={item.customInput}
+                            onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button variant="ghost" size="icon" asChild title="Registrar Entrada">
+                          <Link to={`/movimentacoes?item=${item.id}&qty=${item.finalSuggestion}`}>
+                            <ArrowDownToLine className="h-4 w-4 text-secondary" strokeWidth={1.5} />
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   )
