@@ -18,6 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Search, Download, ShoppingCart, Loader2, ArrowDownToLine, RefreshCcw } from 'lucide-react'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { calculateConsumption } from '@/utils/consumptionLogic'
@@ -28,6 +35,7 @@ export function PurchaseSuggestionReport() {
   const { items, movements, updateItem } = useInventoryStore()
   const [search, setSearch] = useState('')
   const [isExporting, setIsExporting] = useState(false)
+  const [period, setPeriod] = useState<number | 'YTD'>('YTD')
   const [customQuantities, setCustomQuantities] = useState<Record<string, string>>({})
   const [customMinStocks, setCustomMinStocks] = useState<Record<string, string>>({})
   const { toast } = useToast()
@@ -35,7 +43,11 @@ export function PurchaseSuggestionReport() {
   const baseSuggestions = useMemo(() => {
     return items
       .map((item) => {
-        const { monthlyConsumption, dailyConsumption } = calculateConsumption(item, movements)
+        const { monthlyConsumption, dailyConsumption } = calculateConsumption(
+          item,
+          movements,
+          period === 'YTD' ? undefined : period,
+        )
 
         const suggestedMinStock = Math.ceil(dailyConsumption * 40)
 
@@ -57,7 +69,7 @@ export function PurchaseSuggestionReport() {
       })
       .filter((item) => item.suggestion > 0)
       .sort((a, b) => b.suggestion - a.suggestion)
-  }, [items, movements])
+  }, [items, movements, period])
 
   const filteredSuggestions = baseSuggestions
     .map((item) => ({
@@ -146,30 +158,47 @@ export function PurchaseSuggestionReport() {
           </CardDescription>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              disabled={isExporting || filteredSuggestions.length === 0}
-              variant="outline"
-              className="shrink-0"
-            >
-              {isExporting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="mr-2 h-4 w-4" />
-              )}
-              Exportar Lista
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleExport('pdf')}>
-              Exportar como PDF
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport('excel')}>
-              Exportar como Excel
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+          <Select
+            value={period.toString()}
+            onValueChange={(v) => setPeriod(v === 'YTD' ? 'YTD' : Number(v))}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Período de cálculo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="YTD">Ano Atual</SelectItem>
+              <SelectItem value="3">Últimos 3 meses</SelectItem>
+              <SelectItem value="6">Últimos 6 meses</SelectItem>
+              <SelectItem value="8">Últimos 8 meses</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                disabled={isExporting || filteredSuggestions.length === 0}
+                variant="outline"
+                className="w-full sm:w-auto shrink-0"
+              >
+                {isExporting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="mr-2 h-4 w-4" />
+                )}
+                Exportar Lista
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                Exportar como PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('excel')}>
+                Exportar como Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="p-4 border-b">
