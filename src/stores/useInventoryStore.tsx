@@ -31,6 +31,7 @@ interface InventoryContextType {
   addMovement: (
     movement: Omit<Movement, 'id' | 'created_at' | 'items' | 'profiles'>,
   ) => Promise<{ error?: any }>
+  mergeItems: (sourceId: string, destinationId: string) => Promise<{ error?: any }>
 }
 
 export const InventoryContext = createContext<InventoryContextType | null>(null)
@@ -180,6 +181,16 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     return {}
   }
 
+  const mergeItems = async (sourceId: string, destinationId: string) => {
+    const { error } = await supabase.rpc('merge_items' as any, {
+      source_item_id: sourceId,
+      destination_item_id: destinationId,
+    })
+    if (error) return { error }
+    await refreshData()
+    return {}
+  }
+
   return (
     <InventoryContext.Provider
       value={{
@@ -192,6 +203,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         updateItemBatchInfo,
         deleteItem,
         addMovement,
+        mergeItems,
       }}
     >
       {children}

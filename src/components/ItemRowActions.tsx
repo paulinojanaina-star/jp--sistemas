@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Item } from '@/types/inventory'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
-import { MoreHorizontal, Edit, Trash, Loader2, ArrowRightLeft } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash, Loader2, ArrowRightLeft, Merge } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ItemFormModal } from '@/components/ItemFormModal'
+import { MergeItemModal } from '@/components/MergeItemModal'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -27,6 +28,7 @@ import {
 export function ItemRowActions({ item }: { item: Item }) {
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [mergeOpen, setMergeOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const { deleteItem } = useInventoryStore()
   const { toast } = useToast()
@@ -68,6 +70,9 @@ export function ItemRowActions({ item }: { item: Item }) {
           <DropdownMenuItem onClick={() => setEditOpen(true)}>
             <Edit className="mr-2 h-4 w-4" /> Editar Item / Validade
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setMergeOpen(true)}>
+            <Merge className="mr-2 h-4 w-4" /> Merge Inteligente
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setDeleteOpen(true)}
             className="text-destructive focus:text-destructive focus:bg-destructive/10"
@@ -78,6 +83,8 @@ export function ItemRowActions({ item }: { item: Item }) {
       </DropdownMenu>
 
       <ItemFormModal item={item} open={editOpen} onOpenChange={setEditOpen} />
+
+      <MergeItemModal item={item} open={mergeOpen} onOpenChange={setMergeOpen} />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
