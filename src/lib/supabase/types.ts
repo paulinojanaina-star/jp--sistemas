@@ -178,7 +178,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      merge_items: {
+        Args: { destination_item_id: string; source_item_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
@@ -471,6 +474,34 @@ export const Constants = {
 //     INSERT INTO public.profiles (id, email, full_name)
 //     VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'name');
 //     RETURN NEW;
+//   END;
+//   $function$
+//
+// FUNCTION merge_items(uuid, uuid)
+//   CREATE OR REPLACE FUNCTION public.merge_items(source_item_id uuid, destination_item_id uuid)
+//    RETURNS void
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     -- 1. Update all movements to point to the new item
+//     UPDATE public.inventory_movements
+//     SET item_id = destination_item_id
+//     WHERE item_id = source_item_id;
+//
+//     -- 2. Update notifications to point to the new item
+//     UPDATE public.notifications
+//     SET item_id = destination_item_id
+//     WHERE item_id = source_item_id;
+//
+//     -- 3. Move current_quantity from source to destination
+//     UPDATE public.items
+//     SET current_quantity = current_quantity + (SELECT current_quantity FROM public.items WHERE id = source_item_id)
+//     WHERE id = destination_item_id;
+//
+//     -- 4. Delete the source item
+//     DELETE FROM public.items WHERE id = source_item_id;
+//
 //   END;
 //   $function$
 //

@@ -6,6 +6,7 @@ import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Loader2 } from 'lucide-react'
 import { Item, ITEM_UNITS } from '@/types/inventory'
+import { calculateConsumption } from '@/utils/consumptionLogic'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -81,13 +82,19 @@ export function ItemFormModal({
 
   const hasInMovement = !isEditing || !!latestInMovement
 
+  const consumption = item ? calculateConsumption(item, movements) : null
+  const suggestedMinStock =
+    consumption && consumption.dailyConsumption > 0
+      ? Math.ceil(consumption.dailyConsumption * 70)
+      : 0
+
   const form = useForm<z.infer<typeof itemSchema>>({
     resolver: zodResolver(itemSchema),
     defaultValues: {
       name: item?.name || '',
       description: item?.description || '',
       unit_type: (item?.unit_type as any) || undefined,
-      min_quantity: item?.min_quantity || 10,
+      min_quantity: item?.min_quantity ?? (suggestedMinStock > 0 ? suggestedMinStock : 10),
       current_quantity: item?.current_quantity || 0,
       batch_number: '',
       manufacturing_date: '',
@@ -268,10 +275,31 @@ export function ItemFormModal({
                 name="min_quantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estoque Mínimo</FormLabel>
+                    <FormLabel className="flex justify-between items-center h-5">
+                      <span>Estoque Mínimo</span>
+                      {suggestedMinStock > 0 && (
+                        <button
+                          type="button"
+                          className="text-[10px] text-primary hover:bg-primary/20 font-medium bg-primary/10 px-2 py-0.5 rounded-full transition-colors"
+                          onClick={() =>
+                            form.setValue('min_quantity', suggestedMinStock, {
+                              shouldValidate: true,
+                            })
+                          }
+                          title="Calcular estoque de segurança (70 dias de consumo)"
+                        >
+                          Sugerir: {suggestedMinStock}
+                        </button>
+                      )}
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
+                    {suggestedMinStock > 0 && (
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Recomendado p/ 70 dias: {suggestedMinStock}
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}

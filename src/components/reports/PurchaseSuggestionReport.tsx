@@ -25,16 +25,19 @@ import { useToast } from '@/hooks/use-toast'
 import { exportPurchaseSuggestionPdf, exportPurchaseSuggestionExcel } from '@/utils/exportPdf'
 
 export function PurchaseSuggestionReport() {
-  const { items, movements } = useInventoryStore()
+  const { items, movements, updateItem } = useInventoryStore()
   const [search, setSearch] = useState('')
   const [isExporting, setIsExporting] = useState(false)
   const [customQuantities, setCustomQuantities] = useState<Record<string, string>>({})
+  const [customMinStocks, setCustomMinStocks] = useState<Record<string, string>>({})
   const { toast } = useToast()
 
   const baseSuggestions = useMemo(() => {
     return items
       .map((item) => {
-        const { monthlyConsumption } = calculateConsumption(item, movements)
+        const { monthlyConsumption, dailyConsumption } = calculateConsumption(item, movements)
+
+        const suggestedMinStock = Math.ceil(dailyConsumption * 70)
 
         // Meta de estoque ideal = Estoque mínimo + Média de consumo de 1 mês
         const targetStock = Number(item.min_quantity) + Math.ceil(monthlyConsumption)
@@ -45,6 +48,8 @@ export function PurchaseSuggestionReport() {
         return {
           ...item,
           monthlyConsumption,
+          dailyConsumption,
+          suggestedMinStock,
           targetStock,
           suggestion,
           formattedName: formatItemDisplay(item),
@@ -77,6 +82,33 @@ export function PurchaseSuggestionReport() {
       const next = { ...prev }
       delete next[id]
       return next
+    })
+  }
+
+  const handleMinStockChange = (id: string, value: string) => {
+    setCustomMinStocks((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleMinStockBlur = async (id: string, currentMin: number) => {
+    const newVal = customMinStocks[id]
+    if (newVal !== undefined && newVal !== currentMin.toString()) {
+      const numVal = Number(newVal)
+      if (!isNaN(numVal) && numVal >= 0) {
+        await updateItem(id, { min_quantity: numVal })
+        toast({
+          title: 'Estoque mínimo atualizado',
+          description: 'Sugestões de compra recalculadas.',
+        })
+      }
+    }
+  }
+
+  const applySuggestedMinStock = async (id: string, suggested: number) => {
+    setCustomMinStocks((prev) => ({ ...prev, [id]: suggested.toString() }))
+    await updateItem(id, { min_quantity: suggested })
+    toast({
+      title: 'Estoque mínimo atualizado',
+      description: `Sugestão de ${suggested} aplicada com sucesso.`,
     })
   }
 
@@ -156,7 +188,7 @@ export function PurchaseSuggestionReport() {
             <TableHeader>
               <TableRow className="bg-muted/30">
                 <TableHead>Item</TableHead>
-                <TableHead className="text-right">Estoque Mínimo</TableHead>
+                <TableHead className="text-right w-[140px]">Estoque Mínimo</TableHead>
                 <TableHead className="text-right">Média Mensal</TableHead>
                 <TableHead className="text-right">Estoque Atual</TableHead>
                 <TableHead className="text-right min-w-[140px]">Qtd a Comprar</TableHead>
@@ -182,7 +214,41 @@ export function PurchaseSuggestionReport() {
                         {item.formattedName}
                         <div className="text-xs text-muted-foreground mt-0.5">{item.unit_type}</div>
                       </TableCell>
-                      <TableCell className="text-right">{item.min_quantity}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex flex-col items-end justify-center gap-1.5 pt-1">
+                          <Input
+                            type="number"
+                            min="0"
+                            className="w-20 text-right h-8 font-mono text-sm"
+                            value={
+                              customMinStocks[item.id] !== undefined
+                                ? customMinStocks[item.id]
+                                : item.min_quantity
+                            }
+                            onChange={(e) => handleMinStockChange(item.id, e.target.value)}
+                            onBlur={() => handleMinStockBlur(item.id, item.min_quantity)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.currentTarget.blur()
+                              }
+                            }}
+                          />
+                          {item.suggestedMinStock > 0 &&
+                            item.suggestedMinStock !==
+                              Number(customMinStocks[item.id] ?? item.min_quantity) && (
+                              <button
+                                className="text-[10px] text-primary hover:text-primary/80 font-medium bg-primary/10 px-1.5 py-0.5 rounded transition-colors whitespace-nowrap"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() =>
+                                  applySuggestedMinStock(item.id, item.suggestedMinStock)
+                                }
+                                title="Aplicar sugestão para 70 dias"
+                              >
+                                Sugerido: {item.suggestedMinStock}
+                              </button>
+                            )}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right text-muted-foreground">
                         {item.monthlyConsumption}
                       </TableCell>
