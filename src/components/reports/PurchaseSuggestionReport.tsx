@@ -37,7 +37,7 @@ export function PurchaseSuggestionReport() {
       .map((item) => {
         const { monthlyConsumption, dailyConsumption } = calculateConsumption(item, movements)
 
-        const suggestedMinStock = Math.ceil(dailyConsumption * 70)
+        const suggestedMinStock = Math.ceil(dailyConsumption * 40)
 
         // Meta de estoque ideal = Estoque mínimo + Média de consumo de 1 mês
         const targetStock = Number(item.min_quantity) + Math.ceil(monthlyConsumption)
@@ -242,7 +242,7 @@ export function PurchaseSuggestionReport() {
                                 onClick={() =>
                                   applySuggestedMinStock(item.id, item.suggestedMinStock)
                                 }
-                                title="Aplicar sugestão para 70 dias"
+                                title="Aplicar sugestão para 40 dias"
                               >
                                 Sugerido: {item.suggestedMinStock}
                               </button>

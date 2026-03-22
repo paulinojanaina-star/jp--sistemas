@@ -34,9 +34,9 @@ export function calculateConsumption(item: Item, movements: Movement[]) {
     daysUntilStockout = Number(item.current_quantity || 0) / dailyConsumption
   }
 
-  // Risco de falta se o estoque acabar em <= 60 dias, havendo estoque e histórico
+  // Risco de falta se o estoque acabar em <= 40 dias, havendo estoque e histórico
   const isStockoutRisk =
-    daysUntilStockout <= 60 &&
+    daysUntilStockout <= 40 &&
     Number(item.current_quantity || 0) > 0 &&
     totalConsumptionThisYear > 0
 

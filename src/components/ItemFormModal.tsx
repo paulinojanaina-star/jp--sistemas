@@ -85,7 +85,7 @@ export function ItemFormModal({
   const consumption = item ? calculateConsumption(item, movements) : null
   const suggestedMinStock =
     consumption && consumption.dailyConsumption > 0
-      ? Math.ceil(consumption.dailyConsumption * 70)
+      ? Math.ceil(consumption.dailyConsumption * 40)
       : 0
 
   const form = useForm<z.infer<typeof itemSchema>>({
@@ -286,7 +286,7 @@ export function ItemFormModal({
                               shouldValidate: true,
                             })
                           }
-                          title="Calcular estoque de segurança (70 dias de consumo)"
+                          title="Calcular estoque de segurança (40 dias de consumo)"
                         >
                           Sugerir: {suggestedMinStock}
                         </button>
@@ -297,7 +297,7 @@ export function ItemFormModal({
                     </FormControl>
                     {suggestedMinStock > 0 && (
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        Recomendado p/ 70 dias: {suggestedMinStock}
+                        Recomendado p/ 40 dias: {suggestedMinStock}
                       </p>
                     )}
                     <FormMessage />

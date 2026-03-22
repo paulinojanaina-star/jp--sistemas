@@ -63,7 +63,7 @@ export function DashboardMetrics() {
     return diffDays <= 180
   }).length
 
-  // Calculate Stockout Risk (<= 60 days)
+  // Calculate Stockout Risk (<= 40 days)
   const itemsAtRiskCount = items.filter((item) => {
     const { isStockoutRisk } = calculateConsumption(item, movements)
     return isStockoutRisk
@@ -118,7 +118,7 @@ export function DashboardMetrics() {
           <div className={`text-2xl font-bold ${itemsAtRiskCount > 0 ? 'text-purple-600' : ''}`}>
             {itemsAtRiskCount}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">Acabam em &le; 60 dias</p>
+          <p className="text-xs text-muted-foreground mt-1">Acabam em &le; 40 dias</p>
         </CardContent>
       </Card>
 
