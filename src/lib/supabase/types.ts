@@ -77,6 +77,7 @@ export type Database = {
           id: string
           min_quantity: number | null
           name: string
+          supplier: string | null
           unit_type: string | null
         }
         Insert: {
@@ -86,6 +87,7 @@ export type Database = {
           id?: string
           min_quantity?: number | null
           name: string
+          supplier?: string | null
           unit_type?: string | null
         }
         Update: {
@@ -95,6 +97,7 @@ export type Database = {
           id?: string
           min_quantity?: number | null
           name?: string
+          supplier?: string | null
           unit_type?: string | null
         }
         Relationships: []
@@ -347,6 +350,7 @@ export const Constants = {
 //   current_quantity: numeric (nullable, default: 0)
 //   unit_type: text (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
+//   supplier: text (nullable)
 // Table: notifications
 //   id: uuid (not null, default: gen_random_uuid())
 //   item_id: uuid (nullable)

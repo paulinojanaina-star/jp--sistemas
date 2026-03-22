@@ -20,7 +20,11 @@ export function NotificationCenter() {
 
   const unreadNotifications = notifications.filter((n) => !n.read_at)
 
-  const totalAlerts = unreadCount + lowStockItems.length + itemsAtRisk.length
+  // Badge alert count should only consider actual database unread notifications
+  // This ensures the badge is disabled when the user reads them.
+  const totalAlerts = unreadCount
+
+  const hasAnyAlerts = unreadCount > 0 || lowStockItems.length > 0 || itemsAtRisk.length > 0
 
   return (
     <Popover>
@@ -53,7 +57,7 @@ export function NotificationCenter() {
           )}
         </div>
         <ScrollArea className="max-h-[400px]">
-          {totalAlerts === 0 ? (
+          {!hasAnyAlerts ? (
             <div className="p-8 text-center text-sm text-muted-foreground flex flex-col items-center gap-3">
               <div className="bg-muted p-3 rounded-full">
                 <Check className="h-6 w-6 text-slate-400" />
@@ -62,56 +66,10 @@ export function NotificationCenter() {
             </div>
           ) : (
             <div className="flex flex-col">
-              {lowStockItems.length > 0 && (
+              {unreadNotifications.length > 0 && (
                 <div className="p-2 border-b">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
-                    Estoque Crítico
-                  </p>
-                  {lowStockItems.map((item) => (
-                    <div
-                      key={`low-${item.id}`}
-                      className="flex flex-col items-start gap-1 p-2.5 rounded-md hover:bg-muted/50 cursor-default"
-                    >
-                      <div className="flex items-center gap-2 w-full">
-                        <PackageOpen className="h-4 w-4 text-amber-500 shrink-0" />
-                        <span className="font-medium text-sm truncate">{item.name}</span>
-                      </div>
-                      <span className="text-xs text-destructive font-medium ml-6">
-                        Saldo: {item.current_quantity} / Mínimo: {item.min_quantity}{' '}
-                        {item.unit_type}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {itemsAtRisk.length > 0 && (
-                <div className="p-2 border-b bg-purple-500/5">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 px-2 py-1.5">
-                    Risco de Ruptura (&le; 60 dias)
-                  </p>
-                  {itemsAtRisk.map(({ item, daysUntilStockout, monthlyConsumption }) => (
-                    <div
-                      key={`risk-${item.id}`}
-                      className="flex flex-col items-start gap-1 p-2.5 rounded-md hover:bg-purple-500/10 cursor-default"
-                    >
-                      <div className="flex items-center gap-2 w-full">
-                        <TrendingDown className="h-4 w-4 text-purple-500 shrink-0" />
-                        <span className="font-medium text-sm truncate">{item.name}</span>
-                      </div>
-                      <span className="text-xs text-purple-600 font-medium ml-6">
-                        Estoque acaba em ~{Math.round(daysUntilStockout)} dias (Saída/mês:{' '}
-                        {monthlyConsumption})
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {unreadNotifications.length > 0 && (
-                <div className="p-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
-                    Alertas de Consumo
+                    Novos Alertas
                   </p>
                   {unreadNotifications.map((n) => (
                     <div
@@ -135,6 +93,52 @@ export function NotificationCenter() {
                         </div>
                         <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1" />
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {lowStockItems.length > 0 && (
+                <div className="p-2 border-b">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
+                    Estoque Crítico (Acompanhamento)
+                  </p>
+                  {lowStockItems.map((item) => (
+                    <div
+                      key={`low-${item.id}`}
+                      className="flex flex-col items-start gap-1 p-2.5 rounded-md hover:bg-muted/50 cursor-default"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <PackageOpen className="h-4 w-4 text-amber-500 shrink-0" />
+                        <span className="font-medium text-sm truncate">{item.name}</span>
+                      </div>
+                      <span className="text-xs text-destructive font-medium ml-6">
+                        Saldo: {item.current_quantity} / Mínimo: {item.min_quantity}{' '}
+                        {item.unit_type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {itemsAtRisk.length > 0 && (
+                <div className="p-2 bg-purple-500/5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 px-2 py-1.5">
+                    Risco de Ruptura (&le; 40 dias)
+                  </p>
+                  {itemsAtRisk.map(({ item, daysUntilStockout, monthlyConsumption }) => (
+                    <div
+                      key={`risk-${item.id}`}
+                      className="flex flex-col items-start gap-1 p-2.5 rounded-md hover:bg-purple-500/10 cursor-default"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <TrendingDown className="h-4 w-4 text-purple-500 shrink-0" />
+                        <span className="font-medium text-sm truncate">{item.name}</span>
+                      </div>
+                      <span className="text-xs text-purple-600 font-medium ml-6">
+                        Estoque acaba em ~{Math.round(daysUntilStockout)} dias (Saída/mês:{' '}
+                        {monthlyConsumption})
+                      </span>
                     </div>
                   ))}
                 </div>
