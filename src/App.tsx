@@ -14,6 +14,7 @@ import Items from './pages/Items'
 import Movements from './pages/Movements'
 import History from './pages/History'
 import Reports from './pages/Reports'
+import DataHealth from './pages/DataHealth'
 import NotFound from './pages/NotFound'
 import { Loader2 } from 'lucide-react'
 
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/movimentacoes" element={<Movements />} />
                 <Route path="/historico" element={<History />} />
                 <Route path="/relatorios" element={<Reports />} />
+                <Route path="/saude-dados" element={<DataHealth />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

@@ -11,6 +11,7 @@ export interface Item {
   min_quantity: number
   current_quantity: number
   created_at: string
+  supplier?: string | null
 }
 
 export interface Movement {

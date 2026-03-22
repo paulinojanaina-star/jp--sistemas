@@ -10,8 +10,8 @@ function normalizeName(name: string): string {
     .replace(/[^a-z0-9]/g, '') // Remove spaces and punctuation
 }
 
-export function getPotentialDuplicateIds(items: Item[]): Set<string> {
-  const normalizedMap = new Map<string, string[]>()
+export function getDuplicateGroups(items: Item[]): Item[][] {
+  const normalizedMap = new Map<string, Item[]>()
 
   items.forEach((item) => {
     const formatted = formatItemDisplay(item)
@@ -22,15 +22,18 @@ export function getPotentialDuplicateIds(items: Item[]): Set<string> {
     if (!normalizedMap.has(normalized)) {
       normalizedMap.set(normalized, [])
     }
-    normalizedMap.get(normalized)!.push(item.id)
+    normalizedMap.get(normalized)!.push(item)
   })
 
-  const duplicateIds = new Set<string>()
+  return Array.from(normalizedMap.values()).filter((group) => group.length > 1)
+}
 
-  normalizedMap.forEach((ids) => {
-    if (ids.length > 1) {
-      ids.forEach((id) => duplicateIds.add(id))
-    }
+export function getPotentialDuplicateIds(items: Item[]): Set<string> {
+  const duplicateIds = new Set<string>()
+  const groups = getDuplicateGroups(items)
+
+  groups.forEach((group) => {
+    group.forEach((item) => duplicateIds.add(item.id))
   })
 
   return duplicateIds

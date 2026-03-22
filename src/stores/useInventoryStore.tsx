@@ -91,6 +91,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         description: item.description,
         unit_type: item.unit_type,
         min_quantity: item.min_quantity,
+        supplier: item.supplier,
         current_quantity: 0,
       })
       .select()

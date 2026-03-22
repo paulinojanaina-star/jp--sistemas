@@ -45,6 +45,7 @@ const itemSchema = z.object({
   batch_number: z.string().optional(),
   manufacturing_date: z.string().optional(),
   expiry_date: z.string().optional(),
+  supplier: z.string().optional(),
 })
 
 interface ItemFormModalProps {
@@ -99,6 +100,7 @@ export function ItemFormModal({
       batch_number: '',
       manufacturing_date: '',
       expiry_date: '',
+      supplier: item?.supplier || '',
     },
   })
 
@@ -118,6 +120,7 @@ export function ItemFormModal({
           expiry_date: latestInMovement?.expiry_date
             ? latestInMovement.expiry_date.split('T')[0]
             : '',
+          supplier: item.supplier || '',
         })
       } else {
         form.reset({
@@ -129,6 +132,7 @@ export function ItemFormModal({
           batch_number: '',
           manufacturing_date: '',
           expiry_date: '',
+          supplier: '',
         })
       }
     }
@@ -138,10 +142,19 @@ export function ItemFormModal({
   const onSubmit = async (values: z.infer<typeof itemSchema>) => {
     setSubmitting(true)
 
+    const {
+      current_quantity,
+      batch_number,
+      manufacturing_date,
+      expiry_date,
+      supplier,
+      ...itemData
+    } = values
+
+    const parsedSupplier = supplier?.trim() || null
+
     if (isEditing && item) {
-      const { current_quantity, batch_number, manufacturing_date, expiry_date, ...itemData } =
-        values
-      const { error } = await updateItem(item.id, itemData)
+      const { error } = await updateItem(item.id, { ...itemData, supplier: parsedSupplier })
 
       if (error) {
         setSubmitting(false)
@@ -175,9 +188,6 @@ export function ItemFormModal({
 
       setSubmitting(false)
     } else {
-      const { current_quantity, batch_number, manufacturing_date, expiry_date, ...itemData } =
-        values
-
       if (current_quantity === 0 && (batch_number || manufacturing_date || expiry_date)) {
         setSubmitting(false)
         form.setError('current_quantity', {
@@ -193,7 +203,11 @@ export function ItemFormModal({
         expiry_date: expiry_date || null,
       }
 
-      const { error } = await addItem(itemData, current_quantity, movementData)
+      const { error } = await addItem(
+        { ...itemData, supplier: parsedSupplier },
+        current_quantity,
+        movementData,
+      )
       setSubmitting(false)
 
       if (error) {
@@ -404,6 +418,24 @@ export function ItemFormModal({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="supplier"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fornecedor (Opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ex: Distribuidora Med Ltda"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
