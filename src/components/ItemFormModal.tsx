@@ -81,8 +81,6 @@ export function ItemFormModal({
         )[0]
     : null
 
-  const hasInMovement = !isEditing || !!latestInMovement
-
   const consumption = item ? calculateConsumption(item, movements) : null
   const suggestedMinStock =
     consumption && consumption.dailyConsumption > 0
@@ -103,6 +101,9 @@ export function ItemFormModal({
       supplier: item?.supplier || '',
     },
   })
+
+  const currentQuantity = form.watch('current_quantity') || 0
+  const disableBatchFields = !isEditing && currentQuantity <= 0
 
   useEffect(() => {
     if (open) {
@@ -166,22 +167,18 @@ export function ItemFormModal({
         return
       }
 
-      if (hasInMovement) {
-        const { error: batchError } = await updateItemBatchInfo(item.id, {
-          batch_number: batch_number?.trim() || null,
-          manufacturing_date: manufacturing_date || null,
-          expiry_date: expiry_date || null,
-        })
+      const { error: batchError } = await updateItemBatchInfo(item.id, {
+        batch_number: batch_number?.trim() || null,
+        manufacturing_date: manufacturing_date || null,
+        expiry_date: expiry_date || null,
+      })
 
-        if (batchError && (batch_number || manufacturing_date || expiry_date)) {
-          toast({
-            title: 'Atenção',
-            description: `Item salvo, mas não foi possível atualizar a validade: ${batchError.message}`,
-            variant: 'destructive',
-          })
-        } else {
-          toast({ title: 'Sucesso!', description: 'Item atualizado com sucesso.' })
-        }
+      if (batchError && (batch_number || manufacturing_date || expiry_date)) {
+        toast({
+          title: 'Atenção',
+          description: `Item salvo, mas não foi possível atualizar a validade: ${batchError.message}`,
+          variant: 'destructive',
+        })
       } else {
         toast({ title: 'Sucesso!', description: 'Item atualizado com sucesso.' })
       }
@@ -341,19 +338,14 @@ export function ItemFormModal({
                 <h4 className="text-sm font-medium text-foreground">
                   Rastreabilidade de Lote e Validade (Opcional)
                 </h4>
-                {!hasInMovement ? (
-                  <p className="text-xs text-destructive mt-1 font-medium">
-                    Nenhuma entrada de estoque registrada. Realize uma movimentação de entrada ou
-                    cadastre saldo inicial para definir a validade.
-                  </p>
-                ) : isEditing ? (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Atualiza a validade e o lote da última entrada registrada no estoque.
-                  </p>
-                ) : (
+                {!isEditing ? (
                   <p className="text-xs text-muted-foreground mt-1">
                     Para registrar lote e validade, é necessário que o Saldo Inicial seja maior que
                     zero.
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Atualiza a validade e o lote da última entrada registrada no estoque.
                   </p>
                 )}
               </div>
@@ -369,7 +361,7 @@ export function ItemFormModal({
                         placeholder="Ex: L202305A"
                         {...field}
                         value={field.value || ''}
-                        disabled={!hasInMovement}
+                        disabled={disableBatchFields}
                       />
                     </FormControl>
                     <FormMessage />
@@ -389,7 +381,7 @@ export function ItemFormModal({
                         max={todayStr}
                         {...field}
                         value={field.value || ''}
-                        disabled={!hasInMovement}
+                        disabled={disableBatchFields}
                         className="w-full text-sm"
                       />
                     </FormControl>
@@ -409,7 +401,7 @@ export function ItemFormModal({
                         type="date"
                         {...field}
                         value={field.value || ''}
-                        disabled={!hasInMovement}
+                        disabled={disableBatchFields}
                         className="w-full text-sm"
                       />
                     </FormControl>

@@ -159,11 +159,26 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
       return {}
     }
 
-    return {
-      error: new Error(
-        'Registre uma movimentação de entrada para este item antes de definir o lote.',
-      ),
+    // Se não tem movimentação de entrada, cria uma zerada para armazenar lote/validade
+    if (batchData.batch_number || batchData.manufacturing_date || batchData.expiry_date) {
+      if (session?.user?.id) {
+        const { error: moveError } = await addMovement({
+          item_id: itemId,
+          type: 'IN',
+          quantity: 0,
+          health_unit_name: 'Ajuste de Validade',
+          responsible_id: session.user.id,
+          observations: 'Ajuste automático para registro de lote/validade',
+          batch_number: batchData.batch_number,
+          manufacturing_date: batchData.manufacturing_date,
+          expiry_date: batchData.expiry_date,
+        })
+        if (moveError) return { error: moveError }
+        return {}
+      }
     }
+
+    return {}
   }
 
   const deleteItem = async (id: string) => {
