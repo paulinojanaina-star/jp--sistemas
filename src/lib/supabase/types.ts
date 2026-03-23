@@ -371,7 +371,7 @@ export const Constants = {
 // Table: inventory_movements
 //   FOREIGN KEY inventory_movements_item_id_fkey: FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
 //   PRIMARY KEY inventory_movements_pkey: PRIMARY KEY (id)
-//   CHECK inventory_movements_quantity_check: CHECK ((quantity > (0)::numeric))
+//   CHECK inventory_movements_quantity_check: CHECK ((quantity >= (0)::numeric))
 //   FOREIGN KEY inventory_movements_responsible_id_fkey: FOREIGN KEY (responsible_id) REFERENCES profiles(id)
 //   CHECK inventory_movements_type_check: CHECK ((type = ANY (ARRAY['IN'::text, 'OUT'::text])))
 // Table: items
@@ -389,10 +389,15 @@ export const Constants = {
 //     USING: true
 //     WITH CHECK: true
 // Table: inventory_movements
+//   Policy "authenticated_delete_movements" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: true
 //   Policy "authenticated_insert_movements" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: true
 //   Policy "authenticated_select_movements" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
+//   Policy "authenticated_update_movements" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//     WITH CHECK: true
 // Table: items
 //   Policy "authenticated_delete_items" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: true
