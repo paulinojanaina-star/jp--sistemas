@@ -67,7 +67,7 @@ export function DashboardExpiringItems() {
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     <div
-                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isExpired ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}
+                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isExpired ? 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-100' : 'bg-amber-100 text-amber-600'}`}
                     >
                       <CalendarIcon size={14} />
                     </div>
@@ -82,8 +82,8 @@ export function DashboardExpiringItems() {
                     </div>
                   </div>
                   <Badge
-                    variant={isExpired ? 'destructive' : 'default'}
-                    className={`shrink-0 ml-2 ${!isExpired ? 'bg-amber-500 hover:bg-amber-600 text-white' : ''}`}
+                    variant={isExpired ? 'default' : 'default'}
+                    className={`shrink-0 ml-2 border-transparent ${isExpired ? 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
                   >
                     {isExpired ? 'Vencido' : 'Próximo'}
                   </Badge>

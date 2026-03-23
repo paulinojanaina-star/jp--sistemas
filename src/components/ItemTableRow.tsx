@@ -76,7 +76,7 @@ export function ItemTableRow({
   const rowHighlightClass = isZero
     ? 'bg-destructive/5 hover:bg-destructive/10'
     : isExpired
-      ? 'bg-destructive/5 hover:bg-destructive/10'
+      ? 'bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800/50 dark:hover:bg-slate-800'
       : isStockoutRisk
         ? 'bg-purple-500/5 hover:bg-purple-500/10'
         : isExpiringSoon || isCritical
@@ -112,10 +112,7 @@ export function ItemTableRow({
             </Badge>
           )}
           {isExpired && !isZero && (
-            <Badge
-              variant="destructive"
-              className="h-5 px-1.5 text-[10px] uppercase font-semibold border-destructive bg-destructive"
-            >
+            <Badge className="h-5 px-1.5 text-[10px] uppercase font-semibold border-transparent bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
               Vencido
             </Badge>
           )}
@@ -144,7 +141,7 @@ export function ItemTableRow({
               className={cn(
                 'font-medium flex items-center gap-1',
                 isExpired && !isZero
-                  ? 'text-destructive'
+                  ? 'text-slate-900 dark:text-slate-100 font-bold'
                   : isExpiringSoon && !isZero
                     ? 'text-orange-600'
                     : isZero
