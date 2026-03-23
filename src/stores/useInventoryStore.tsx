@@ -99,14 +99,17 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
 
     if (error) return { error }
 
-    if (initialQty > 0 && session?.user?.id) {
+    const hasBatchData =
+      movementData?.batch_number || movementData?.manufacturing_date || movementData?.expiry_date
+
+    if ((initialQty > 0 || hasBatchData) && session?.user?.id) {
       const { error: moveError } = await addMovement({
         item_id: data.id,
         type: 'IN',
         quantity: initialQty,
         health_unit_name: 'Estoque Inicial',
         responsible_id: session.user.id,
-        observations: 'Cadastro inicial',
+        observations: initialQty > 0 ? 'Cadastro inicial' : 'Registro de lote/validade inicial',
         batch_number: movementData?.batch_number,
         manufacturing_date: movementData?.manufacturing_date,
         expiry_date: movementData?.expiry_date,

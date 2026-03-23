@@ -102,9 +102,6 @@ export function ItemFormModal({
     },
   })
 
-  const currentQuantity = form.watch('current_quantity') || 0
-  const disableBatchFields = !isEditing && currentQuantity <= 0
-
   useEffect(() => {
     if (open) {
       if (item) {
@@ -138,7 +135,7 @@ export function ItemFormModal({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, item])
+  }, [open, item, latestInMovement])
 
   const onSubmit = async (values: z.infer<typeof itemSchema>) => {
     setSubmitting(true)
@@ -185,15 +182,6 @@ export function ItemFormModal({
 
       setSubmitting(false)
     } else {
-      if (current_quantity === 0 && (batch_number || manufacturing_date || expiry_date)) {
-        setSubmitting(false)
-        form.setError('current_quantity', {
-          type: 'manual',
-          message: 'Para registrar lote ou validade, o Saldo Inicial deve ser maior que zero.',
-        })
-        return
-      }
-
       const movementData = {
         batch_number: batch_number?.trim() || null,
         manufacturing_date: manufacturing_date || null,
@@ -338,16 +326,11 @@ export function ItemFormModal({
                 <h4 className="text-sm font-medium text-foreground">
                   Rastreabilidade de Lote e Validade (Opcional)
                 </h4>
-                {!isEditing ? (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Para registrar lote e validade, é necessário que o Saldo Inicial seja maior que
-                    zero.
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Atualiza a validade e o lote da última entrada registrada no estoque.
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {!isEditing
+                    ? 'Registre as informações de lote e validade do estoque inicial.'
+                    : 'Atualiza a validade e o lote da última entrada registrada no estoque.'}
+                </p>
               </div>
 
               <FormField
@@ -357,12 +340,7 @@ export function ItemFormModal({
                   <FormItem>
                     <FormLabel>Lote</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Ex: L202305A"
-                        {...field}
-                        value={field.value || ''}
-                        disabled={disableBatchFields}
-                      />
+                      <Input placeholder="Ex: L202305A" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -381,7 +359,6 @@ export function ItemFormModal({
                         max={todayStr}
                         {...field}
                         value={field.value || ''}
-                        disabled={disableBatchFields}
                         className="w-full text-sm"
                       />
                     </FormControl>
@@ -401,7 +378,6 @@ export function ItemFormModal({
                         type="date"
                         {...field}
                         value={field.value || ''}
-                        disabled={disableBatchFields}
                         className="w-full text-sm"
                       />
                     </FormControl>
