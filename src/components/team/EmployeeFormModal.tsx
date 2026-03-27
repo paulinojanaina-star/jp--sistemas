@@ -92,6 +92,7 @@ export function EmployeeFormModal({ employee, open, onOpenChange }: Props) {
                 <SelectItem value="ENFERMEIRO">Enfermeiro</SelectItem>
                 <SelectItem value="TECNICO">Técnico</SelectItem>
                 <SelectItem value="AUXILIAR">Auxiliar</SelectItem>
+                <SelectItem value="AGENTE">Agente</SelectItem>
               </SelectContent>
             </Select>
           </div>

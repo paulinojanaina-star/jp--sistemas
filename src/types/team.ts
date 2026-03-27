@@ -1,4 +1,4 @@
-export type EmployeeCategory = 'MEDICO' | 'ENFERMEIRO' | 'AUXILIAR' | 'TECNICO'
+export type EmployeeCategory = 'MEDICO' | 'ENFERMEIRO' | 'AUXILIAR' | 'TECNICO' | 'AGENTE'
 export type TimeOffType = 'FERIAS' | 'FOLGA' | 'ATESTADO'
 
 export interface Employee {

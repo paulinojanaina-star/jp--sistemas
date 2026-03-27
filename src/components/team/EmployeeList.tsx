@@ -59,6 +59,7 @@ export function EmployeeList() {
     ENFERMEIRO: 'bg-blue-100 text-blue-800 border-blue-200',
     TECNICO: 'bg-purple-100 text-purple-800 border-purple-200',
     AUXILIAR: 'bg-orange-100 text-orange-800 border-orange-200',
+    AGENTE: 'bg-teal-100 text-teal-800 border-teal-200',
   }
 
   const filteredEmployees = employees.filter(
@@ -80,6 +81,7 @@ export function EmployeeList() {
               <SelectItem value="ENFERMEIRO">Enfermeiro</SelectItem>
               <SelectItem value="TECNICO">Técnico</SelectItem>
               <SelectItem value="AUXILIAR">Auxiliar</SelectItem>
+              <SelectItem value="AGENTE">Agente</SelectItem>
             </SelectContent>
           </Select>
           <Button
