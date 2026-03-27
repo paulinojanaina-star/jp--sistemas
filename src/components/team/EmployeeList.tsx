@@ -15,6 +15,13 @@ import { UserPlus, Edit2, Trash2, CalendarPlus } from 'lucide-react'
 import { Employee } from '@/types/team'
 import { EmployeeFormModal } from './EmployeeFormModal'
 import { TimeOffFormModal } from './TimeOffFormModal'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function EmployeeList() {
   const { employees, deleteEmployee } = useTeamStore()
@@ -24,6 +31,8 @@ export function EmployeeList() {
 
   const [timeOffModalOpen, setTimeOffModalOpen] = useState(false)
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
+
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
 
   const handleEdit = (emp: Employee) => {
     setEditingEmployee(emp)
@@ -52,19 +61,38 @@ export function EmployeeList() {
     AUXILIAR: 'bg-orange-100 text-orange-800 border-orange-200',
   }
 
+  const filteredEmployees = employees.filter(
+    (emp) => selectedCategory === 'ALL' || emp.category === selectedCategory,
+  )
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h3 className="text-lg font-medium">Gestão da Equipe</h3>
-        <Button
-          onClick={() => {
-            setEditingEmployee(null)
-            setEmployeeModalOpen(true)
-          }}
-          className="gap-2"
-        >
-          <UserPlus className="h-4 w-4" /> Adicionar Profissional
-        </Button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Todas as Categorias" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Todas as Categorias</SelectItem>
+              <SelectItem value="MEDICO">Médico</SelectItem>
+              <SelectItem value="ENFERMEIRO">Enfermeiro</SelectItem>
+              <SelectItem value="TECNICO">Técnico</SelectItem>
+              <SelectItem value="AUXILIAR">Auxiliar</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            onClick={() => {
+              setEditingEmployee(null)
+              setEmployeeModalOpen(true)
+            }}
+            className="gap-2 shrink-0"
+          >
+            <UserPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Adicionar</span>
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -78,14 +106,16 @@ export function EmployeeList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employees.length === 0 ? (
+              {filteredEmployees.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
-                    Nenhum profissional cadastrado.
+                    {employees.length === 0
+                      ? 'Nenhum profissional cadastrado.'
+                      : 'Nenhum profissional encontrado para esta categoria.'}
                   </TableCell>
                 </TableRow>
               ) : (
-                employees.map((emp) => (
+                filteredEmployees.map((emp) => (
                   <TableRow key={emp.id}>
                     <TableCell className="font-medium">{emp.name}</TableCell>
                     <TableCell>

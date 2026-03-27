@@ -460,7 +460,7 @@ export const Constants = {
 // Table: time_off_requests
 //   FOREIGN KEY time_off_requests_employee_id_fkey: FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
 //   PRIMARY KEY time_off_requests_pkey: PRIMARY KEY (id)
-//   CHECK time_off_requests_type_check: CHECK ((type = ANY (ARRAY['FERIAS'::text, 'FOLGA'::text])))
+//   CHECK time_off_requests_type_check: CHECK ((type = ANY (ARRAY['FERIAS'::text, 'FOLGA'::text, 'ATESTADO'::text])))
 
 // --- ROW LEVEL SECURITY POLICIES ---
 // Table: Janaina Paulino
