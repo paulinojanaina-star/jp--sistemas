@@ -9,6 +9,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      employees: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       inventory_movements: {
         Row: {
           batch_number: string | null
@@ -176,6 +197,44 @@ export type Database = {
         }
         Relationships: []
       }
+      time_off_requests: {
+        Row: {
+          created_at: string
+          employee_id: string
+          end_date: string
+          id: string
+          notes: string | null
+          start_date: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          end_date: string
+          id?: string
+          notes?: string | null
+          start_date: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          end_date?: string
+          id?: string
+          notes?: string | null
+          start_date?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'time_off_requests_employee_id_fkey'
+            columns: ['employee_id']
+            isOneToOne: false
+            referencedRelation: 'employees'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -329,6 +388,11 @@ export const Constants = {
 // Table: Janaina Paulino
 //   id: bigint (not null)
 //   created_at: timestamp with time zone (not null, default: now())
+// Table: employees
+//   id: uuid (not null, default: gen_random_uuid())
+//   name: text (not null)
+//   category: text (not null)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: inventory_movements
 //   id: uuid (not null, default: gen_random_uuid())
 //   item_id: uuid (not null)
@@ -364,10 +428,21 @@ export const Constants = {
 //   email: text (not null)
 //   full_name: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
+// Table: time_off_requests
+//   id: uuid (not null, default: gen_random_uuid())
+//   employee_id: uuid (not null)
+//   type: text (not null)
+//   start_date: date (not null)
+//   end_date: date (not null)
+//   notes: text (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
 
 // --- CONSTRAINTS ---
 // Table: Janaina Paulino
 //   PRIMARY KEY Janaina Paulino_pkey: PRIMARY KEY (id)
+// Table: employees
+//   CHECK employees_category_check: CHECK ((category = ANY (ARRAY['MEDICO'::text, 'ENFERMEIRO'::text, 'AUXILIAR'::text, 'TECNICO'::text])))
+//   PRIMARY KEY employees_pkey: PRIMARY KEY (id)
 // Table: inventory_movements
 //   FOREIGN KEY inventory_movements_item_id_fkey: FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
 //   PRIMARY KEY inventory_movements_pkey: PRIMARY KEY (id)
@@ -382,10 +457,18 @@ export const Constants = {
 // Table: profiles
 //   FOREIGN KEY profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
+// Table: time_off_requests
+//   FOREIGN KEY time_off_requests_employee_id_fkey: FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+//   PRIMARY KEY time_off_requests_pkey: PRIMARY KEY (id)
+//   CHECK time_off_requests_type_check: CHECK ((type = ANY (ARRAY['FERIAS'::text, 'FOLGA'::text])))
 
 // --- ROW LEVEL SECURITY POLICIES ---
 // Table: Janaina Paulino
 //   Policy "authenticated_all_janaina" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: true
+//     WITH CHECK: true
+// Table: employees
+//   Policy "authenticated_all_employees" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
 // Table: inventory_movements
@@ -415,6 +498,10 @@ export const Constants = {
 // Table: profiles
 //   Policy "authenticated_select_profiles" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
+// Table: time_off_requests
+//   Policy "authenticated_all_time_off" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: true
+//     WITH CHECK: true
 
 // --- DATABASE FUNCTIONS ---
 // FUNCTION analyze_consumption_spike()
