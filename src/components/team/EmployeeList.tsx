@@ -99,7 +99,7 @@ export function EmployeeList() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleAddAbsence(emp.id)}
-                          title="Registrar Férias/Folga"
+                          title="Registrar Ausência"
                           className="text-muted-foreground hover:text-primary"
                         >
                           <CalendarPlus className="h-4 w-4" />

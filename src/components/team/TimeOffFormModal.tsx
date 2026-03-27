@@ -84,7 +84,7 @@ export function TimeOffFormModal({ request, preselectedEmployeeId, open, onOpenC
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{request ? 'Editar Ausência' : 'Registrar Férias / Folga'}</DialogTitle>
+          <DialogTitle>{request ? 'Editar Ausência' : 'Registrar Ausência'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
@@ -116,6 +116,7 @@ export function TimeOffFormModal({ request, preselectedEmployeeId, open, onOpenC
               <SelectContent>
                 <SelectItem value="FERIAS">Férias</SelectItem>
                 <SelectItem value="FOLGA">Folga / Recesso</SelectItem>
+                <SelectItem value="ATESTADO">Atestado Médico</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -144,7 +145,7 @@ export function TimeOffFormModal({ request, preselectedEmployeeId, open, onOpenC
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Motivo da folga, observações sobre as férias..."
+              placeholder="Motivo da ausência, detalhes do atestado..."
               rows={3}
             />
           </div>

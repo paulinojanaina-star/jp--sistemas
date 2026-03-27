@@ -15,13 +15,13 @@ export default function Team() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Equipe & Escalas</h2>
           <p className="text-muted-foreground">
-            Gerencie o cadastro de profissionais, registre férias e acompanhe as folgas da sua
-            equipe.
+            Gerencie o cadastro de profissionais, registre ausências e acompanhe a disponibilidade
+            da sua equipe.
           </p>
         </div>
         <Button onClick={() => setTimeOffModalOpen(true)} className="gap-2">
           <CalendarPlus className="h-4 w-4" />
-          Registrar Férias / Folga
+          Registrar Ausência
         </Button>
       </div>
 
