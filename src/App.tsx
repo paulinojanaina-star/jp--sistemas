@@ -5,6 +5,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { InventoryProvider } from '@/stores/useInventoryStore'
 import { NotificationProvider } from '@/stores/useNotificationStore'
+import { TeamProvider } from '@/stores/useTeamStore'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
 
 import Layout from './components/Layout'
@@ -15,6 +16,7 @@ import Movements from './pages/Movements'
 import History from './pages/History'
 import Reports from './pages/Reports'
 import DataHealth from './pages/DataHealth'
+import Team from './pages/Team'
 import NotFound from './pages/NotFound'
 import { Loader2 } from 'lucide-react'
 
@@ -41,30 +43,33 @@ const App = () => (
     <AuthProvider>
       <NotificationProvider>
         <InventoryProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/login" element={<Login />} />
+          <TeamProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Routes>
+                <Route path="/login" element={<Login />} />
 
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <Layout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/" element={<Index />} />
-                <Route path="/itens" element={<Items />} />
-                <Route path="/movimentacoes" element={<Movements />} />
-                <Route path="/historico" element={<History />} />
-                <Route path="/relatorios" element={<Reports />} />
-                <Route path="/saude-dados" element={<DataHealth />} />
-              </Route>
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <Layout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/" element={<Index />} />
+                  <Route path="/itens" element={<Items />} />
+                  <Route path="/movimentacoes" element={<Movements />} />
+                  <Route path="/historico" element={<History />} />
+                  <Route path="/equipe" element={<Team />} />
+                  <Route path="/relatorios" element={<Reports />} />
+                  <Route path="/saude-dados" element={<DataHealth />} />
+                </Route>
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </TooltipProvider>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </TooltipProvider>
+          </TeamProvider>
         </InventoryProvider>
       </NotificationProvider>
     </AuthProvider>
