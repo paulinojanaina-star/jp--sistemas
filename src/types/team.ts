@@ -1,5 +1,5 @@
 export type EmployeeCategory = 'MEDICO' | 'ENFERMEIRO' | 'AUXILIAR' | 'TECNICO' | 'AGENTE'
-export type TimeOffType = 'FERIAS' | 'FOLGA' | 'ATESTADO'
+export type TimeOffType = 'FERIAS' | 'FOLGA' | 'ATESTADO' | 'ANIVERSARIO'
 
 export interface Employee {
   id: string

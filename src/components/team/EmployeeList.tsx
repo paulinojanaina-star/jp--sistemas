@@ -11,10 +11,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { UserPlus, Edit2, Trash2, CalendarPlus } from 'lucide-react'
+import { UserPlus, Edit2, Trash2, CalendarPlus, CalendarDays } from 'lucide-react'
 import { Employee } from '@/types/team'
 import { EmployeeFormModal } from './EmployeeFormModal'
 import { TimeOffFormModal } from './TimeOffFormModal'
+import { EmployeeTimeOffsModal } from './EmployeeTimeOffsModal'
 import {
   Select,
   SelectContent,
@@ -32,6 +33,9 @@ export function EmployeeList() {
   const [timeOffModalOpen, setTimeOffModalOpen] = useState(false)
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
 
+  const [timeOffsListOpen, setTimeOffsListOpen] = useState(false)
+  const [viewingEmployee, setViewingEmployee] = useState<Employee | null>(null)
+
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
 
   const handleEdit = (emp: Employee) => {
@@ -42,6 +46,11 @@ export function EmployeeList() {
   const handleAddAbsence = (empId: string) => {
     setSelectedEmployeeId(empId)
     setTimeOffModalOpen(true)
+  }
+
+  const handleViewAbsences = (emp: Employee) => {
+    setViewingEmployee(emp)
+    setTimeOffsListOpen(true)
   }
 
   const handleDelete = async (id: string) => {
@@ -134,6 +143,15 @@ export function EmployeeList() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => handleViewAbsences(emp)}
+                          title="Ver Ausências Programadas"
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <CalendarDays className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleAddAbsence(emp.id)}
                           title="Registrar Ausência"
                           className="text-muted-foreground hover:text-primary"
@@ -179,6 +197,17 @@ export function EmployeeList() {
           onOpenChange={(open) => {
             setTimeOffModalOpen(open)
             if (!open) setSelectedEmployeeId(null)
+          }}
+        />
+      )}
+
+      {timeOffsListOpen && (
+        <EmployeeTimeOffsModal
+          employee={viewingEmployee}
+          open={timeOffsListOpen}
+          onOpenChange={(open) => {
+            setTimeOffsListOpen(open)
+            if (!open) setViewingEmployee(null)
           }}
         />
       )}

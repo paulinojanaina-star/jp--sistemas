@@ -117,6 +117,7 @@ export function TimeOffFormModal({ request, preselectedEmployeeId, open, onOpenC
                 <SelectItem value="FERIAS">Férias</SelectItem>
                 <SelectItem value="FOLGA">Folga / Recesso</SelectItem>
                 <SelectItem value="ATESTADO">Atestado Médico</SelectItem>
+                <SelectItem value="ANIVERSARIO">Aniversário</SelectItem>
               </SelectContent>
             </Select>
           </div>

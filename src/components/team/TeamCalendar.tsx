@@ -44,12 +44,14 @@ export function TeamCalendar() {
   const getBadgeStyle = (type: string) => {
     if (type === 'FERIAS') return 'bg-amber-500/10 text-amber-600 border-amber-200'
     if (type === 'ATESTADO') return 'bg-rose-500/10 text-rose-600 border-rose-200'
+    if (type === 'ANIVERSARIO') return 'bg-fuchsia-500/10 text-fuchsia-600 border-fuchsia-200'
     return 'bg-blue-500/10 text-blue-600 border-blue-200'
   }
 
   const getTypeColor = (type: string) => {
     if (type === 'FERIAS') return 'bg-amber-500'
     if (type === 'ATESTADO') return 'bg-rose-500'
+    if (type === 'ANIVERSARIO') return 'bg-fuchsia-500'
     return 'bg-blue-500'
   }
 
@@ -158,7 +160,9 @@ export function TeamCalendar() {
                                 ? 'bg-amber-100 text-amber-700 border-amber-200/50'
                                 : req.type === 'ATESTADO'
                                   ? 'bg-rose-100 text-rose-700 border-rose-200/50'
-                                  : 'bg-blue-100 text-blue-700 border-blue-200/50',
+                                  : req.type === 'ANIVERSARIO'
+                                    ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200/50'
+                                    : 'bg-blue-100 text-blue-700 border-blue-200/50',
                             )}
                             title={`${req.employees?.name} - ${req.type}`}
                           >
