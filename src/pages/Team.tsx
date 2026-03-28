@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CalendarDays, Users, CalendarPlus, ShieldAlert } from 'lucide-react'
+import { CalendarDays, Users, CalendarPlus, ShieldAlert, LayoutDashboard } from 'lucide-react'
 import { TeamDashboard } from '@/components/team/TeamDashboard'
+import { TeamCalendar } from '@/components/team/TeamCalendar'
 import { EmployeeList } from '@/components/team/EmployeeList'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
@@ -51,18 +52,25 @@ export default function Team() {
       </div>
 
       <Tabs defaultValue="dashboard" className="space-y-8">
-        <div className="bg-card/80 backdrop-blur-xl rounded-[1.5rem] p-2 border border-border/50 shadow-lg inline-flex w-full md:w-auto">
-          <TabsList className="grid w-full md:w-[400px] grid-cols-2 h-auto bg-transparent gap-2">
+        <div className="bg-card/80 backdrop-blur-xl rounded-[1.5rem] p-2 border border-border/50 shadow-lg inline-flex w-full overflow-x-auto">
+          <TabsList className="flex w-max min-w-full md:w-auto md:grid md:grid-cols-3 h-auto bg-transparent gap-2 p-0">
             <TabsTrigger
               value="dashboard"
-              className="gap-2 text-sm py-3.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
+              className="gap-2 text-sm py-3.5 px-4 md:px-6 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold flex-1"
             >
-              <CalendarDays className="h-5 w-5" />
+              <LayoutDashboard className="h-5 w-5" />
               Visão Executiva
             </TabsTrigger>
             <TabsTrigger
+              value="calendar"
+              className="gap-2 text-sm py-3.5 px-4 md:px-6 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold flex-1"
+            >
+              <CalendarDays className="h-5 w-5" />
+              Calendário
+            </TabsTrigger>
+            <TabsTrigger
               value="employees"
-              className="gap-2 text-sm py-3.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
+              className="gap-2 text-sm py-3.5 px-4 md:px-6 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold flex-1"
             >
               <Users className="h-5 w-5" />
               Corpo Clínico
@@ -70,12 +78,19 @@ export default function Team() {
           </TabsList>
         </div>
 
-        <div className="bg-card/90 backdrop-blur-2xl border border-border/50 shadow-2xl rounded-[2rem] p-6 lg:p-10 min-h-[500px]">
+        <div className="bg-card/90 backdrop-blur-2xl border border-border/50 shadow-2xl rounded-[2rem] p-4 sm:p-6 lg:p-10 min-h-[500px]">
           <TabsContent
             value="dashboard"
             className="mt-0 outline-none animate-in fade-in-50 duration-500"
           >
             <TeamDashboard />
+          </TabsContent>
+
+          <TabsContent
+            value="calendar"
+            className="mt-0 outline-none animate-in fade-in-50 duration-500"
+          >
+            <TeamCalendar />
           </TabsContent>
 
           <TabsContent
