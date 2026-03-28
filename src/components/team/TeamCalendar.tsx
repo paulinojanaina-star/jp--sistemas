@@ -108,8 +108,12 @@ export function TeamCalendar() {
               const isCurrentMonth = isSameMonth(day, currentDate)
               const isTodayDate = isToday(day)
 
-              const holidayRequest = requests.find((req) => req.type === 'FERIADO')
-              const isHoliday = !!holidayRequest
+              const systemOffRequest = requests.find(
+                (req) => req.type === 'FERIADO' || req.type === 'PONTO_FACULTATIVO',
+              )
+              const isSystemOff = !!systemOffRequest
+              const isHoliday = systemOffRequest?.type === 'FERIADO'
+              const isOptional = systemOffRequest?.type === 'PONTO_FACULTATIVO'
 
               return (
                 <div
@@ -122,12 +126,16 @@ export function TeamCalendar() {
                       ? isSelected
                         ? 'ring-2 ring-emerald-500 border-emerald-500 shadow-md bg-emerald-500/20 scale-[1.02]'
                         : 'border-emerald-200 bg-emerald-500/10 hover:border-emerald-300 hover:bg-emerald-500/20'
-                      : isSelected
-                        ? 'ring-2 ring-primary border-primary shadow-md bg-primary/5 scale-[1.02]'
-                        : 'hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm',
-                    !isHoliday && isTodayDate && !isSelected
+                      : isOptional
+                        ? isSelected
+                          ? 'ring-2 ring-violet-500 border-violet-500 shadow-md bg-violet-500/20 scale-[1.02]'
+                          : 'border-violet-200 bg-violet-500/10 hover:border-violet-300 hover:bg-violet-500/20'
+                        : isSelected
+                          ? 'ring-2 ring-primary border-primary shadow-md bg-primary/5 scale-[1.02]'
+                          : 'hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm',
+                    !isSystemOff && isTodayDate && !isSelected
                       ? 'bg-primary/5 border-primary/30'
-                      : !isHoliday && !isSelected
+                      : !isSystemOff && !isSelected
                         ? 'bg-card'
                         : '',
                   )}
@@ -135,22 +143,29 @@ export function TeamCalendar() {
                   <span
                     className={cn(
                       'text-xs sm:text-sm font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-colors z-10',
-                      isTodayDate && !isHoliday
+                      isTodayDate && !isSystemOff
                         ? 'bg-primary text-primary-foreground shadow-sm'
                         : isHoliday
                           ? 'text-emerald-800 bg-emerald-500/20'
-                          : isSelected
-                            ? 'text-primary'
-                            : 'text-foreground/80 group-hover:text-primary',
+                          : isOptional
+                            ? 'text-violet-800 bg-violet-500/20'
+                            : isSelected
+                              ? 'text-primary'
+                              : 'text-foreground/80 group-hover:text-primary',
                     )}
                   >
                     {format(day, 'd')}
                   </span>
 
-                  {isHoliday ? (
+                  {isSystemOff ? (
                     <div className="flex flex-col w-full gap-1 mt-auto z-10 items-center justify-center h-full pb-1 sm:pb-2">
-                      <span className="text-[10px] sm:text-xs font-bold text-emerald-700 uppercase tracking-wider text-center leading-tight px-1">
-                        {holidayRequest.notes || holidayRequest.employees?.name || 'Feriado'}
+                      <span
+                        className={cn(
+                          'text-[10px] sm:text-xs font-bold uppercase tracking-wider text-center leading-tight px-1',
+                          isHoliday ? 'text-emerald-700' : 'text-violet-700',
+                        )}
+                      >
+                        {systemOffRequest.notes || systemOffRequest.employees?.name}
                       </span>
                     </div>
                   ) : (
@@ -235,31 +250,61 @@ export function TeamCalendar() {
                 <p className="text-sm font-medium">Escala completa neste dia</p>
                 <p className="text-xs opacity-70">Nenhuma ausência registrada.</p>
               </div>
-            ) : selectedDateRequests.some((r) => r.type === 'FERIADO') ? (
+            ) : selectedDateRequests.some(
+                (r) => r.type === 'FERIADO' || r.type === 'PONTO_FACULTATIVO',
+              ) ? (
               <div className="space-y-2.5">
                 {selectedDateRequests
-                  .filter((r) => r.type === 'FERIADO')
-                  .map((req) => (
-                    <div
-                      key={req.id}
-                      className="p-6 border border-emerald-200 rounded-xl bg-emerald-500/10 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col items-center justify-center text-center space-y-3 mt-4"
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500" />
-                      <Badge
-                        variant="outline"
-                        className="bg-emerald-500/20 text-emerald-700 border-emerald-200 uppercase tracking-widest text-[10px] font-bold"
+                  .filter((r) => r.type === 'FERIADO' || r.type === 'PONTO_FACULTATIVO')
+                  .map((req) => {
+                    const isFeriado = req.type === 'FERIADO'
+                    return (
+                      <div
+                        key={req.id}
+                        className={cn(
+                          'p-6 border rounded-xl hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col items-center justify-center text-center space-y-3 mt-4',
+                          isFeriado
+                            ? 'border-emerald-200 bg-emerald-500/10'
+                            : 'border-violet-200 bg-violet-500/10',
+                        )}
                       >
-                        Feriado Nacional
-                      </Badge>
-                      <span className="font-bold text-xl text-emerald-800 tracking-tight">
-                        {req.notes || req.employees?.name || 'Feriado'}
-                      </span>
-                      <p className="text-sm text-emerald-700/80 font-medium px-4">
-                        Não há expediente da equipe neste dia. As ausências individuais não precisam
-                        ser gerenciadas.
-                      </p>
-                    </div>
-                  ))}
+                        <div
+                          className={cn(
+                            'absolute left-0 top-0 bottom-0 w-1.5',
+                            isFeriado ? 'bg-emerald-500' : 'bg-violet-500',
+                          )}
+                        />
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'uppercase tracking-widest text-[10px] font-bold',
+                            isFeriado
+                              ? 'bg-emerald-500/20 text-emerald-700 border-emerald-200'
+                              : 'bg-violet-500/20 text-violet-700 border-violet-200',
+                          )}
+                        >
+                          {isFeriado ? 'Feriado Nacional' : 'Decreto Municipal'}
+                        </Badge>
+                        <span
+                          className={cn(
+                            'font-bold text-xl tracking-tight',
+                            isFeriado ? 'text-emerald-800' : 'text-violet-800',
+                          )}
+                        >
+                          {req.notes || req.employees?.name}
+                        </span>
+                        <p
+                          className={cn(
+                            'text-sm font-medium px-4',
+                            isFeriado ? 'text-emerald-700/80' : 'text-violet-700/80',
+                          )}
+                        >
+                          Não há expediente da equipe neste dia. As ausências individuais não
+                          precisam ser gerenciadas.
+                        </p>
+                      </div>
+                    )
+                  })}
               </div>
             ) : (
               <div className="space-y-2.5">

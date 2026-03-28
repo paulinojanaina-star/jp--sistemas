@@ -119,16 +119,44 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
         const createHolidayReq = (idSuffix: string, name: string, dateStr: string) => ({
           id: `auto-holiday-${idSuffix}`,
           employee_id: 'system-holiday',
-          type: 'FERIADO',
+          type: 'FERIADO' as TimeOffType,
           start_date: dateStr,
           end_date: dateStr,
           notes: 'Feriado Nacional',
           created_at: new Date().toISOString(),
           employees: {
             name: name,
-            category: 'FERIADO',
+            category: 'FERIADO' as EmployeeCategory,
           },
         })
+
+        const createOptionalReq = (idSuffix: string, name: string, dateStr: string) => ({
+          id: `auto-optional-${idSuffix}`,
+          employee_id: 'system-optional',
+          type: 'PONTO_FACULTATIVO' as TimeOffType,
+          start_date: dateStr,
+          end_date: dateStr,
+          notes: name,
+          created_at: new Date().toISOString(),
+          employees: {
+            name: name,
+            category: 'FERIADO' as EmployeeCategory,
+          },
+        })
+
+        const optionalHolidays2026 = [
+          { month: 2, day: 16, name: 'Ponto Facultativo' },
+          { month: 2, day: 17, name: 'Ponto Facultativo' },
+          { month: 2, day: 18, name: 'Ponto Facultativo' },
+          { month: 4, day: 2, name: 'Ponto Facultativo' },
+          { month: 4, day: 20, name: 'Ponto Facultativo' },
+          { month: 6, day: 5, name: 'Ponto Facultativo' },
+          { month: 9, day: 14, name: 'Ponto Facultativo' },
+          { month: 10, day: 30, name: 'Ponto Facultativo' },
+          { month: 12, day: 7, name: 'Ponto Facultativo' },
+          { month: 12, day: 24, name: 'Ponto Facultativo' },
+          { month: 12, day: 31, name: 'Ponto Facultativo' },
+        ]
 
         ;[-1, 0, 1].forEach((yearOffset) => {
           const year = currentYear + yearOffset
@@ -165,6 +193,13 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
               corpus.toISOString().split('T')[0],
             ),
           )
+
+          if (year === 2026) {
+            optionalHolidays2026.forEach((h) => {
+              const dateStr = `2026-${String(h.month).padStart(2, '0')}-${String(h.day).padStart(2, '0')}`
+              holidays.push(createOptionalReq(`2026-${h.month}-${h.day}`, h.name, dateStr))
+            })
+          }
         })
 
         const allTimeOffs = [
@@ -238,7 +273,8 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
     if (id.startsWith('auto-')) {
       return {
         error: {
-          message: 'Não é possível excluir um registro automático (aniversário ou feriado).',
+          message:
+            'Não é possível excluir um registro automático (aniversário, feriado ou ponto facultativo).',
         },
       }
     }

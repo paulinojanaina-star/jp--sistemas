@@ -5,7 +5,13 @@ export type EmployeeCategory =
   | 'TECNICO'
   | 'AGENTE'
   | 'GERENTE'
-export type TimeOffType = 'FERIAS' | 'FOLGA' | 'ATESTADO' | 'ANIVERSARIO'
+export type TimeOffType =
+  | 'FERIAS'
+  | 'FOLGA'
+  | 'ATESTADO'
+  | 'ANIVERSARIO'
+  | 'FERIADO'
+  | 'PONTO_FACULTATIVO'
 
 export interface Employee {
   id: string
