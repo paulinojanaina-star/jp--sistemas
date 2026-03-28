@@ -10,7 +10,7 @@ interface TeamContextType {
   refreshData: () => Promise<void>
   saveEmployee: (
     id: string | null,
-    data: { name: string; category: EmployeeCategory },
+    data: { name: string; category: EmployeeCategory; birth_date?: string | null },
   ) => Promise<{ error?: any }>
   deleteEmployee: (id: string) => Promise<{ error?: any }>
   saveTimeOff: (
@@ -64,7 +64,7 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
 
   const saveEmployee = async (
     id: string | null,
-    data: { name: string; category: EmployeeCategory },
+    data: { name: string; category: EmployeeCategory; birth_date?: string | null },
   ) => {
     let result
     if (id) {

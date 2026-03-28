@@ -33,12 +33,14 @@ export function EmployeeFormModal({ employee, open, onOpenChange }: Props) {
 
   const [name, setName] = useState('')
   const [category, setCategory] = useState<EmployeeCategory | ''>('')
+  const [birthDate, setBirthDate] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (open) {
       setName(employee?.name || '')
       setCategory(employee?.category || '')
+      setBirthDate(employee?.birth_date || '')
     }
   }, [open, employee])
 
@@ -50,6 +52,7 @@ export function EmployeeFormModal({ employee, open, onOpenChange }: Props) {
     const { error } = await saveEmployee(employee?.id || null, {
       name: name.trim(),
       category: category as EmployeeCategory,
+      birth_date: birthDate || null,
     })
     setLoading(false)
 
@@ -93,8 +96,13 @@ export function EmployeeFormModal({ employee, open, onOpenChange }: Props) {
                 <SelectItem value="TECNICO">Técnico</SelectItem>
                 <SelectItem value="AUXILIAR">Auxiliar</SelectItem>
                 <SelectItem value="AGENTE">Agente</SelectItem>
+                <SelectItem value="GERENTE">Gerente</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Data de Nascimento (Opcional)</Label>
+            <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
           </div>
           <DialogFooter className="pt-4">
             <Button

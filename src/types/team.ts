@@ -1,4 +1,10 @@
-export type EmployeeCategory = 'MEDICO' | 'ENFERMEIRO' | 'AUXILIAR' | 'TECNICO' | 'AGENTE'
+export type EmployeeCategory =
+  | 'MEDICO'
+  | 'ENFERMEIRO'
+  | 'AUXILIAR'
+  | 'TECNICO'
+  | 'AGENTE'
+  | 'GERENTE'
 export type TimeOffType = 'FERIAS' | 'FOLGA' | 'ATESTADO' | 'ANIVERSARIO'
 
 export interface Employee {
@@ -6,6 +12,7 @@ export interface Employee {
   name: string
   category: EmployeeCategory
   created_at: string
+  birth_date?: string | null
 }
 
 export interface TimeOffRequest {
