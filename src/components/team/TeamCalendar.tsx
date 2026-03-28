@@ -108,80 +108,97 @@ export function TeamCalendar() {
               const isCurrentMonth = isSameMonth(day, currentDate)
               const isTodayDate = isToday(day)
 
+              const holidayRequest = requests.find((req) => req.type === 'FERIADO')
+              const isHoliday = !!holidayRequest
+
               return (
                 <div
                   key={day.toISOString()}
                   onClick={() => setSelectedDate(day)}
                   className={cn(
-                    'min-h-[60px] sm:min-h-[80px] p-1 sm:p-1.5 border rounded-xl cursor-pointer transition-all flex flex-col items-start gap-1 group',
+                    'min-h-[60px] sm:min-h-[80px] p-1 sm:p-1.5 border rounded-xl cursor-pointer transition-all flex flex-col items-start gap-1 group relative overflow-hidden',
                     !isCurrentMonth && 'opacity-40 bg-muted/30',
-                    isSelected
-                      ? 'ring-2 ring-primary border-primary shadow-md bg-primary/5 scale-[1.02]'
-                      : 'hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm',
-                    isTodayDate && !isSelected ? 'bg-primary/5 border-primary/30' : 'bg-card',
+                    isHoliday
+                      ? isSelected
+                        ? 'ring-2 ring-emerald-500 border-emerald-500 shadow-md bg-emerald-500/20 scale-[1.02]'
+                        : 'border-emerald-200 bg-emerald-500/10 hover:border-emerald-300 hover:bg-emerald-500/20'
+                      : isSelected
+                        ? 'ring-2 ring-primary border-primary shadow-md bg-primary/5 scale-[1.02]'
+                        : 'hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm',
+                    !isHoliday && isTodayDate && !isSelected
+                      ? 'bg-primary/5 border-primary/30'
+                      : !isHoliday && !isSelected
+                        ? 'bg-card'
+                        : '',
                   )}
                 >
                   <span
                     className={cn(
-                      'text-xs sm:text-sm font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-colors',
-                      isTodayDate
+                      'text-xs sm:text-sm font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-colors z-10',
+                      isTodayDate && !isHoliday
                         ? 'bg-primary text-primary-foreground shadow-sm'
-                        : isSelected
-                          ? 'text-primary'
-                          : 'text-foreground/80 group-hover:text-primary',
+                        : isHoliday
+                          ? 'text-emerald-800 bg-emerald-500/20'
+                          : isSelected
+                            ? 'text-primary'
+                            : 'text-foreground/80 group-hover:text-primary',
                     )}
                   >
                     {format(day, 'd')}
                   </span>
 
-                  {requests.length > 0 && (
-                    <div className="flex flex-col w-full gap-1 mt-auto">
-                      {/* Mobile view: just dots */}
-                      <div className="flex flex-wrap gap-1 sm:hidden">
-                        {requests.slice(0, 3).map((req, i) => (
-                          <div
-                            key={i}
-                            className={cn('w-1.5 h-1.5 rounded-full', getTypeColor(req.type))}
-                          />
-                        ))}
-                        {requests.length > 3 && (
-                          <span className="text-[9px] text-muted-foreground font-medium leading-none">
-                            +{requests.length - 3}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Desktop view: pills with names */}
-                      <div className="hidden sm:flex flex-col gap-1 w-full">
-                        {requests.slice(0, 3).map((req, i) => (
-                          <div
-                            key={i}
-                            className={cn(
-                              'text-[10px] font-semibold px-1.5 py-0.5 rounded-md truncate w-full border border-transparent',
-                              req.type === 'FERIAS'
-                                ? 'bg-amber-100 text-amber-700 border-amber-200/50'
-                                : req.type === 'ATESTADO'
-                                  ? 'bg-rose-100 text-rose-700 border-rose-200/50'
-                                  : req.type === 'ANIVERSARIO'
-                                    ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200/50'
-                                    : req.type === 'FERIADO'
-                                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300/50'
-                                      : 'bg-blue-100 text-blue-700 border-blue-200/50',
-                            )}
-                            title={`${req.employees?.name} - ${req.type}`}
-                          >
-                            {req.type === 'FERIADO'
-                              ? req.employees?.name
-                              : req.employees?.name?.split(' ')[0]}
-                          </div>
-                        ))}
-                        {requests.length > 3 && (
-                          <div className="text-[10px] text-muted-foreground font-medium pl-1">
-                            +{requests.length - 3} mais
-                          </div>
-                        )}
-                      </div>
+                  {isHoliday ? (
+                    <div className="flex flex-col w-full gap-1 mt-auto z-10 items-center justify-center h-full pb-1 sm:pb-2">
+                      <span className="text-[10px] sm:text-xs font-bold text-emerald-700 uppercase tracking-wider text-center leading-tight px-1">
+                        {holidayRequest.notes || holidayRequest.employees?.name || 'Feriado'}
+                      </span>
                     </div>
+                  ) : (
+                    requests.length > 0 && (
+                      <div className="flex flex-col w-full gap-1 mt-auto z-10">
+                        {/* Mobile view: just dots */}
+                        <div className="flex flex-wrap gap-1 sm:hidden">
+                          {requests.slice(0, 3).map((req, i) => (
+                            <div
+                              key={i}
+                              className={cn('w-1.5 h-1.5 rounded-full', getTypeColor(req.type))}
+                            />
+                          ))}
+                          {requests.length > 3 && (
+                            <span className="text-[9px] text-muted-foreground font-medium leading-none">
+                              +{requests.length - 3}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Desktop view: pills with names */}
+                        <div className="hidden sm:flex flex-col gap-1 w-full">
+                          {requests.slice(0, 3).map((req, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                'text-[10px] font-semibold px-1.5 py-0.5 rounded-md truncate w-full border border-transparent',
+                                req.type === 'FERIAS'
+                                  ? 'bg-amber-100 text-amber-700 border-amber-200/50'
+                                  : req.type === 'ATESTADO'
+                                    ? 'bg-rose-100 text-rose-700 border-rose-200/50'
+                                    : req.type === 'ANIVERSARIO'
+                                      ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200/50'
+                                      : 'bg-blue-100 text-blue-700 border-blue-200/50',
+                              )}
+                              title={`${req.employees?.name} - ${req.type}`}
+                            >
+                              {req.employees?.name?.split(' ')[0]}
+                            </div>
+                          ))}
+                          {requests.length > 3 && (
+                            <div className="text-[10px] text-muted-foreground font-medium pl-1">
+                              +{requests.length - 3} mais
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
                   )}
                 </div>
               )
@@ -217,6 +234,32 @@ export function TeamCalendar() {
                 </div>
                 <p className="text-sm font-medium">Escala completa neste dia</p>
                 <p className="text-xs opacity-70">Nenhuma ausência registrada.</p>
+              </div>
+            ) : selectedDateRequests.some((r) => r.type === 'FERIADO') ? (
+              <div className="space-y-2.5">
+                {selectedDateRequests
+                  .filter((r) => r.type === 'FERIADO')
+                  .map((req) => (
+                    <div
+                      key={req.id}
+                      className="p-6 border border-emerald-200 rounded-xl bg-emerald-500/10 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col items-center justify-center text-center space-y-3 mt-4"
+                    >
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500" />
+                      <Badge
+                        variant="outline"
+                        className="bg-emerald-500/20 text-emerald-700 border-emerald-200 uppercase tracking-widest text-[10px] font-bold"
+                      >
+                        Feriado Nacional
+                      </Badge>
+                      <span className="font-bold text-xl text-emerald-800 tracking-tight">
+                        {req.notes || req.employees?.name || 'Feriado'}
+                      </span>
+                      <p className="text-sm text-emerald-700/80 font-medium px-4">
+                        Não há expediente da equipe neste dia. As ausências individuais não precisam
+                        ser gerenciadas.
+                      </p>
+                    </div>
+                  ))}
               </div>
             ) : (
               <div className="space-y-2.5">
