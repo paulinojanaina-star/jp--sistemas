@@ -441,7 +441,7 @@ export const Constants = {
 // Table: Janaina Paulino
 //   PRIMARY KEY Janaina Paulino_pkey: PRIMARY KEY (id)
 // Table: employees
-//   CHECK employees_category_check: CHECK ((category = ANY (ARRAY['MEDICO'::text, 'ENFERMEIRO'::text, 'AUXILIAR'::text, 'TECNICO'::text])))
+//   CHECK employees_category_check: CHECK ((category = ANY (ARRAY['MEDICO'::text, 'ENFERMEIRO'::text, 'AUXILIAR'::text, 'TECNICO'::text, 'AGENTE'::text])))
 //   PRIMARY KEY employees_pkey: PRIMARY KEY (id)
 // Table: inventory_movements
 //   FOREIGN KEY inventory_movements_item_id_fkey: FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE

@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { DashboardMetrics } from '@/components/DashboardMetrics'
 import { DashboardChart } from '@/components/DashboardChart'
 import { DashboardRecentActivity } from '@/components/DashboardRecentActivity'
@@ -9,7 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Users, Package, ArrowLeft, ArrowRight, LayoutDashboard } from 'lucide-react'
 
 export default function Index() {
-  const [showDashboard, setShowDashboard] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const showDashboard = searchParams.get('module') === 'almoxarifado'
 
   if (showDashboard) {
     return (
@@ -18,7 +18,10 @@ export default function Index() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setShowDashboard(false)}
+            onClick={() => {
+              searchParams.delete('module')
+              setSearchParams(searchParams)
+            }}
             title="Voltar para o Início"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -85,7 +88,10 @@ export default function Index() {
 
         {/* Módulo de Almoxarifado */}
         <button
-          onClick={() => setShowDashboard(true)}
+          onClick={() => {
+            searchParams.set('module', 'almoxarifado')
+            setSearchParams(searchParams)
+          }}
           className="group relative bg-card hover:bg-accent/5 border border-border/60 rounded-2xl p-8 flex flex-col items-center text-center gap-4 shadow-sm hover:shadow-md transition-all overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500 transition-opacity opacity-80 group-hover:opacity-100" />
