@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from '@/hooks/use-auth'
 import Layout from './components/Layout'
 import Login from './pages/Login'
 import Index from './pages/Index'
+import Almoxarifado from './pages/Almoxarifado'
 import Items from './pages/Items'
 import Movements from './pages/Movements'
 import History from './pages/History'
@@ -58,6 +59,7 @@ const App = () => (
                   }
                 >
                   <Route path="/" element={<Index />} />
+                  <Route path="/almoxarifado" element={<Almoxarifado />} />
                   <Route path="/itens" element={<Items />} />
                   <Route path="/movimentacoes" element={<Movements />} />
                   <Route path="/historico" element={<History />} />

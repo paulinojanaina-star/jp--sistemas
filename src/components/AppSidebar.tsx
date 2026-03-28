@@ -24,7 +24,7 @@ export function AppSidebar() {
   const isPessoal = location.pathname.startsWith('/equipe')
 
   const almoxarifadoItems = [
-    { title: 'Início', url: '/', icon: LayoutDashboard },
+    { title: 'Dashboard', url: '/almoxarifado', icon: LayoutDashboard },
     { title: 'Itens', url: '/itens', icon: Package },
     { title: 'Movimentações', url: '/movimentacoes', icon: ArrowRightLeft },
     { title: 'Histórico', url: '/historico', icon: History },
@@ -32,10 +32,7 @@ export function AppSidebar() {
     { title: 'Saúde dos Dados', url: '/saude-dados', icon: Activity },
   ]
 
-  const pessoalItems = [
-    { title: 'Início', url: '/', icon: LayoutDashboard },
-    { title: 'Equipe & Escalas', url: '/equipe', icon: Users },
-  ]
+  const pessoalItems = [{ title: 'Equipe & Escalas', url: '/equipe', icon: Users }]
 
   const navItems = isPessoal ? pessoalItems : almoxarifadoItems
   const moduleName = isPessoal ? 'Gestão de Pessoal' : 'Almoxarifado'
@@ -65,7 +62,10 @@ export function AppSidebar() {
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   asChild
-                  isActive={location.pathname === item.url}
+                  isActive={
+                    location.pathname === item.url ||
+                    (item.url !== '/' && location.pathname.startsWith(item.url + '/'))
+                  }
                   className="font-medium mb-1 tracking-wide"
                 >
                   <Link to={item.url}>
