@@ -69,10 +69,10 @@ export function EmployeeList() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h3 className="text-lg font-medium">Gestão da Equipe</h3>
+        <h3 className="text-base font-semibold">Gestão da Equipe</h3>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
               <SelectValue placeholder="Todas as Categorias" />
             </SelectTrigger>
             <SelectContent>
@@ -85,11 +85,12 @@ export function EmployeeList() {
             </SelectContent>
           </Select>
           <Button
+            size="sm"
             onClick={() => {
               setEditingEmployee(null)
               setEmployeeModalOpen(true)
             }}
-            className="gap-2 shrink-0"
+            className="gap-1.5 shrink-0 h-9"
           >
             <UserPlus className="h-4 w-4" />
             <span className="hidden sm:inline">Adicionar</span>
@@ -102,9 +103,9 @@ export function EmployeeList() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead>Nome</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="py-3">Nome</TableHead>
+                <TableHead className="py-3">Categoria</TableHead>
+                <TableHead className="text-right py-3">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -119,13 +120,16 @@ export function EmployeeList() {
               ) : (
                 filteredEmployees.map((emp) => (
                   <TableRow key={emp.id}>
-                    <TableCell className="font-medium">{emp.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={categoryColors[emp.category] || ''}>
+                    <TableCell className="font-medium py-2.5">{emp.name}</TableCell>
+                    <TableCell className="py-2.5">
+                      <Badge
+                        variant="outline"
+                        className={`${categoryColors[emp.category] || ''} text-[10px] px-2 py-0`}
+                      >
                         {emp.category}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right py-2.5">
                       <div className="flex items-center justify-end gap-2">
                         <Button
                           variant="ghost"

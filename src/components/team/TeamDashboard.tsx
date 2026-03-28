@@ -70,43 +70,52 @@ export function TeamDashboard() {
     return (
       <div
         key={req.id}
-        className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg ${isActive ? 'bg-muted/50 border-primary/20' : ''}`}
+        className={`flex flex-col sm:flex-row sm:items-center justify-between p-2.5 border rounded-lg shadow-sm ${isActive ? 'bg-muted/30 border-primary/20' : 'bg-card'}`}
       >
-        <div className="mb-3 sm:mb-0">
+        <div className="mb-2 sm:mb-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold">{req.employees?.name}</span>
+            <span className="font-medium text-sm">{req.employees?.name}</span>
             <Badge
               variant={req.type === 'FOLGA' ? 'outline' : 'default'}
-              className={getBadgeStyle(req.type)}
+              className={`${getBadgeStyle(req.type)} text-[10px] px-1.5 py-0`}
             >
               {req.type}
             </Badge>
             {isActive && (
               <Badge
                 variant="secondary"
-                className="bg-green-100 text-green-700 hover:bg-green-200 border-transparent"
+                className="bg-green-100 text-green-700 hover:bg-green-200 border-transparent text-[10px] px-1.5 py-0"
               >
-                Ativo Agora
+                Ativo
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground flex items-center gap-2">
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
             {formatDateBR(req.start_date)} até {formatDateBR(req.end_date)}
-            <span className="text-xs opacity-70">({req.employees?.category})</span>
+            <span className="text-[10px] opacity-70">({req.employees?.category})</span>
           </p>
-          {req.notes && <p className="text-xs text-muted-foreground mt-1 italic">"{req.notes}"</p>}
+          {req.notes && (
+            <p className="text-[10px] text-muted-foreground mt-0.5 italic line-clamp-1">
+              "{req.notes}"
+            </p>
+          )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={() => setEditingRequest(req)}>
-            <Edit className="h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Editar</span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setEditingRequest(req)}
+          >
+            <Edit className="h-3.5 w-3.5" />
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
             onClick={() => handleDelete(req.id)}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
@@ -116,16 +125,18 @@ export function TeamDashboard() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Equipe</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex items-center">
             <div className="text-2xl font-bold">{employees.length}</div>
           </CardContent>
         </Card>
-        <Card className={activeVacations.length > 0 ? 'border-amber-500/30 bg-amber-500/5' : ''}>
+        <Card
+          className={`flex flex-col ${activeVacations.length > 0 ? 'border-amber-500/30 bg-amber-500/5' : ''}`}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle
               className={`text-sm font-medium ${activeVacations.length > 0 ? 'text-amber-600' : ''}`}
@@ -136,7 +147,7 @@ export function TeamDashboard() {
               className={`h-4 w-4 ${activeVacations.length > 0 ? 'text-amber-500' : 'text-muted-foreground'}`}
             />
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex items-center">
             <div
               className={`text-2xl font-bold ${activeVacations.length > 0 ? 'text-amber-600' : ''}`}
             >
@@ -144,7 +155,9 @@ export function TeamDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card className={activeDaysOff.length > 0 ? 'border-blue-500/30 bg-blue-500/5' : ''}>
+        <Card
+          className={`flex flex-col ${activeDaysOff.length > 0 ? 'border-blue-500/30 bg-blue-500/5' : ''}`}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle
               className={`text-sm font-medium ${activeDaysOff.length > 0 ? 'text-blue-600' : ''}`}
@@ -155,7 +168,7 @@ export function TeamDashboard() {
               className={`h-4 w-4 ${activeDaysOff.length > 0 ? 'text-blue-500' : 'text-muted-foreground'}`}
             />
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex items-center">
             <div
               className={`text-2xl font-bold ${activeDaysOff.length > 0 ? 'text-blue-600' : ''}`}
             >
@@ -163,7 +176,9 @@ export function TeamDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card className={activeAtestados.length > 0 ? 'border-rose-500/30 bg-rose-500/5' : ''}>
+        <Card
+          className={`flex flex-col ${activeAtestados.length > 0 ? 'border-rose-500/30 bg-rose-500/5' : ''}`}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle
               className={`text-sm font-medium ${activeAtestados.length > 0 ? 'text-rose-600' : ''}`}
@@ -174,7 +189,7 @@ export function TeamDashboard() {
               className={`h-4 w-4 ${activeAtestados.length > 0 ? 'text-rose-500' : 'text-muted-foreground'}`}
             />
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex items-center">
             <div
               className={`text-2xl font-bold ${activeAtestados.length > 0 ? 'text-rose-600' : ''}`}
             >
@@ -184,18 +199,18 @@ export function TeamDashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-orange-200 shadow-sm bg-orange-50/20">
+      <div className="grid gap-6 lg:grid-cols-2 items-start">
+        <Card className="border-orange-200 shadow-sm bg-orange-50/20 flex flex-col h-full">
           <CardHeader className="pb-4 border-b border-orange-100">
-            <CardTitle className="text-lg text-orange-800 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
+            <CardTitle className="text-base text-orange-800 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
               Ausências na Próxima Semana
             </CardTitle>
             <CardDescription className="text-orange-700/80">
               Profissionais ausentes nos próximos 7 dias
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 space-y-4">
+          <CardContent className="pt-4 space-y-3 flex-1">
             {nextWeekAbsences.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center border rounded-lg border-dashed border-orange-200 bg-white/50">
                 Nenhuma ausência programada para os próximos 7 dias.
@@ -206,12 +221,12 @@ export function TeamDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col h-full">
           <CardHeader className="pb-4 border-b">
-            <CardTitle className="text-lg">Todas as Escalas Programadas</CardTitle>
+            <CardTitle className="text-base">Todas as Escalas Programadas</CardTitle>
             <CardDescription>Visão geral de todas as ausências ativas e futuras</CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 space-y-4">
+          <CardContent className="pt-4 space-y-3 flex-1">
             {upcomingRequests.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center border rounded-lg border-dashed">
                 Nenhuma ausência programada.

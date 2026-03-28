@@ -13,7 +13,7 @@ export default function Team() {
   return (
     <div className="space-y-8 animate-fade-in-up pb-8">
       {/* Premium Hero Banner */}
-      <div className="relative overflow-hidden rounded-[2rem] border border-border/50 shadow-2xl mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 min-h-[240px] p-8 lg:p-12">
+      <div className="relative overflow-hidden rounded-2xl border border-border/50 shadow-lg mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 min-h-[160px] p-6 lg:p-8">
         <div
           className="absolute inset-0 z-0 opacity-40 mix-blend-luminosity"
           style={{
@@ -25,15 +25,15 @@ export default function Team() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-900/40 z-0" />
 
-        <div className="relative z-10 flex flex-col gap-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 text-xs font-black uppercase tracking-widest w-fit backdrop-blur-md shadow-inner">
-            <ShieldAlert className="h-4 w-4" strokeWidth={2.5} />
+        <div className="relative z-10 flex flex-col gap-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 text-xs font-bold uppercase tracking-wider w-fit backdrop-blur-md shadow-inner">
+            <ShieldAlert className="h-3.5 w-3.5" strokeWidth={2.5} />
             Capital Humano Corporativo
           </div>
-          <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black tracking-tighter text-white drop-shadow-lg">
+          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white drop-shadow-md">
             Equipe & Escalas
           </h1>
-          <p className="text-lg lg:text-xl text-slate-300 max-w-2xl font-bold drop-shadow-md">
+          <p className="text-base text-slate-300 max-w-2xl font-medium drop-shadow-sm">
             Gestão executiva de profissionais, registro integrado de ausências e monitoramento
             contínuo de capacidade.
           </p>
@@ -43,42 +43,42 @@ export default function Team() {
           <Button
             onClick={() => setTimeOffModalOpen(true)}
             size="lg"
-            className="rounded-[1.5rem] h-14 px-8 shadow-[0_0_20px_rgba(var(--primary),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary),0.5)] transition-all duration-300 font-extrabold gap-3 text-base bg-primary text-primary-foreground border border-primary/50 hover:bg-primary/90"
+            className="rounded-xl h-12 px-6 shadow-md hover:shadow-lg transition-all duration-300 font-bold gap-2 text-sm bg-primary text-primary-foreground border border-primary/50 hover:bg-primary/90"
           >
-            <CalendarPlus className="h-6 w-6" strokeWidth={2.5} />
+            <CalendarPlus className="h-5 w-5" strokeWidth={2.5} />
             Registrar Ausência
           </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="dashboard" className="space-y-8">
-        <div className="bg-card/80 backdrop-blur-xl rounded-[1.5rem] p-2 border border-border/50 shadow-lg inline-flex w-full overflow-x-auto">
-          <TabsList className="flex w-max min-w-full md:w-auto md:grid md:grid-cols-3 h-auto bg-transparent gap-2 p-0">
+      <Tabs defaultValue="dashboard" className="space-y-6">
+        <div className="bg-card/80 backdrop-blur-xl rounded-xl p-1.5 border border-border/50 shadow-sm inline-flex w-full overflow-x-auto">
+          <TabsList className="flex w-max min-w-full md:w-auto md:grid md:grid-cols-3 h-auto bg-transparent gap-1.5 p-0">
             <TabsTrigger
               value="dashboard"
-              className="gap-2 text-sm py-3.5 px-4 md:px-6 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold flex-1"
+              className="gap-2 text-sm py-2 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all font-semibold flex-1"
             >
-              <LayoutDashboard className="h-5 w-5" />
+              <LayoutDashboard className="h-4 w-4" />
               Visão Executiva
             </TabsTrigger>
             <TabsTrigger
               value="calendar"
-              className="gap-2 text-sm py-3.5 px-4 md:px-6 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold flex-1"
+              className="gap-2 text-sm py-2 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all font-semibold flex-1"
             >
-              <CalendarDays className="h-5 w-5" />
+              <CalendarDays className="h-4 w-4" />
               Calendário
             </TabsTrigger>
             <TabsTrigger
               value="employees"
-              className="gap-2 text-sm py-3.5 px-4 md:px-6 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold flex-1"
+              className="gap-2 text-sm py-2 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all font-semibold flex-1"
             >
-              <Users className="h-5 w-5" />
+              <Users className="h-4 w-4" />
               Corpo Clínico
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <div className="bg-card/90 backdrop-blur-2xl border border-border/50 shadow-2xl rounded-[2rem] p-4 sm:p-6 lg:p-10 min-h-[500px]">
+        <div className="bg-card/90 backdrop-blur-2xl border border-border/50 shadow-lg rounded-2xl p-4 sm:p-6 min-h-[400px]">
           <TabsContent
             value="dashboard"
             className="mt-0 outline-none animate-in fade-in-50 duration-500"

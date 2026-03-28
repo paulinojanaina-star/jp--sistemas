@@ -54,36 +54,36 @@ export function TeamCalendar() {
   }
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6">
+    <div className="flex flex-col xl:flex-row gap-6 items-start">
       <Card className="flex-1 shadow-md border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="flex flex-col sm:flex-row items-center justify-between pb-4 border-b">
-          <CardTitle className="text-xl font-bold flex items-center gap-2 mb-4 sm:mb-0">
-            <CalendarIcon className="h-6 w-6 text-primary" />
+        <CardHeader className="flex flex-col sm:flex-row items-center justify-between pb-3 border-b">
+          <CardTitle className="text-lg font-bold flex items-center gap-2 mb-3 sm:mb-0">
+            <CalendarIcon className="h-5 w-5 text-primary" />
             Calendário de Escalas
           </CardTitle>
-          <div className="flex items-center gap-4 bg-muted/50 p-1.5 rounded-full border border-border/50">
+          <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-full border border-border/50">
             <Button
               variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-background shadow-sm"
+              size="sm"
+              className="rounded-full h-8 w-8 p-0 hover:bg-background shadow-sm"
               onClick={() => setCurrentDate(subMonths(currentDate, 1))}
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-            <h2 className="text-base sm:text-lg font-bold capitalize w-32 sm:w-40 text-center tracking-tight">
+            <h2 className="text-sm font-bold capitalize w-28 sm:w-32 text-center tracking-tight">
               {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
             </h2>
             <Button
               variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-background shadow-sm"
+              size="sm"
+              className="rounded-full h-8 w-8 p-0 hover:bg-background shadow-sm"
               onClick={() => setCurrentDate(addMonths(currentDate, 1))}
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className="p-3 sm:p-4">
           <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center mb-2">
             {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((d) => (
               <div
@@ -94,7 +94,7 @@ export function TeamCalendar() {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
             {days.map((day) => {
               const requests = timeOffRequests.filter((req) =>
                 isDateInRange(day, req.start_date, req.end_date),
@@ -109,7 +109,7 @@ export function TeamCalendar() {
                   key={day.toISOString()}
                   onClick={() => setSelectedDate(day)}
                   className={cn(
-                    'min-h-[60px] sm:min-h-[90px] p-1 sm:p-2 border rounded-xl cursor-pointer transition-all flex flex-col items-start gap-1 group',
+                    'min-h-[60px] sm:min-h-[80px] p-1 sm:p-1.5 border rounded-xl cursor-pointer transition-all flex flex-col items-start gap-1 group',
                     !isCurrentMonth && 'opacity-40 bg-muted/30',
                     isSelected
                       ? 'ring-2 ring-primary border-primary shadow-md bg-primary/5 scale-[1.02]'
@@ -180,13 +180,13 @@ export function TeamCalendar() {
         </CardContent>
       </Card>
 
-      <Card className="w-full xl:w-[380px] shrink-0 shadow-lg border-primary/10 bg-gradient-to-b from-card to-muted/20">
-        <CardHeader className="pb-4 border-b border-border/50 bg-card/50">
-          <CardTitle className="text-lg flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg text-primary">
-              <CalendarIcon className="h-5 w-5" />
+      <Card className="w-full xl:w-[340px] shrink-0 shadow-lg border-primary/10 bg-gradient-to-b from-card to-muted/20 h-auto">
+        <CardHeader className="pb-3 border-b border-border/50 bg-card/50">
+          <CardTitle className="text-base flex items-center gap-3">
+            <div className="p-1.5 bg-primary/10 rounded-md text-primary">
+              <CalendarIcon className="h-4 w-4" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-0.5">
               <span className="text-sm font-normal text-muted-foreground">
                 {selectedDate ? format(selectedDate, 'EEEE', { locale: ptBR }) : 'Detalhes do dia'}
               </span>
@@ -199,7 +199,7 @@ export function TeamCalendar() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="h-[400px] xl:h-[600px] p-4">
+          <ScrollArea className="h-[300px] xl:h-[450px] p-3">
             {selectedDateRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-3">
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border border-border/50">
@@ -209,11 +209,11 @@ export function TeamCalendar() {
                 <p className="text-xs opacity-70">Nenhuma ausência registrada.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {selectedDateRequests.map((req) => (
                   <div
                     key={req.id}
-                    className="p-4 border rounded-xl bg-card hover:shadow-md transition-shadow relative overflow-hidden group"
+                    className="p-3 border rounded-xl bg-card hover:shadow-md transition-shadow relative overflow-hidden group"
                   >
                     <div
                       className={cn(
