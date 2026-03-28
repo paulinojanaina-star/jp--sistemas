@@ -5,7 +5,7 @@ import {
   TrendingUp,
   PackageSearch,
   ShoppingCart,
-  Sparkles,
+  ShieldCheck,
 } from 'lucide-react'
 import { StaleItemsReport } from '@/components/reports/StaleItemsReport'
 import { ConsumptionReport } from '@/components/reports/ConsumptionReport'
@@ -15,76 +15,82 @@ import { PurchaseSuggestionReport } from '@/components/reports/PurchaseSuggestio
 
 export default function Reports() {
   return (
-    <div className="space-y-8 pb-8">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-card to-muted/30 p-8 sm:p-10 border border-border/50 shadow-sm">
-        <div className="absolute top-0 right-0 -mt-16 -mr-16 text-primary/5">
-          <Sparkles className="h-64 w-64" />
-        </div>
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-extrabold uppercase tracking-widest mb-4">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            Analytics
+    <div className="space-y-8 animate-fade-in-up pb-8">
+      {/* Premium Hero Banner */}
+      <div className="relative overflow-hidden rounded-[2rem] border border-border/50 shadow-2xl mb-8 flex flex-col justify-center min-h-[240px]">
+        <div
+          className="absolute inset-0 z-0 opacity-40 mix-blend-luminosity"
+          style={{
+            backgroundImage:
+              'url("https://img.usecurling.com/p/1920/600?q=data%20analytics%20abstract%20modern%20medical&color=blue&dpr=2")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-900/40 z-0" />
+
+        <div className="relative z-10 p-8 lg:p-12 flex flex-col gap-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 text-xs font-black uppercase tracking-widest w-fit backdrop-blur-md shadow-inner">
+            <ShieldCheck className="h-4 w-4" strokeWidth={2.5} />
+            Business Intelligence
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground mb-3">
-            Relatórios Gerenciais
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed font-medium">
-            Obtenha insights profundos sobre o seu estoque, antecipe demandas e tome decisões
-            baseadas em dados consolidados.
+          <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black tracking-tighter text-white drop-shadow-lg">
+            Analytics & Relatórios
+          </h1>
+          <p className="text-lg lg:text-xl text-slate-300 max-w-2xl font-bold drop-shadow-md">
+            Obtenha insights corporativos profundos, antecipe demandas críticas e embase decisões em
+            dados consolidados de alta precisão.
           </p>
         </div>
       </div>
 
-      <Tabs defaultValue="stock" className="space-y-6">
-        <div className="bg-card rounded-2xl p-1.5 border border-border/50 shadow-sm inline-flex w-full overflow-x-auto overflow-y-hidden hide-scrollbar">
-          <TabsList className="grid w-full lg:w-auto grid-cols-5 h-auto bg-transparent gap-1">
+      <Tabs defaultValue="stock" className="space-y-8">
+        <div className="bg-card/80 backdrop-blur-xl rounded-[1.5rem] p-2 border border-border/50 shadow-lg inline-flex w-full overflow-x-auto overflow-y-hidden hide-scrollbar">
+          <TabsList className="grid w-full lg:w-auto grid-cols-5 h-auto bg-transparent gap-2">
             <TabsTrigger
               value="stock"
-              className="gap-2 text-sm py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+              className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
             >
-              <PackageSearch className="h-4 w-4" />
-              <span className="hidden sm:inline font-bold">Posição Atual</span>
-              <span className="sm:hidden font-bold">Posição</span>
+              <PackageSearch className="h-5 w-5" />
+              <span className="hidden sm:inline">Posição Atual</span>
+              <span className="sm:hidden">Posição</span>
             </TabsTrigger>
             <TabsTrigger
               value="consumption"
-              className="gap-2 text-sm py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+              className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
             >
-              <TrendingDown className="h-4 w-4" />
-              <span className="hidden sm:inline font-bold">Consumo</span>
-              <span className="sm:hidden font-bold">Consumo</span>
+              <TrendingDown className="h-5 w-5" />
+              <span className="hidden sm:inline">Consumo</span>
+              <span className="sm:hidden">Consumo</span>
             </TabsTrigger>
             <TabsTrigger
               value="purchase"
-              className="gap-2 text-sm py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+              className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
             >
-              <ShoppingCart className="h-4 w-4" />
-              <span className="hidden sm:inline font-bold">Compras</span>
-              <span className="sm:hidden font-bold">Compras</span>
+              <ShoppingCart className="h-5 w-5" />
+              <span className="hidden sm:inline">Compras</span>
+              <span className="sm:hidden">Compras</span>
             </TabsTrigger>
             <TabsTrigger
               value="trends"
-              className="gap-2 text-sm py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+              className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
             >
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline font-bold">Tendências</span>
-              <span className="sm:hidden font-bold">Trends</span>
+              <TrendingUp className="h-5 w-5" />
+              <span className="hidden sm:inline">Tendências</span>
+              <span className="sm:hidden">Trends</span>
             </TabsTrigger>
             <TabsTrigger
               value="stale"
-              className="gap-2 text-sm py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+              className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
             >
-              <Clock className="h-4 w-4" />
-              <span className="hidden sm:inline font-bold">Inativos</span>
-              <span className="sm:hidden font-bold">Inativos</span>
+              <Clock className="h-5 w-5" />
+              <span className="hidden sm:inline">Inativos</span>
+              <span className="sm:hidden">Inativos</span>
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <div className="bg-card border border-border/50 shadow-subtle rounded-3xl p-6 lg:p-8 min-h-[400px]">
+        <div className="bg-card/90 backdrop-blur-2xl border border-border/50 shadow-2xl rounded-[2rem] p-6 lg:p-10 min-h-[500px]">
           <TabsContent
             value="stock"
             className="mt-0 outline-none animate-in fade-in-50 duration-500 slide-in-from-bottom-4"
