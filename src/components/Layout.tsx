@@ -23,58 +23,75 @@ export default function Layout() {
 
   return (
     <SidebarProvider>
-      <div className="flex w-full min-h-screen bg-background">
+      <div className="flex w-full min-h-screen bg-muted/30">
         <AppSidebar />
         <div className="flex flex-col flex-1 min-w-0">
-          <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b bg-card shadow-subtle z-10 sticky top-0">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="-ml-2 text-muted-foreground hover:text-foreground" />
-              <div className="hidden md:flex relative w-72 items-center">
-                <Search className="absolute left-2.5 text-muted-foreground h-4 w-4" />
+          <header className="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border/40 bg-background/80 backdrop-blur-xl z-10 sticky top-0 shadow-sm transition-all">
+            <div className="flex items-center gap-6">
+              <SidebarTrigger className="-ml-2 text-muted-foreground hover:text-foreground transition-colors" />
+              <div className="hidden md:flex relative w-80 items-center group">
+                <Search className="absolute left-4 text-muted-foreground/70 h-4 w-4 group-focus-within:text-primary transition-colors" />
                 <Input
-                  placeholder="Buscar itens rapidamente..."
-                  className="pl-9 h-9 bg-muted/50 border-transparent focus-visible:border-primary"
+                  placeholder="Buscar recursos e análises..."
+                  className="pl-11 h-10 bg-muted/50 border-transparent focus-visible:bg-background focus-visible:ring-primary/20 focus-visible:border-primary/30 rounded-full transition-all shadow-none"
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-5">
-              <NotificationCenter />
+            <div className="flex items-center gap-4 lg:gap-6">
+              <div className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted/80 transition-colors cursor-pointer relative">
+                <NotificationCenter />
+              </div>
+
+              <div className="h-6 w-px bg-border/60 hidden sm:block"></div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+                  <div className="flex items-center gap-3 cursor-pointer group p-1 rounded-full hover:bg-muted/50 transition-colors">
                     <div className="hidden sm:block text-right">
-                      <p className="text-sm font-medium leading-none truncate max-w-[120px]">
+                      <p className="text-sm font-bold leading-none text-foreground group-hover:text-primary transition-colors">
                         {userName}
                       </p>
-                      <p className="text-xs text-muted-foreground">Sessão Ativa</p>
+                      <p className="text-xs text-muted-foreground mt-1.5 font-medium">
+                        Gestor de Sistema
+                      </p>
                     </div>
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
+                    <Avatar className="h-10 w-10 border-2 border-background shadow-sm group-hover:border-primary/20 transition-all">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/20 text-primary font-bold text-sm">
                         {userInitials}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground border-b mb-1 truncate">
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 rounded-xl shadow-elevation p-2 border-border/50"
+                >
+                  <div className="px-3 py-2.5 text-xs font-semibold text-muted-foreground mb-2 bg-muted/50 rounded-lg truncate">
                     {user?.email}
                   </div>
-                  <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
+                  <DropdownMenuItem
+                    onClick={signOut}
+                    className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer rounded-lg py-2.5"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sair do sistema
+                    <span className="font-bold">Sair do sistema</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </header>
 
-          <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
+          <main className="flex-1 p-6 lg:p-8 overflow-auto">
             <div className="max-w-7xl mx-auto animate-fade-in-up">
               {loading ? (
-                <div className="flex items-center justify-center h-64">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <div className="flex items-center justify-center min-h-[60vh]">
+                  <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                    <p className="text-muted-foreground font-bold tracking-wide animate-pulse">
+                      Carregando seus dados...
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <Outlet />

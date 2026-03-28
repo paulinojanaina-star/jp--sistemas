@@ -17,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 
 export function AppSidebar() {
   const location = useLocation()
@@ -34,43 +35,57 @@ export function AppSidebar() {
   const moduleName = 'Menu Principal'
 
   return (
-    <Sidebar className="border-r border-border/60 shadow-sm bg-card/50">
+    <Sidebar className="border-r border-border/40 shadow-subtle bg-card/80 backdrop-blur-xl">
       <SidebarContent>
         <SidebarGroup>
-          <div className="p-4 mb-4 mt-2">
+          <div className="p-5 mb-4 mt-2">
             <div className="flex flex-col gap-2">
               <Link
                 to="/"
-                className="flex items-center gap-3 text-foreground hover:opacity-80 transition-opacity"
+                className="flex items-center gap-3 text-foreground hover:opacity-80 transition-opacity group"
               >
-                <div className="bg-primary/10 p-2.5 rounded-xl text-primary border border-primary/10 shadow-sm">
-                  <Leaf className="h-5 w-5" strokeWidth={1.5} />
+                <div className="bg-gradient-to-br from-primary to-primary/80 p-2.5 rounded-xl text-primary-foreground shadow-elevation group-hover:scale-105 transition-transform duration-300">
+                  <Leaf className="h-5 w-5 drop-shadow-sm" strokeWidth={2} />
                 </div>
-                <span className="font-light tracking-tight text-xl">JP Sistemas</span>
+                <span className="font-extrabold tracking-tight text-xl">JP Sistemas</span>
               </Link>
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1 mt-2">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 mt-3">
                 {moduleName}
               </span>
             </div>
           </div>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={
-                    location.pathname === item.url ||
-                    (item.url !== '/' && location.pathname.startsWith(item.url + '/'))
-                  }
-                  className="font-medium mb-1 tracking-wide"
-                >
-                  <Link to={item.url}>
-                    <item.icon className="h-4 w-4" strokeWidth={1.5} />
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+          <SidebarMenu className="px-3 gap-1">
+            {navItems.map((item) => {
+              const isActive =
+                location.pathname === item.url ||
+                (item.url !== '/' && location.pathname.startsWith(item.url + '/'))
+
+              return (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    className={cn(
+                      'font-semibold mb-1 tracking-wide rounded-xl h-11 transition-all duration-200',
+                      isActive
+                        ? 'bg-primary/10 text-primary shadow-sm'
+                        : 'hover:bg-muted/80 text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    <Link to={item.url} className="flex items-center gap-3 px-3">
+                      <item.icon
+                        className={cn(
+                          'h-4 w-4',
+                          isActive ? 'text-primary' : 'text-muted-foreground',
+                        )}
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
