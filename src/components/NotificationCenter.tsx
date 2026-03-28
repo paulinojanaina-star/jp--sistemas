@@ -1,16 +1,18 @@
 import { useNotificationStore } from '@/stores/useNotificationStore'
-import { Bell, Check, AlertTriangle, PackageOpen, TrendingDown } from 'lucide-react'
+import { Bell, Check, AlertTriangle, PackageOpen, TrendingDown, CalendarClock } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useInventoryStore } from '@/stores/useInventoryStore'
-import { formatDistanceToNow } from 'date-fns'
+import { useTeamStore } from '@/stores/useTeamStore'
+import { formatDistanceToNow, parseISO, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { calculateConsumption } from '@/utils/consumptionLogic'
 
 export function NotificationCenter() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
   const { items, movements } = useInventoryStore()
+  const { timeOffRequests } = useTeamStore()
 
   const lowStockItems = items.filter((i) => (i.current_quantity || 0) < (i.min_quantity || 0))
 
@@ -18,13 +20,26 @@ export function NotificationCenter() {
     .map((item) => ({ item, ...calculateConsumption(item, movements) }))
     .filter((x) => x.isStockoutRisk)
 
+  const todayStr = new Date().toISOString().split('T')[0]
+  const nextWeekDate = new Date()
+  nextWeekDate.setDate(nextWeekDate.getDate() + 7)
+  const nextWeekStr = nextWeekDate.toISOString().split('T')[0]
+
+  const upcomingTimeOffs = timeOffRequests
+    .filter((r) => r.start_date > todayStr && r.start_date <= nextWeekStr)
+    .sort((a, b) => a.start_date.localeCompare(b.start_date))
+
   const unreadNotifications = notifications.filter((n) => !n.read_at)
 
   // Badge alert count should only consider actual database unread notifications
   // This ensures the badge is disabled when the user reads them.
   const totalAlerts = unreadCount
 
-  const hasAnyAlerts = unreadCount > 0 || lowStockItems.length > 0 || itemsAtRisk.length > 0
+  const hasAnyAlerts =
+    unreadCount > 0 ||
+    lowStockItems.length > 0 ||
+    itemsAtRisk.length > 0 ||
+    upcomingTimeOffs.length > 0
 
   return (
     <Popover>
@@ -35,11 +50,16 @@ export function NotificationCenter() {
           className="relative rounded-full hover:bg-muted outline-none"
         >
           <Bell className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-          {totalAlerts > 0 && (
+          {totalAlerts > 0 ? (
             <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center border-2 border-card">
               {totalAlerts > 9 ? '9+' : totalAlerts}
             </span>
-          )}
+          ) : upcomingTimeOffs.length > 0 ? (
+            <span
+              className="absolute top-1 right-1 h-3 w-3 rounded-full bg-blue-500 border-2 border-card"
+              title="Ausências próximas"
+            />
+          ) : null}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[360px] p-0 shadow-lg border-muted">
@@ -138,6 +158,28 @@ export function NotificationCenter() {
                       <span className="text-xs text-purple-600 font-medium ml-6">
                         Estoque acaba em ~{Math.round(daysUntilStockout)} dias (Saída/mês:{' '}
                         {monthlyConsumption})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {upcomingTimeOffs.length > 0 && (
+                <div className="p-2 border-t bg-blue-500/5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 px-2 py-1.5">
+                    Ausências (Próximos 7 dias)
+                  </p>
+                  {upcomingTimeOffs.map((req) => (
+                    <div
+                      key={`timeoff-${req.id}`}
+                      className="flex flex-col items-start gap-1 p-2.5 rounded-md hover:bg-blue-500/10 cursor-default"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <CalendarClock className="h-4 w-4 text-blue-500 shrink-0" />
+                        <span className="font-medium text-sm truncate">{req.employees?.name}</span>
+                      </div>
+                      <span className="text-xs text-blue-600 font-medium ml-6">
+                        {req.type} - Início: {format(parseISO(req.start_date), 'dd/MM/yyyy')}
                       </span>
                     </div>
                   ))}
