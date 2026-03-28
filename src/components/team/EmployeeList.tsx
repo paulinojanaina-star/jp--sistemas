@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { UserPlus, Edit2, Trash2, CalendarPlus, CalendarDays } from 'lucide-react'
+import { differenceInYears, parseISO } from 'date-fns'
 import { Employee } from '@/types/team'
 import { EmployeeFormModal } from './EmployeeFormModal'
 import { TimeOffFormModal } from './TimeOffFormModal'
@@ -114,13 +115,14 @@ export function EmployeeList() {
               <TableRow className="bg-muted/30">
                 <TableHead className="py-3">Nome</TableHead>
                 <TableHead className="py-3">Categoria</TableHead>
+                <TableHead className="py-3">Idade</TableHead>
                 <TableHead className="text-right py-3">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredEmployees.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                     {employees.length === 0
                       ? 'Nenhum profissional cadastrado.'
                       : 'Nenhum profissional encontrado para esta categoria.'}
@@ -137,6 +139,11 @@ export function EmployeeList() {
                       >
                         {emp.category}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="py-2.5 text-muted-foreground text-sm">
+                      {emp.birth_date
+                        ? `${differenceInYears(new Date(), parseISO(emp.birth_date))} anos`
+                        : '-'}
                     </TableCell>
                     <TableCell className="text-right py-2.5">
                       <div className="flex items-center justify-end gap-2">

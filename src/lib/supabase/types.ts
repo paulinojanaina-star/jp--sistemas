@@ -11,18 +11,21 @@ export type Database = {
     Tables: {
       employees: {
         Row: {
+          birth_date: string | null
           category: string
           created_at: string
           id: string
           name: string
         }
         Insert: {
+          birth_date?: string | null
           category: string
           created_at?: string
           id?: string
           name: string
         }
         Update: {
+          birth_date?: string | null
           category?: string
           created_at?: string
           id?: string
@@ -393,6 +396,7 @@ export const Constants = {
 //   name: text (not null)
 //   category: text (not null)
 //   created_at: timestamp with time zone (not null, default: now())
+//   birth_date: date (nullable)
 // Table: inventory_movements
 //   id: uuid (not null, default: gen_random_uuid())
 //   item_id: uuid (not null)
@@ -441,7 +445,7 @@ export const Constants = {
 // Table: Janaina Paulino
 //   PRIMARY KEY Janaina Paulino_pkey: PRIMARY KEY (id)
 // Table: employees
-//   CHECK employees_category_check: CHECK ((category = ANY (ARRAY['MEDICO'::text, 'ENFERMEIRO'::text, 'AUXILIAR'::text, 'TECNICO'::text, 'AGENTE'::text])))
+//   CHECK employees_category_check: CHECK ((category = ANY (ARRAY['MEDICO'::text, 'ENFERMEIRO'::text, 'AUXILIAR'::text, 'TECNICO'::text, 'AGENTE'::text, 'GERENTE'::text])))
 //   PRIMARY KEY employees_pkey: PRIMARY KEY (id)
 // Table: inventory_movements
 //   FOREIGN KEY inventory_movements_item_id_fkey: FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE

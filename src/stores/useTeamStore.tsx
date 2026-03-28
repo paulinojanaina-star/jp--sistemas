@@ -34,22 +34,65 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
   const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchEmployees = async () => {
-    const { data, error } = await supabase.from('employees').select('*').order('name')
-    if (!error && data) setEmployees(data as Employee[])
-  }
-
-  const fetchTimeOffs = async () => {
-    const { data, error } = await supabase
-      .from('time_off_requests')
-      .select('*, employees(name, category)')
-      .order('start_date', { ascending: true })
-    if (!error && data) setTimeOffRequests(data as any as TimeOffRequest[])
-  }
-
   const refreshData = async () => {
     setLoading(true)
-    await Promise.all([fetchEmployees(), fetchTimeOffs()])
+    const { data: emps, error: empsError } = await supabase
+      .from('employees')
+      .select('*')
+      .order('name')
+
+    if (!empsError && emps) {
+      setEmployees(emps as Employee[])
+
+      const { data: timeOffs, error: timeOffsError } = await supabase
+        .from('time_off_requests')
+        .select('*, employees(name, category)')
+        .order('start_date', { ascending: true })
+
+      if (!timeOffsError && timeOffs) {
+        const currentYear = new Date().getFullYear()
+        const birthdayTimeOffs: TimeOffRequest[] = []
+
+        emps.forEach((emp: any) => {
+          if (emp.birth_date) {
+            const [, month, day] = emp.birth_date.split('-')
+
+            // Add birthdays for previous, current and next year
+            ;[-1, 0, 1].forEach((yearOffset) => {
+              const year = currentYear + yearOffset
+              const bdayDate = `${year}-${month}-${day}`
+
+              const hasManualBday = timeOffs.some(
+                (t: any) =>
+                  t.employee_id === emp.id && t.type === 'ANIVERSARIO' && t.start_date === bdayDate,
+              )
+
+              if (!hasManualBday) {
+                birthdayTimeOffs.push({
+                  id: `auto-bday-${emp.id}-${year}`,
+                  employee_id: emp.id,
+                  type: 'ANIVERSARIO',
+                  start_date: bdayDate,
+                  end_date: bdayDate,
+                  notes: 'Aniversário (Automático)',
+                  created_at: new Date().toISOString(),
+                  employees: {
+                    name: emp.name,
+                    category: emp.category as EmployeeCategory,
+                  },
+                })
+              }
+            })
+          }
+        })
+
+        const allTimeOffs = [...(timeOffs as any as TimeOffRequest[]), ...birthdayTimeOffs].sort(
+          (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+        )
+
+        setTimeOffRequests(allTimeOffs)
+      }
+    }
     setLoading(false)
   }
 
@@ -94,6 +137,9 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
       notes?: string
     },
   ) => {
+    if (id?.startsWith('auto-bday-')) {
+      return { error: { message: 'Não é possível editar uma ausência automática de aniversário.' } }
+    }
     let result
     if (id) {
       result = await supabase.from('time_off_requests').update(data).eq('id', id)
@@ -106,6 +152,14 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const deleteTimeOff = async (id: string) => {
+    if (id.startsWith('auto-bday-')) {
+      return {
+        error: {
+          message:
+            'Não é possível excluir uma ausência automática de aniversário. Remova a data de nascimento do cadastro do profissional caso deseje cancelar.',
+        },
+      }
+    }
     const { error } = await supabase.from('time_off_requests').delete().eq('id', id)
     if (error) return { error }
     await refreshData()
