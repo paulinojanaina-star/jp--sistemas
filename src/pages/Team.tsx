@@ -31,7 +31,7 @@ export default function Team() {
             Capital Humano Corporativo
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white drop-shadow-md">
-            Equipe & Escalas
+            Profissionais & Escalas
           </h1>
           <p className="text-base text-slate-300 max-w-2xl font-medium drop-shadow-sm">
             Gestão executiva de profissionais, registro integrado de ausências e monitoramento

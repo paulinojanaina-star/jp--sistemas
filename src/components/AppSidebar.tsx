@@ -27,7 +27,7 @@ export function AppSidebar() {
     { title: 'Itens', url: '/itens', icon: Package },
     { title: 'Movimentações', url: '/movimentacoes', icon: ArrowRightLeft },
     { title: 'Histórico', url: '/historico', icon: History },
-    { title: 'Equipe & Escalas', url: '/equipe', icon: Users },
+    { title: 'Profissionais & Escalas', url: '/equipe', icon: Users },
     { title: 'Relatórios', url: '/relatorios', icon: FileBarChart },
     { title: 'Saúde dos Dados', url: '/saude-dados', icon: Activity },
   ]

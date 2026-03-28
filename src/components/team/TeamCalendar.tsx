@@ -209,7 +209,7 @@ export function TeamCalendar() {
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border border-border/50">
                   <Info className="h-5 w-5 opacity-50" />
                 </div>
-                <p className="text-sm font-medium">Equipe completa neste dia</p>
+                <p className="text-sm font-medium">Escala completa neste dia</p>
                 <p className="text-xs opacity-70">Nenhuma ausência registrada.</p>
               </div>
             ) : (

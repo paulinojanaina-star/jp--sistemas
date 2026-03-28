@@ -78,7 +78,7 @@ export function EmployeeList() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h3 className="text-base font-semibold">Gestão da Equipe</h3>
+        <h3 className="text-base font-semibold">Gestão de Profissionais</h3>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full sm:w-[180px] h-9">

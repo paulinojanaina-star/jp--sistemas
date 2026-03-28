@@ -127,7 +127,7 @@ export function TeamDashboard() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
         <Card className="flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Equipe</CardTitle>
+            <CardTitle className="text-sm font-medium">Profissionais</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="flex-1 flex items-center">
