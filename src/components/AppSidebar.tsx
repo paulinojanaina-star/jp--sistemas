@@ -21,21 +21,17 @@ import {
 export function AppSidebar() {
   const location = useLocation()
 
-  const isPessoal = location.pathname.startsWith('/equipe')
-
-  const almoxarifadoItems = [
+  const navItems = [
     { title: 'Dashboard', url: '/almoxarifado', icon: LayoutDashboard },
     { title: 'Itens', url: '/itens', icon: Package },
     { title: 'Movimentações', url: '/movimentacoes', icon: ArrowRightLeft },
     { title: 'Histórico', url: '/historico', icon: History },
+    { title: 'Equipe & Escalas', url: '/equipe', icon: Users },
     { title: 'Relatórios', url: '/relatorios', icon: FileBarChart },
     { title: 'Saúde dos Dados', url: '/saude-dados', icon: Activity },
   ]
 
-  const pessoalItems = [{ title: 'Equipe & Escalas', url: '/equipe', icon: Users }]
-
-  const navItems = isPessoal ? pessoalItems : almoxarifadoItems
-  const moduleName = isPessoal ? 'Gestão de Pessoal' : 'Almoxarifado'
+  const moduleName = 'Menu Principal'
 
   return (
     <Sidebar className="border-r border-border/60 shadow-sm bg-card/50">
