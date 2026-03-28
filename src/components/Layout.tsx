@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from './AppSidebar'
 import { useInventoryStore } from '@/stores/useInventoryStore'
@@ -17,9 +17,6 @@ import { NotificationCenter } from './NotificationCenter'
 export default function Layout() {
   const { loading } = useInventoryStore()
   const { user, signOut } = useAuth()
-  const location = useLocation()
-
-  const isHome = location.pathname === '/'
 
   const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
   const userInitials = userName.substring(0, 2).toUpperCase()
@@ -27,13 +24,11 @@ export default function Layout() {
   return (
     <SidebarProvider>
       <div className="flex w-full min-h-screen bg-background">
-        {!isHome && <AppSidebar />}
+        <AppSidebar />
         <div className="flex flex-col flex-1 min-w-0">
           <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b bg-card shadow-subtle z-10 sticky top-0">
             <div className="flex items-center gap-4">
-              {!isHome && (
-                <SidebarTrigger className="-ml-2 text-muted-foreground hover:text-foreground" />
-              )}
+              <SidebarTrigger className="-ml-2 text-muted-foreground hover:text-foreground" />
               <div className="hidden md:flex relative w-72 items-center">
                 <Search className="absolute left-2.5 text-muted-foreground h-4 w-4" />
                 <Input
