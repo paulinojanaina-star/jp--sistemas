@@ -2,7 +2,24 @@ import { useState } from 'react'
 import { useTeamStore } from '@/stores/useTeamStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  Info,
+  PartyPopper,
+  Music,
+  Heart,
+  Landmark,
+  Briefcase,
+  Sun,
+  Flag,
+  Star,
+  Flower2,
+  Gift,
+  Palmtree,
+  CalendarHeart,
+} from 'lucide-react'
 import {
   format,
   addMonths,
@@ -18,7 +35,25 @@ import {
 import { ptBR } from 'date-fns/locale'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+
+const getHolidayIcon = (notes?: string | null) => {
+  if (!notes) return CalendarHeart
+  const lower = notes.toLowerCase()
+  if (lower.includes('ano novo') || lower.includes('confraterniza')) return PartyPopper
+  if (lower.includes('carnaval')) return Music
+  if (lower.includes('paixão') || lower.includes('santa') || lower.includes('cristo')) return Heart
+  if (lower.includes('tiradentes')) return Landmark
+  if (lower.includes('trabalho')) return Briefcase
+  if (lower.includes('corpus')) return Sun
+  if (lower.includes('independência') || lower.includes('república')) return Flag
+  if (lower.includes('aparecida') || lower.includes('criança')) return Star
+  if (lower.includes('finados')) return Flower2
+  if (lower.includes('natal')) return Gift
+  if (lower.includes('facultativo')) return Palmtree
+  return CalendarHeart
+}
 
 export function TeamCalendar() {
   const { timeOffRequests } = useTeamStore()
@@ -158,16 +193,43 @@ export function TeamCalendar() {
                   </span>
 
                   {isSystemOff ? (
-                    <div className="flex flex-col w-full gap-1 mt-auto z-10 items-center justify-center h-full pb-1 sm:pb-2">
-                      <span
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex flex-col w-full gap-0.5 sm:gap-1 mt-auto z-10 items-center justify-center h-full pb-1 sm:pb-2 px-1 cursor-help">
+                          {(() => {
+                            const Icon = getHolidayIcon(systemOffRequest.notes)
+                            return (
+                              <Icon
+                                className={cn(
+                                  'h-4 w-4 sm:h-5 sm:w-5 opacity-80',
+                                  isHoliday ? 'text-emerald-600' : 'text-violet-600',
+                                )}
+                              />
+                            )
+                          })()}
+                          <span
+                            className={cn(
+                              'text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-center leading-tight line-clamp-2',
+                              isHoliday ? 'text-emerald-700' : 'text-violet-700',
+                            )}
+                          >
+                            {systemOffRequest.notes ||
+                              (isHoliday ? 'Feriado' : 'Ponto Facultativo')}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent
                         className={cn(
-                          'text-[10px] sm:text-xs font-bold uppercase tracking-wider text-center leading-tight px-1',
-                          isHoliday ? 'text-emerald-700' : 'text-violet-700',
+                          'border-none font-medium',
+                          isHoliday
+                            ? 'bg-emerald-600 text-emerald-50'
+                            : 'bg-violet-600 text-violet-50',
                         )}
                       >
-                        {systemOffRequest.notes || systemOffRequest.employees?.name}
-                      </span>
-                    </div>
+                        {systemOffRequest.notes ||
+                          (isHoliday ? 'Feriado Nacional' : 'Decreto Municipal')}
+                      </TooltipContent>
+                    </Tooltip>
                   ) : (
                     requests.length > 0 && (
                       <div className="flex flex-col w-full gap-1 mt-auto z-10">
@@ -274,6 +336,21 @@ export function TeamCalendar() {
                             isFeriado ? 'bg-emerald-500' : 'bg-violet-500',
                           )}
                         />
+                        {(() => {
+                          const Icon = getHolidayIcon(req.notes)
+                          return (
+                            <div
+                              className={cn(
+                                'p-3 rounded-full mb-1',
+                                isFeriado
+                                  ? 'bg-emerald-500/20 text-emerald-600'
+                                  : 'bg-violet-500/20 text-violet-600',
+                              )}
+                            >
+                              <Icon className="h-8 w-8" />
+                            </div>
+                          )
+                        })()}
                         <Badge
                           variant="outline"
                           className={cn(
@@ -291,7 +368,7 @@ export function TeamCalendar() {
                             isFeriado ? 'text-emerald-800' : 'text-violet-800',
                           )}
                         >
-                          {req.notes || req.employees?.name}
+                          {req.notes || (isFeriado ? 'Feriado' : 'Ponto Facultativo')}
                         </span>
                         <p
                           className={cn(
