@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useSearchParams } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from './AppSidebar'
 import { useInventoryStore } from '@/stores/useInventoryStore'
@@ -18,9 +18,8 @@ export default function Layout() {
   const { loading } = useInventoryStore()
   const { user, signOut } = useAuth()
   const location = useLocation()
-  const [searchParams] = useSearchParams()
 
-  const isHome = location.pathname === '/' && searchParams.get('module') !== 'almoxarifado'
+  const isHome = location.pathname === '/'
 
   const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
   const userInitials = userName.substring(0, 2).toUpperCase()
