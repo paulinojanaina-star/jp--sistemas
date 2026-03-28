@@ -62,11 +62,14 @@ export function TeamDashboard() {
   const getBadgeStyle = (type: string) => {
     if (type === 'FERIAS') return 'bg-amber-500 hover:bg-amber-600 text-white border-transparent'
     if (type === 'ATESTADO') return 'bg-rose-500 hover:bg-rose-600 text-white border-transparent'
+    if (type === 'FERIADO')
+      return 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent'
     return 'text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100'
   }
 
   const renderRequest = (req: TimeOffRequest) => {
     const isActive = req.start_date <= todayStr && req.end_date >= todayStr
+    const isSystem = req.id.startsWith('auto-')
     return (
       <div
         key={req.id}
@@ -100,24 +103,26 @@ export function TeamDashboard() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setEditingRequest(req)}
-          >
-            <Edit className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(req.id)}
-            className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        {!isSystem && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setEditingRequest(req)}
+            >
+              <Edit className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleDelete(req.id)}
+              className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
       </div>
     )
   }

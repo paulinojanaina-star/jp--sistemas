@@ -86,9 +86,92 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
           }
         })
 
-        const allTimeOffs = [...(timeOffs as any as TimeOffRequest[]), ...birthdayTimeOffs].sort(
-          (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
-        )
+        const holidays: any[] = []
+        const fixedHolidays = [
+          { month: 1, day: 1, name: 'Confraternização Universal' },
+          { month: 4, day: 21, name: 'Tiradentes' },
+          { month: 5, day: 1, name: 'Dia do Trabalhador' },
+          { month: 9, day: 7, name: 'Independência do Brasil' },
+          { month: 10, day: 12, name: 'Nossa Senhora Aparecida' },
+          { month: 11, day: 2, name: 'Finados' },
+          { month: 11, day: 15, name: 'Proclamação da República' },
+          { month: 12, day: 25, name: 'Natal' },
+        ]
+
+        function getEasterUTC(year: number) {
+          const a = year % 19
+          const b = Math.floor(year / 100)
+          const c = year % 100
+          const d = Math.floor(b / 4)
+          const e = b % 4
+          const f = Math.floor((b + 8) / 25)
+          const g = Math.floor((b - f + 1) / 3)
+          const h = (19 * a + b - d - g + 15) % 30
+          const i = Math.floor(c / 4)
+          const k = c % 4
+          const l = (32 + 2 * e + 2 * i - h - k) % 7
+          const m = Math.floor((a + 11 * h + 22 * l) / 451)
+          const month = Math.floor((h + l - 7 * m + 114) / 31)
+          const day = ((h + l - 7 * m + 114) % 31) + 1
+          return new Date(Date.UTC(year, month - 1, day))
+        }
+
+        const createHolidayReq = (idSuffix: string, name: string, dateStr: string) => ({
+          id: `auto-holiday-${idSuffix}`,
+          employee_id: 'system-holiday',
+          type: 'FERIADO',
+          start_date: dateStr,
+          end_date: dateStr,
+          notes: 'Feriado Nacional',
+          created_at: new Date().toISOString(),
+          employees: {
+            name: name,
+            category: 'FERIADO',
+          },
+        })
+
+        ;[-1, 0, 1].forEach((yearOffset) => {
+          const year = currentYear + yearOffset
+
+          fixedHolidays.forEach((h) => {
+            const dateStr = `${year}-${String(h.month).padStart(2, '0')}-${String(h.day).padStart(2, '0')}`
+            holidays.push(createHolidayReq(`${year}-${h.month}-${h.day}`, h.name, dateStr))
+          })
+
+          const easter = getEasterUTC(year)
+
+          const goodFriday = new Date(easter)
+          goodFriday.setUTCDate(easter.getUTCDate() - 2)
+          holidays.push(
+            createHolidayReq(
+              `${year}-goodfriday`,
+              'Paixão de Cristo',
+              goodFriday.toISOString().split('T')[0],
+            ),
+          )
+
+          const carnaval = new Date(easter)
+          carnaval.setUTCDate(easter.getUTCDate() - 47)
+          holidays.push(
+            createHolidayReq(`${year}-carnaval`, 'Carnaval', carnaval.toISOString().split('T')[0]),
+          )
+
+          const corpus = new Date(easter)
+          corpus.setUTCDate(easter.getUTCDate() + 60)
+          holidays.push(
+            createHolidayReq(
+              `${year}-corpus`,
+              'Corpus Christi',
+              corpus.toISOString().split('T')[0],
+            ),
+          )
+        })
+
+        const allTimeOffs = [
+          ...(timeOffs as any as TimeOffRequest[]),
+          ...birthdayTimeOffs,
+          ...holidays,
+        ].sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
 
         setTimeOffRequests(allTimeOffs)
       }
@@ -137,8 +220,8 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
       notes?: string
     },
   ) => {
-    if (id?.startsWith('auto-bday-')) {
-      return { error: { message: 'Não é possível editar uma ausência automática de aniversário.' } }
+    if (id?.startsWith('auto-')) {
+      return { error: { message: 'Não é possível editar um registro automático do sistema.' } }
     }
     let result
     if (id) {
@@ -152,11 +235,10 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const deleteTimeOff = async (id: string) => {
-    if (id.startsWith('auto-bday-')) {
+    if (id.startsWith('auto-')) {
       return {
         error: {
-          message:
-            'Não é possível excluir uma ausência automática de aniversário. Remova a data de nascimento do cadastro do profissional caso deseje cancelar.',
+          message: 'Não é possível excluir um registro automático (aniversário ou feriado).',
         },
       }
     }

@@ -45,6 +45,7 @@ export function TeamCalendar() {
     if (type === 'FERIAS') return 'bg-amber-500/10 text-amber-600 border-amber-200'
     if (type === 'ATESTADO') return 'bg-rose-500/10 text-rose-600 border-rose-200'
     if (type === 'ANIVERSARIO') return 'bg-fuchsia-500/10 text-fuchsia-600 border-fuchsia-200'
+    if (type === 'FERIADO') return 'bg-emerald-500/10 text-emerald-700 border-emerald-200'
     return 'bg-blue-500/10 text-blue-600 border-blue-200'
   }
 
@@ -52,6 +53,7 @@ export function TeamCalendar() {
     if (type === 'FERIAS') return 'bg-amber-500'
     if (type === 'ATESTADO') return 'bg-rose-500'
     if (type === 'ANIVERSARIO') return 'bg-fuchsia-500'
+    if (type === 'FERIADO') return 'bg-emerald-500'
     return 'bg-blue-500'
   }
 
@@ -162,11 +164,15 @@ export function TeamCalendar() {
                                   ? 'bg-rose-100 text-rose-700 border-rose-200/50'
                                   : req.type === 'ANIVERSARIO'
                                     ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200/50'
-                                    : 'bg-blue-100 text-blue-700 border-blue-200/50',
+                                    : req.type === 'FERIADO'
+                                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300/50'
+                                      : 'bg-blue-100 text-blue-700 border-blue-200/50',
                             )}
                             title={`${req.employees?.name} - ${req.type}`}
                           >
-                            {req.employees?.name?.split(' ')[0]}
+                            {req.type === 'FERIADO'
+                              ? req.employees?.name
+                              : req.employees?.name?.split(' ')[0]}
                           </div>
                         ))}
                         {requests.length > 3 && (
