@@ -39,6 +39,7 @@ export function ItemTableRow({
   let isExpiringSoon = false
   let nearestExpiry = null
   let nearestBatch = null
+  let isExpiring120Days = false
 
   if (!nearest && movements) {
     const latestInWithExpiry = movements
@@ -69,6 +70,8 @@ export function ItemTableRow({
         isExpired = true
       } else if (diffDays <= 60) {
         isExpiringSoon = true
+      } else if (diffDays <= 120) {
+        isExpiring120Days = true
       }
     }
   }
@@ -81,7 +84,9 @@ export function ItemTableRow({
         ? 'bg-purple-500/5 hover:bg-purple-500/10'
         : isExpiringSoon || isCritical
           ? 'bg-amber-500/5 hover:bg-amber-500/10'
-          : ''
+          : isExpiring120Days
+            ? 'bg-yellow-500/5 hover:bg-yellow-500/10'
+            : ''
 
   return (
     <TableRow className={rowHighlightClass}>
@@ -131,6 +136,16 @@ export function ItemTableRow({
               Vence em Breve
             </Badge>
           )}
+          {isExpiring120Days &&
+            !isZero &&
+            !isExpired &&
+            !isStockoutRisk &&
+            !isCritical &&
+            !isExpiringSoon && (
+              <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
+                Vence em 120 dias
+              </Badge>
+            )}
         </div>
         <div className="text-xs text-muted-foreground">{item.unit_type}</div>
       </TableCell>
@@ -144,9 +159,11 @@ export function ItemTableRow({
                   ? 'text-slate-900 dark:text-slate-100 font-bold'
                   : isExpiringSoon && !isZero
                     ? 'text-orange-600'
-                    : isZero
-                      ? 'text-muted-foreground/70'
-                      : 'text-foreground',
+                    : isExpiring120Days && !isZero
+                      ? 'text-yellow-600'
+                      : isZero
+                        ? 'text-muted-foreground/70'
+                        : 'text-foreground',
               )}
             >
               <CalendarIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
