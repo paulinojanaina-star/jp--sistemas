@@ -145,7 +145,6 @@ export const exportStockReportPdf = async (
   const printWindow = window.open('', '_blank')
   if (!printWindow) return { error: new Error('Popup blocked') }
 
-  const now = new Date()
   const formattedDate = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
 
   let filterTitle = 'Completo'
