@@ -8,6 +8,7 @@ import { useTeamStore } from '@/stores/useTeamStore'
 import { formatDistanceToNow, parseISO, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { calculateConsumption } from '@/utils/consumptionLogic'
+import { getNearestExpiry } from '@/utils/expiryLogic'
 
 export function NotificationCenter() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
@@ -19,6 +20,27 @@ export function NotificationCenter() {
   const itemsAtRisk = items
     .map((item) => ({ item, ...calculateConsumption(item, movements) }))
     .filter((x) => x.isStockoutRisk)
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const expiringItems = items
+    .map((item) => {
+      if ((item.current_quantity || 0) === 0) return null
+      const nearest = getNearestExpiry(item, movements)
+      if (!nearest) return null
+      const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
+      if (diffDays >= 0 && diffDays <= 120) {
+        return { item, diffDays, date: nearest.date }
+      }
+      return null
+    })
+    .filter(Boolean) as Array<{ item: any; diffDays: number; date: Date }>
+
+  expiringItems.sort((a, b) => a.diffDays - b.diffDays)
+
+  const expiring60 = expiringItems.filter((i) => i.diffDays <= 60)
+  const expiring120 = expiringItems.filter((i) => i.diffDays > 60 && i.diffDays <= 120)
 
   const todayStr = new Date().toISOString().split('T')[0]
   const nextWeekDate = new Date()
@@ -39,6 +61,8 @@ export function NotificationCenter() {
     unreadCount > 0 ||
     lowStockItems.length > 0 ||
     itemsAtRisk.length > 0 ||
+    expiring60.length > 0 ||
+    expiring120.length > 0 ||
     upcomingTimeOffs.length > 0
 
   return (
@@ -142,7 +166,7 @@ export function NotificationCenter() {
               )}
 
               {itemsAtRisk.length > 0 && (
-                <div className="p-2 bg-purple-500/5">
+                <div className="p-2 border-b bg-purple-500/5">
                   <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 px-2 py-1.5">
                     Risco de Ruptura (&le; 40 dias)
                   </p>
@@ -164,8 +188,52 @@ export function NotificationCenter() {
                 </div>
               )}
 
+              {expiring60.length > 0 && (
+                <div className="p-2 border-b bg-orange-500/5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 px-2 py-1.5">
+                    Vencimento Crítico (&le; 60 dias)
+                  </p>
+                  {expiring60.map(({ item, diffDays, date }) => (
+                    <div
+                      key={`exp60-${item.id}`}
+                      className="flex flex-col items-start gap-1 p-2.5 rounded-md hover:bg-orange-500/10 cursor-default"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <CalendarClock className="h-4 w-4 text-orange-500 shrink-0" />
+                        <span className="font-medium text-sm truncate">{item.name}</span>
+                      </div>
+                      <span className="text-xs text-orange-600 font-medium ml-6">
+                        Vence em {Math.round(diffDays)} dias ({format(date, 'dd/MM/yyyy')})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {expiring120.length > 0 && (
+                <div className="p-2 border-b bg-yellow-500/5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-yellow-600 px-2 py-1.5">
+                    Atenção: Vencimento (&le; 120 dias)
+                  </p>
+                  {expiring120.map(({ item, diffDays, date }) => (
+                    <div
+                      key={`exp120-${item.id}`}
+                      className="flex flex-col items-start gap-1 p-2.5 rounded-md hover:bg-yellow-500/10 cursor-default"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <CalendarClock className="h-4 w-4 text-yellow-500 shrink-0" />
+                        <span className="font-medium text-sm truncate">{item.name}</span>
+                      </div>
+                      <span className="text-xs text-yellow-600 font-medium ml-6">
+                        Vence em {Math.round(diffDays)} dias ({format(date, 'dd/MM/yyyy')})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {upcomingTimeOffs.length > 0 && (
-                <div className="p-2 border-t bg-blue-500/5">
+                <div className="p-2 bg-blue-500/5">
                   <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 px-2 py-1.5">
                     Ausências (Próximos 7 dias)
                   </p>

@@ -133,7 +133,7 @@ export function ItemTableRow({
           )}
           {isExpiringSoon && !isZero && !isExpired && !isStockoutRisk && !isCritical && (
             <Badge className="bg-orange-500 hover:bg-orange-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
-              Vence em Breve
+              Vence em ≤ 60 dias
             </Badge>
           )}
           {isExpiring120Days &&
@@ -143,7 +143,7 @@ export function ItemTableRow({
             !isCritical &&
             !isExpiringSoon && (
               <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white h-5 px-1.5 text-[10px] uppercase border-transparent font-semibold">
-                Vence em 120 dias
+                Vence em ≤ 120 dias
               </Badge>
             )}
         </div>

@@ -19,7 +19,7 @@ export function DashboardExpiringItems() {
 
       const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
 
-      if (diffDays <= 180) {
+      if (diffDays <= 120) {
         return {
           item,
           nearestExpiry: nearest.date,
@@ -67,7 +67,7 @@ export function DashboardExpiringItems() {
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     <div
-                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isExpired ? 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-100' : diffDays <= 120 && diffDays > 60 ? 'bg-yellow-100 text-yellow-600' : 'bg-amber-100 text-amber-600'}`}
+                      className={`p-2 rounded-full mt-0.5 shrink-0 ${isExpired ? 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-100' : diffDays <= 120 && diffDays > 60 ? 'bg-yellow-100 text-yellow-600' : 'bg-orange-100 text-orange-600'}`}
                     >
                       <CalendarIcon size={14} />
                     </div>
@@ -83,13 +83,13 @@ export function DashboardExpiringItems() {
                   </div>
                   <Badge
                     variant={isExpired ? 'default' : 'default'}
-                    className={`shrink-0 ml-2 border-transparent ${isExpired ? 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200' : diffDays <= 120 && diffDays > 60 ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
+                    className={`shrink-0 ml-2 border-transparent ${isExpired ? 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200' : diffDays <= 120 && diffDays > 60 ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-orange-500 hover:bg-orange-600 text-white'}`}
                   >
                     {isExpired
                       ? 'Vencido'
                       : diffDays <= 120 && diffDays > 60
-                        ? '120 Dias'
-                        : 'Próximo'}
+                        ? '≤ 120 Dias'
+                        : '≤ 60 Dias'}
                   </Badge>
                 </div>
               )

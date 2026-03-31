@@ -38,6 +38,7 @@ export type Database = {
           batch_number: string | null
           created_at: string | null
           document_url: string | null
+          edit_justification: string | null
           expiry_date: string | null
           health_unit_name: string
           id: string
@@ -46,12 +47,14 @@ export type Database = {
           observations: string | null
           quantity: number
           responsible_id: string
+          special_reason: string | null
           type: string
         }
         Insert: {
           batch_number?: string | null
           created_at?: string | null
           document_url?: string | null
+          edit_justification?: string | null
           expiry_date?: string | null
           health_unit_name: string
           id?: string
@@ -60,12 +63,14 @@ export type Database = {
           observations?: string | null
           quantity: number
           responsible_id: string
+          special_reason?: string | null
           type: string
         }
         Update: {
           batch_number?: string | null
           created_at?: string | null
           document_url?: string | null
+          edit_justification?: string | null
           expiry_date?: string | null
           health_unit_name?: string
           id?: string
@@ -74,6 +79,7 @@ export type Database = {
           observations?: string | null
           quantity?: number
           responsible_id?: string
+          special_reason?: string | null
           type?: string
         }
         Relationships: [
@@ -410,6 +416,8 @@ export const Constants = {
 //   batch_number: text (nullable)
 //   manufacturing_date: date (nullable)
 //   expiry_date: date (nullable)
+//   special_reason: text (nullable)
+//   edit_justification: text (nullable)
 // Table: items
 //   id: uuid (not null, default: gen_random_uuid())
 //   name: text (not null)
@@ -452,7 +460,7 @@ export const Constants = {
 //   PRIMARY KEY inventory_movements_pkey: PRIMARY KEY (id)
 //   CHECK inventory_movements_quantity_check: CHECK ((quantity >= (0)::numeric))
 //   FOREIGN KEY inventory_movements_responsible_id_fkey: FOREIGN KEY (responsible_id) REFERENCES profiles(id)
-//   CHECK inventory_movements_type_check: CHECK ((type = ANY (ARRAY['IN'::text, 'OUT'::text])))
+//   CHECK inventory_movements_type_check: CHECK ((type = ANY (ARRAY['IN'::text, 'OUT'::text, 'SPECIAL_OUT'::text])))
 // Table: items
 //   PRIMARY KEY items_pkey: PRIMARY KEY (id)
 // Table: notifications
@@ -617,9 +625,68 @@ export const Constants = {
 //     -- Get current quantity
 //     SELECT current_quantity INTO current_qty FROM public.items WHERE id = NEW.item_id FOR UPDATE;
 //
-//     IF NEW.type = 'OUT' THEN
+//     IF NEW.type = 'OUT' OR NEW.type = 'SPECIAL_OUT' THEN
 //       IF current_qty - NEW.quantity < 0 THEN
 //         RAISE EXCEPTION 'Estoque insuficiente para esta saída. Quantidade atual: %', current_qty;
+//       END IF;
+//       UPDATE public.items SET current_quantity = current_quantity - NEW.quantity WHERE id = NEW.item_id;
+//     ELSIF NEW.type = 'IN' THEN
+//       UPDATE public.items SET current_quantity = current_quantity + NEW.quantity WHERE id = NEW.item_id;
+//     END IF;
+//
+//     RETURN NEW;
+//   END;
+//   $function$
+//
+// FUNCTION process_inventory_movement_delete()
+//   CREATE OR REPLACE FUNCTION public.process_inventory_movement_delete()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     IF OLD.type = 'OUT' OR OLD.type = 'SPECIAL_OUT' THEN
+//       UPDATE public.items SET current_quantity = current_quantity + OLD.quantity WHERE id = OLD.item_id;
+//     ELSIF OLD.type = 'IN' THEN
+//       UPDATE public.items SET current_quantity = current_quantity - OLD.quantity WHERE id = OLD.item_id;
+//     END IF;
+//     RETURN OLD;
+//   END;
+//   $function$
+//
+// FUNCTION process_inventory_movement_update()
+//   CREATE OR REPLACE FUNCTION public.process_inventory_movement_update()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   DECLARE
+//     current_qty NUMERIC;
+//   BEGIN
+//     -- Only process if quantity or type changed
+//     IF OLD.quantity = NEW.quantity AND OLD.type = NEW.type THEN
+//       RETURN NEW;
+//     END IF;
+//
+//     -- Revert old movement
+//     IF OLD.type = 'OUT' OR OLD.type = 'SPECIAL_OUT' THEN
+//       UPDATE public.items SET current_quantity = current_quantity + OLD.quantity WHERE id = OLD.item_id;
+//     ELSIF OLD.type = 'IN' THEN
+//       UPDATE public.items SET current_quantity = current_quantity - OLD.quantity WHERE id = OLD.item_id;
+//     END IF;
+//
+//     -- Apply new movement
+//     SELECT current_quantity INTO current_qty FROM public.items WHERE id = NEW.item_id FOR UPDATE;
+//
+//     IF NEW.type = 'OUT' OR NEW.type = 'SPECIAL_OUT' THEN
+//       IF current_qty - NEW.quantity < 0 THEN
+//          -- Revert back to avoid messing up state in error
+//          IF OLD.type = 'OUT' OR OLD.type = 'SPECIAL_OUT' THEN
+//            UPDATE public.items SET current_quantity = current_quantity - OLD.quantity WHERE id = OLD.item_id;
+//          ELSIF OLD.type = 'IN' THEN
+//            UPDATE public.items SET current_quantity = current_quantity + OLD.quantity WHERE id = OLD.item_id;
+//          END IF;
+//          RAISE EXCEPTION 'Estoque insuficiente para esta atualização. A quantidade ficaria negativa.';
 //       END IF;
 //       UPDATE public.items SET current_quantity = current_quantity - NEW.quantity WHERE id = NEW.item_id;
 //     ELSIF NEW.type = 'IN' THEN
@@ -635,6 +702,8 @@ export const Constants = {
 // Table: inventory_movements
 //   trigger_consumption_spike: CREATE TRIGGER trigger_consumption_spike AFTER INSERT ON public.inventory_movements FOR EACH ROW EXECUTE FUNCTION analyze_consumption_spike()
 //   trigger_process_movement: CREATE TRIGGER trigger_process_movement BEFORE INSERT ON public.inventory_movements FOR EACH ROW EXECUTE FUNCTION process_inventory_movement()
+//   trigger_process_movement_delete: CREATE TRIGGER trigger_process_movement_delete BEFORE DELETE ON public.inventory_movements FOR EACH ROW EXECUTE FUNCTION process_inventory_movement_delete()
+//   trigger_process_movement_update: CREATE TRIGGER trigger_process_movement_update BEFORE UPDATE ON public.inventory_movements FOR EACH ROW EXECUTE FUNCTION process_inventory_movement_update()
 
 // --- INDEXES ---
 // Table: inventory_movements

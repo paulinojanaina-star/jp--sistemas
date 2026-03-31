@@ -53,12 +53,19 @@ export default function Items() {
         Number(item.current_quantity) <= Number(item.min_quantity)
       )
     if (stockFilter === 'zero') return Number(item.current_quantity) === 0
-    if (stockFilter === 'expiring') {
+    if (stockFilter === 'expiring-60') {
       if (Number(item.current_quantity) === 0) return false
       const nearest = getNearestExpiry(item, movements)
       if (!nearest) return false
       const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
-      return diffDays <= 60
+      return diffDays >= 0 && diffDays <= 60
+    }
+    if (stockFilter === 'expiring-120') {
+      if (Number(item.current_quantity) === 0) return false
+      const nearest = getNearestExpiry(item, movements)
+      if (!nearest) return false
+      const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
+      return diffDays > 60 && diffDays <= 120
     }
     if (stockFilter === 'stockout') {
       if (Number(item.current_quantity) === 0) return false
@@ -68,7 +75,7 @@ export default function Items() {
     return true
   })
 
-  if (stockFilter === 'expiring') {
+  if (stockFilter === 'expiring-60' || stockFilter === 'expiring-120') {
     filteredItems.sort((a, b) => {
       const nearestA = getNearestExpiry(a, movements)
       const nearestB = getNearestExpiry(b, movements)
@@ -94,12 +101,20 @@ export default function Items() {
 
   const zeroItemsCount = items.filter((item) => Number(item.current_quantity) === 0).length
 
-  const expiringSoonItemsCount = items.filter((item) => {
+  const expiring60DaysCount = items.filter((item) => {
     if (Number(item.current_quantity) === 0) return false
     const nearest = getNearestExpiry(item, movements)
     if (!nearest) return false
     const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
     return diffDays >= 0 && diffDays <= 60
+  }).length
+
+  const expiring120DaysCount = items.filter((item) => {
+    if (Number(item.current_quantity) === 0) return false
+    const nearest = getNearestExpiry(item, movements)
+    if (!nearest) return false
+    const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
+    return diffDays > 60 && diffDays <= 120
   }).length
 
   const stockoutRiskItemsCount = items.filter((item) => {
@@ -110,7 +125,9 @@ export default function Items() {
   const handleExportPDF = async () => {
     setIsGenerating(true)
     const { error } = await exportStockReportPdf(
-      stockFilter === 'critical' || stockFilter === 'zero' ? stockFilter : 'all',
+      ['critical', 'zero', 'expiring-60', 'expiring-120', 'stockout'].includes(stockFilter)
+        ? stockFilter
+        : 'all',
     )
     setIsGenerating(false)
 
@@ -155,12 +172,24 @@ export default function Items() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card className="bg-destructive/10 border-destructive/20">
+          <CardContent className="p-4 flex flex-col gap-1">
+            <div className="flex justify-between items-center text-destructive">
+              <span className="text-xs lg:text-sm font-semibold uppercase tracking-wider">
+                Zerado
+              </span>
+              <PackageX className="h-4 w-4" />
+            </div>
+            <span className="text-2xl font-bold text-destructive">{zeroItemsCount}</span>
+          </CardContent>
+        </Card>
+
         <Card className="bg-amber-500/10 border-amber-500/20">
           <CardContent className="p-4 flex flex-col gap-1">
             <div className="flex justify-between items-center text-amber-700">
-              <span className="text-sm font-semibold uppercase tracking-wider">
-                Estoque Crítico
+              <span className="text-xs lg:text-sm font-semibold uppercase tracking-wider">
+                Crítico
               </span>
               <AlertTriangle className="h-4 w-4" />
             </div>
@@ -168,37 +197,39 @@ export default function Items() {
           </CardContent>
         </Card>
 
-        <Card className="bg-destructive/10 border-destructive/20">
+        <Card className="bg-purple-500/10 border-purple-500/20">
           <CardContent className="p-4 flex flex-col gap-1">
-            <div className="flex justify-between items-center text-destructive">
-              <span className="text-sm font-semibold uppercase tracking-wider">Estoque Zerado</span>
-              <PackageX className="h-4 w-4" />
+            <div className="flex justify-between items-center text-purple-700">
+              <span className="text-xs lg:text-sm font-semibold uppercase tracking-wider">
+                Ruptura
+              </span>
+              <TrendingDown className="h-4 w-4" />
             </div>
-            <span className="text-2xl font-bold text-destructive">{zeroItemsCount}</span>
+            <span className="text-2xl font-bold text-purple-700">{stockoutRiskItemsCount}</span>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-yellow-500/10 border-yellow-500/20">
+          <CardContent className="p-4 flex flex-col gap-1">
+            <div className="flex justify-between items-center text-yellow-700">
+              <span className="text-xs lg:text-sm font-semibold uppercase tracking-wider">
+                ≤ 120 dias
+              </span>
+              <Clock className="h-4 w-4" />
+            </div>
+            <span className="text-2xl font-bold text-yellow-700">{expiring120DaysCount}</span>
           </CardContent>
         </Card>
 
         <Card className="bg-orange-500/10 border-orange-500/20">
           <CardContent className="p-4 flex flex-col gap-1">
             <div className="flex justify-between items-center text-orange-700">
-              <span className="text-sm font-semibold uppercase tracking-wider">
-                Vence em ≤ 60 dias
+              <span className="text-xs lg:text-sm font-semibold uppercase tracking-wider">
+                ≤ 60 dias
               </span>
               <Clock className="h-4 w-4" />
             </div>
-            <span className="text-2xl font-bold text-orange-700">{expiringSoonItemsCount}</span>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-purple-500/10 border-purple-500/20">
-          <CardContent className="p-4 flex flex-col gap-1">
-            <div className="flex justify-between items-center text-purple-700">
-              <span className="text-sm font-semibold uppercase tracking-wider">
-                Risco de Ruptura
-              </span>
-              <TrendingDown className="h-4 w-4" />
-            </div>
-            <span className="text-2xl font-bold text-purple-700">{stockoutRiskItemsCount}</span>
+            <span className="text-2xl font-bold text-orange-700">{expiring60DaysCount}</span>
           </CardContent>
         </Card>
       </div>
@@ -220,11 +251,12 @@ export default function Items() {
               onValueChange={setStockFilter}
               className="w-full xl:w-auto overflow-x-auto"
             >
-              <TabsList className="grid w-full min-w-[500px] grid-cols-5">
+              <TabsList className="grid w-full min-w-[600px] grid-cols-6">
                 <TabsTrigger value="all">Todos</TabsTrigger>
                 <TabsTrigger value="critical">Crítico</TabsTrigger>
                 <TabsTrigger value="zero">Zerado</TabsTrigger>
-                <TabsTrigger value="expiring">Vencimento</TabsTrigger>
+                <TabsTrigger value="expiring-120">≤ 120 Dias</TabsTrigger>
+                <TabsTrigger value="expiring-60">≤ 60 Dias</TabsTrigger>
                 <TabsTrigger value="stockout">Ruptura</TabsTrigger>
               </TabsList>
             </Tabs>
@@ -248,11 +280,13 @@ export default function Items() {
                       ? 'Nenhum item com estoque crítico encontrado.'
                       : stockFilter === 'zero'
                         ? 'Nenhum item com estoque zerado encontrado.'
-                        : stockFilter === 'expiring'
-                          ? 'Nenhum item com validade próxima encontrado.'
-                          : stockFilter === 'stockout'
-                            ? 'Nenhum item com risco de ruptura encontrado.'
-                            : 'Nenhum item encontrado.'}
+                        : stockFilter === 'expiring-60'
+                          ? 'Nenhum item vencendo em 60 dias ou menos encontrado.'
+                          : stockFilter === 'expiring-120'
+                            ? 'Nenhum item vencendo em 120 dias ou menos encontrado.'
+                            : stockFilter === 'stockout'
+                              ? 'Nenhum item com risco de ruptura encontrado.'
+                              : 'Nenhum item encontrado.'}
                   </TableCell>
                 </TableRow>
               ) : (
