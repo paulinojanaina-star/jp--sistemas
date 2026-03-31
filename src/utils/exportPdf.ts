@@ -232,18 +232,18 @@ export const exportStockReportPdf = async (
                 if (['expiring', 'expired'].includes(filter)) {
                   const nearest = getNearestExpiry(item, movementsData)
                   const expiryStr = nearest ? nearest.date.toLocaleDateString('pt-BR') : '-'
-                  expiryColumn = \`<td class="text-right">\${expiryStr}</td>\`
+                  expiryColumn = `<td class="text-right">${expiryStr}</td>`
                 }
 
-                return \`
-                  <tr class="\${rowClass}">
-                    <td>\${formatItemDisplay(item)} \${badge}</td>
-                    <td>\${item.unit_type || '-'}</td>
-                    <td class="text-right">\${min}</td>
-                    <td class="text-right font-bold">\${qty}</td>
-                    \${expiryColumn}
+                return `
+                  <tr class="${rowClass}">
+                    <td>${formatItemDisplay(item)} ${badge}</td>
+                    <td>${item.unit_type || '-'}</td>
+                    <td class="text-right">${min}</td>
+                    <td class="text-right font-bold">${qty}</td>
+                    ${expiryColumn}
                   </tr>
-                \`
+                `
               })
               .join('')}
           </tbody>
@@ -316,12 +316,12 @@ export const exportStockReportExcel = async (filter: ReportFilter = 'all') => {
     else if (filter === 'expired') status = 'VENCIDO'
 
     const row = [formatItemDisplay(item), item.unit_type || '-', min, qty, status]
-    
+
     if (['expiring', 'expired'].includes(filter)) {
       const nearest = getNearestExpiry(item, movementsData)
       row.push(nearest ? nearest.date.toLocaleDateString('pt-BR') : '-')
     }
-    
+
     return row
   })
 
