@@ -1,4 +1,4 @@
-DO $
+DO $$
 BEGIN
   -- Drop check constraint safely to allow new type
   ALTER TABLE public.inventory_movements DROP CONSTRAINT IF EXISTS inventory_movements_type_check;
@@ -9,7 +9,7 @@ BEGIN
   -- Add new columns for special reasons and edit tracking
   ALTER TABLE public.inventory_movements ADD COLUMN IF NOT EXISTS special_reason TEXT;
   ALTER TABLE public.inventory_movements ADD COLUMN IF NOT EXISTS edit_justification TEXT;
-END $;
+END $$;
 
 -- Update the main process movement trigger to handle SPECIAL_OUT
 CREATE OR REPLACE FUNCTION public.process_inventory_movement()
