@@ -12,8 +12,11 @@ import {
   ArrowUpFromLine,
   FileText,
   CalendarIcon,
+  Edit,
+  AlertCircle,
 } from 'lucide-react'
 import { formatItemDisplay } from '@/utils/itemFormat'
+import { EditMovementDialog } from '@/components/EditMovementDialog'
 import {
   Table,
   TableBody,
@@ -36,6 +39,7 @@ export default function History() {
 
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<string>('TODOS')
+  const [editingMovement, setEditingMovement] = useState<any | null>(null)
 
   const filteredMovements = movements.filter((m) => {
     const itemName = m.items
@@ -98,6 +102,7 @@ export default function History() {
                 <SelectItem value="TODOS">Todas as Operações</SelectItem>
                 <SelectItem value="IN">Apenas Entradas</SelectItem>
                 <SelectItem value="OUT">Apenas Saídas</SelectItem>
+                <SelectItem value="SPECIAL_OUT">Saídas Especiais</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -113,6 +118,7 @@ export default function History() {
                 <TableHead>Responsável</TableHead>
                 <TableHead>Unidade Origem/Destino</TableHead>
                 <TableHead className="text-center">Anexo</TableHead>
+                <TableHead className="text-center">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -125,6 +131,7 @@ export default function History() {
               ) : (
                 filteredMovements.map((m) => {
                   const isEntry = m.type === 'IN'
+                  const isSpecial = m.type === 'SPECIAL_OUT'
 
                   return (
                     <TableRow key={m.id}>
@@ -139,18 +146,33 @@ export default function History() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={isEntry ? 'outline' : 'default'}
-                          className={`uppercase text-[10px] tracking-wider font-semibold ${isEntry ? 'text-secondary border-secondary/30 bg-secondary/10' : ''}`}
+                          variant={isEntry ? 'outline' : isSpecial ? 'secondary' : 'default'}
+                          className={`uppercase text-[10px] tracking-wider font-semibold ${isEntry ? 'text-secondary border-secondary/30 bg-secondary/10' : isSpecial ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' : ''}`}
                         >
                           <span className="flex items-center gap-1">
                             {isEntry ? (
                               <ArrowDownToLine size={12} strokeWidth={1.5} />
+                            ) : isSpecial ? (
+                              <AlertCircle size={12} strokeWidth={1.5} />
                             ) : (
                               <ArrowUpFromLine size={12} strokeWidth={1.5} />
                             )}
-                            {isEntry ? 'ENTRADA' : 'SAÍDA'}
+                            {isEntry ? 'ENTRADA' : isSpecial ? 'SAÍDA ESP.' : 'SAÍDA'}
                           </span>
                         </Badge>
+                        {isSpecial && m.special_reason && (
+                          <div className="text-[10px] text-muted-foreground mt-1 font-medium">
+                            {m.special_reason}
+                          </div>
+                        )}
+                        {m.edit_justification && (
+                          <div
+                            className="text-[10px] text-blue-500 mt-1 cursor-help"
+                            title={`Justificativa: ${m.edit_justification}`}
+                          >
+                            *Editado
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="font-medium">
                         {m.items
@@ -209,6 +231,16 @@ export default function History() {
                           </Button>
                         )}
                       </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditingMovement(m)}
+                          title="Editar Registro"
+                        >
+                          <Edit className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   )
                 })
@@ -217,6 +249,14 @@ export default function History() {
           </Table>
         </CardContent>
       </Card>
+
+      {editingMovement && (
+        <EditMovementDialog
+          movement={editingMovement}
+          open={!!editingMovement}
+          onOpenChange={(open) => !open && setEditingMovement(null)}
+        />
+      )}
     </div>
   )
 }

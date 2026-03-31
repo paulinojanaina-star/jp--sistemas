@@ -1,7 +1,7 @@
 export const ITEM_UNITS = ['Caixa', 'Unidade', 'Rolo', 'Litro', 'Frasco', 'Par', 'Pacote'] as const
 
 export type ItemUnit = (typeof ITEM_UNITS)[number] | string
-export type MovementType = 'IN' | 'OUT'
+export type MovementType = 'IN' | 'OUT' | 'SPECIAL_OUT'
 
 export interface Item {
   id: string
@@ -27,6 +27,8 @@ export interface Movement {
   batch_number?: string | null
   manufacturing_date?: string | null
   expiry_date?: string | null
+  special_reason?: string | null
+  edit_justification?: string | null
 
   // Joined fields from Supabase
   items?: { name: string }

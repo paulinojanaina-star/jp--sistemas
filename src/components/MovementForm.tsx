@@ -49,17 +49,26 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
-const movementSchema = z.object({
-  item_id: z.string().min(1, 'Selecione um item'),
-  type: z.enum(['IN', 'OUT']),
-  quantity: z.coerce.number().positive('A quantidade deve ser maior que zero'),
-  health_unit_name: z.string().min(2, 'Especifique a origem ou destino').trim(),
-  observations: z.string().optional(),
-  file: z.any().optional(),
-  batch_number: z.string().optional(),
-  manufacturing_date: z.string().optional(),
-  expiry_date: z.string().optional(),
-})
+const movementSchema = z
+  .object({
+    item_id: z.string().min(1, 'Selecione um item'),
+    type: z.enum(['IN', 'OUT', 'SPECIAL_OUT']),
+    quantity: z.coerce.number().positive('A quantidade deve ser maior que zero'),
+    health_unit_name: z.string().min(2, 'Especifique a origem ou destino').trim(),
+    special_reason: z.string().optional(),
+    observations: z.string().optional(),
+    file: z.any().optional(),
+    batch_number: z.string().optional(),
+    manufacturing_date: z.string().optional(),
+    expiry_date: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.type === 'SPECIAL_OUT' && !data.special_reason) return false
+      return true
+    },
+    { message: 'Selecione o motivo da saída especial', path: ['special_reason'] },
+  )
 
 export function MovementForm() {
   const { items, addMovement } = useInventoryStore()
@@ -77,6 +86,7 @@ export function MovementForm() {
       type: 'OUT',
       health_unit_name: '',
       observations: '',
+      special_reason: '',
       item_id: defaultItemId,
       batch_number: '',
       manufacturing_date: '',
@@ -89,7 +99,7 @@ export function MovementForm() {
   const quantityInput = form.watch('quantity')
 
   const selectedItem = items.find((i) => i.id === selectedItemId)
-  const isOutbound = selectedType === 'OUT'
+  const isOutbound = selectedType === 'OUT' || selectedType === 'SPECIAL_OUT'
   const quantity = Number(quantityInput) || 0
   const willBeNegative = selectedItem && isOutbound && quantity > selectedItem.current_quantity
   const newBalance = selectedItem
@@ -134,9 +144,10 @@ export function MovementForm() {
 
     const movementPayload = {
       item_id: values.item_id,
-      type: values.type.toUpperCase() as 'IN' | 'OUT',
+      type: values.type.toUpperCase() as any,
       quantity: Number(values.quantity),
       health_unit_name: values.health_unit_name.trim(),
+      special_reason: values.type === 'SPECIAL_OUT' ? values.special_reason : null,
       observations: values.observations?.trim() || undefined,
       responsible_id: session.user.id,
       document_url: documentUrl,
@@ -160,6 +171,7 @@ export function MovementForm() {
       item_id: '',
       quantity: 1,
       observations: '',
+      special_reason: '',
       file: undefined,
       batch_number: '',
       manufacturing_date: '',
@@ -200,11 +212,42 @@ export function MovementForm() {
                             <ArrowUpFromLine className="text-primary h-4 w-4" /> Saída
                           </div>
                         </SelectItem>
+                        <SelectItem value="SPECIAL_OUT">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="text-amber-500 h-4 w-4" /> Saída Especial
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
                 )}
               />
+
+              {selectedType === 'SPECIAL_OUT' && (
+                <FormField
+                  control={form.control}
+                  name="special_reason"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Motivo da Saída Especial</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o motivo..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Vencimento">Vencimento</SelectItem>
+                          <SelectItem value="Doação">Doação</SelectItem>
+                          <SelectItem value="A Esclarecer">A Esclarecer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <div className="space-y-2">
                 <FormLabel>Responsável (Automático)</FormLabel>
                 <div className="h-10 px-3 py-2 border rounded-md bg-muted text-sm text-muted-foreground flex items-center">

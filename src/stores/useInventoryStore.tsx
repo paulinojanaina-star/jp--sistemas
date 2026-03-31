@@ -31,6 +31,7 @@ interface InventoryContextType {
   addMovement: (
     movement: Omit<Movement, 'id' | 'created_at' | 'items' | 'profiles'>,
   ) => Promise<{ error?: any }>
+  updateMovement: (id: string, updates: Partial<Movement>) => Promise<{ error?: any }>
   mergeItems: (sourceId: string, destinationId: string) => Promise<{ error?: any }>
 }
 
@@ -194,7 +195,17 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   const addMovement = async (
     movement: Omit<Movement, 'id' | 'created_at' | 'items' | 'profiles'>,
   ) => {
-    const { error } = await supabase.from('inventory_movements').insert(movement)
+    const { error } = await supabase.from('inventory_movements').insert(movement as any)
+    if (error) return { error }
+    await refreshData()
+    return {}
+  }
+
+  const updateMovement = async (id: string, updates: Partial<Movement>) => {
+    const { error } = await supabase
+      .from('inventory_movements')
+      .update(updates as any)
+      .eq('id', id)
     if (error) return { error }
     await refreshData()
     return {}
@@ -222,6 +233,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
         updateItemBatchInfo,
         deleteItem,
         addMovement,
+        updateMovement,
         mergeItems,
       }}
     >
