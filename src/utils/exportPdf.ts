@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase/client'
 import { formatItemDisplay } from '@/utils/itemFormat'
+import { getNearestExpiry } from '@/utils/expiryLogic'
 
-export type ReportFilter = 'all' | 'critical' | 'zero'
+export type ReportFilter = 'all' | 'critical' | 'zero' | 'expiring' | 'expired'
 
 const downloadExcel = (
   filename: string,
@@ -106,7 +107,16 @@ export const exportStockReportPdf = async (
 
   if (error || !latestItems) return { error: error || new Error('No data') }
 
+  let movementsData: any[] = []
+  if (filter === 'expiring' || filter === 'expired') {
+    const { data: movements } = await supabase.from('inventory_movements').select('*')
+    movementsData = movements || []
+  }
+
   let filteredItems = latestItems
+  const now = new Date()
+  const days120 = new Date(now.getTime() + 120 * 24 * 60 * 60 * 1000)
+
   if (filter === 'critical') {
     filteredItems = latestItems.filter(
       (item) =>
@@ -115,6 +125,18 @@ export const exportStockReportPdf = async (
     )
   } else if (filter === 'zero') {
     filteredItems = latestItems.filter((item) => (item.current_quantity ?? 0) <= 0)
+  } else if (filter === 'expiring') {
+    filteredItems = latestItems.filter((item) => {
+      const nearest = getNearestExpiry(item, movementsData)
+      if (!nearest) return false
+      return nearest.date > now && nearest.date <= days120
+    })
+  } else if (filter === 'expired') {
+    filteredItems = latestItems.filter((item) => {
+      const nearest = getNearestExpiry(item, movementsData)
+      if (!nearest) return false
+      return nearest.date <= now
+    })
   }
 
   // Ensure alphabetical sorting by the new formatted name
@@ -129,6 +151,8 @@ export const exportStockReportPdf = async (
   let filterTitle = 'Completo'
   if (filter === 'critical') filterTitle = 'Estoque Crítico'
   if (filter === 'zero') filterTitle = 'Estoque Zerado'
+  if (filter === 'expiring') filterTitle = 'A Vencer (120 dias)'
+  if (filter === 'expired') filterTitle = 'Vencidos'
 
   const html = `
     <!DOCTYPE html>
@@ -175,10 +199,11 @@ export const exportStockReportPdf = async (
               <th>Unidade</th>
               <th class="text-right">Estoque Mínimo</th>
               <th class="text-right">Quantidade Atual</th>
+              ${['expiring', 'expired'].includes(filter) ? '<th class="text-right">Vencimento</th>' : ''}
             </tr>
           </thead>
           <tbody>
-            ${filteredItems.length === 0 ? '<tr><td colspan="4" class="text-center">Nenhum item encontrado para este filtro.</td></tr>' : ''}
+            ${filteredItems.length === 0 ? `<tr><td colspan="${['expiring', 'expired'].includes(filter) ? 5 : 4}" class="text-center">Nenhum item encontrado para este filtro.</td></tr>` : ''}
             ${filteredItems
               .map((item) => {
                 const qty = item.current_quantity ?? 0
@@ -195,16 +220,30 @@ export const exportStockReportPdf = async (
                 } else if (isCritical) {
                   rowClass = 'low-stock'
                   badge = '<span class="status-badge badge-critical">CRÍTICO</span>'
+                } else if (filter === 'expiring') {
+                  rowClass = 'low-stock'
+                  badge = '<span class="status-badge badge-critical">A VENCER</span>'
+                } else if (filter === 'expired') {
+                  rowClass = 'zero-stock'
+                  badge = '<span class="status-badge badge-zero">VENCIDO</span>'
                 }
 
-                return `
-                  <tr class="${rowClass}">
-                    <td>${formatItemDisplay(item)} ${badge}</td>
-                    <td>${item.unit_type || '-'}</td>
-                    <td class="text-right">${min}</td>
-                    <td class="text-right font-bold">${qty}</td>
+                let expiryColumn = ''
+                if (['expiring', 'expired'].includes(filter)) {
+                  const nearest = getNearestExpiry(item, movementsData)
+                  const expiryStr = nearest ? nearest.date.toLocaleDateString('pt-BR') : '-'
+                  expiryColumn = \`<td class="text-right">\${expiryStr}</td>\`
+                }
+
+                return \`
+                  <tr class="\${rowClass}">
+                    <td>\${formatItemDisplay(item)} \${badge}</td>
+                    <td>\${item.unit_type || '-'}</td>
+                    <td class="text-right">\${min}</td>
+                    <td class="text-right font-bold">\${qty}</td>
+                    \${expiryColumn}
                   </tr>
-                `
+                \`
               })
               .join('')}
           </tbody>
@@ -228,7 +267,16 @@ export const exportStockReportExcel = async (filter: ReportFilter = 'all') => {
   const { data: latestItems, error } = await supabase.from('items').select('*')
   if (error || !latestItems) return { error: error || new Error('No data') }
 
+  let movementsData: any[] = []
+  if (filter === 'expiring' || filter === 'expired') {
+    const { data: movements } = await supabase.from('inventory_movements').select('*')
+    movementsData = movements || []
+  }
+
   let filteredItems = latestItems
+  const now = new Date()
+  const days120 = new Date(now.getTime() + 120 * 24 * 60 * 60 * 1000)
+
   if (filter === 'critical') {
     filteredItems = latestItems.filter(
       (item) =>
@@ -237,19 +285,44 @@ export const exportStockReportExcel = async (filter: ReportFilter = 'all') => {
     )
   } else if (filter === 'zero') {
     filteredItems = latestItems.filter((item) => (item.current_quantity ?? 0) <= 0)
+  } else if (filter === 'expiring') {
+    filteredItems = latestItems.filter((item) => {
+      const nearest = getNearestExpiry(item, movementsData)
+      if (!nearest) return false
+      return nearest.date > now && nearest.date <= days120
+    })
+  } else if (filter === 'expired') {
+    filteredItems = latestItems.filter((item) => {
+      const nearest = getNearestExpiry(item, movementsData)
+      if (!nearest) return false
+      return nearest.date <= now
+    })
   }
 
   filteredItems.sort((a, b) => formatItemDisplay(a).localeCompare(formatItemDisplay(b), 'pt-BR'))
 
   const headers = ['Nome do Item', 'Unidade', 'Estoque Mínimo', 'Quantidade Atual', 'Status']
+  if (['expiring', 'expired'].includes(filter)) {
+    headers.push('Vencimento')
+  }
+
   const rows = filteredItems.map((item) => {
     const qty = item.current_quantity ?? 0
     const min = item.min_quantity ?? 0
     let status = 'ADEQUADO'
     if (qty <= 0) status = 'ZERADO'
     else if (qty <= min) status = 'CRÍTICO'
+    else if (filter === 'expiring') status = 'A VENCER'
+    else if (filter === 'expired') status = 'VENCIDO'
 
-    return [formatItemDisplay(item), item.unit_type || '-', min, qty, status]
+    const row = [formatItemDisplay(item), item.unit_type || '-', min, qty, status]
+    
+    if (['expiring', 'expired'].includes(filter)) {
+      const nearest = getNearestExpiry(item, movementsData)
+      row.push(nearest ? nearest.date.toLocaleDateString('pt-BR') : '-')
+    }
+    
+    return row
   })
 
   return downloadExcel(`Estoque_${filter}`, headers, rows)
