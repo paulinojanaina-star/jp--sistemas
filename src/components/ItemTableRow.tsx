@@ -148,6 +148,14 @@ export function ItemTableRow({
             )}
         </div>
         <div className="text-xs text-muted-foreground">{item.unit_type}</div>
+        {item.description && (
+          <div
+            className="text-xs text-muted-foreground/80 mt-1.5 line-clamp-2 whitespace-normal break-words max-w-[280px]"
+            title={item.description}
+          >
+            <span className="font-medium text-muted-foreground">Obs:</span> {item.description}
+          </div>
+        )}
       </TableCell>
       <TableCell>
         {nearestExpiry ? (
