@@ -199,10 +199,11 @@ export const exportStockReportPdf = async (
               <th class="text-right">Estoque Mínimo</th>
               <th class="text-right">Quantidade Atual</th>
               ${['expiring', 'expired'].includes(filter) ? '<th class="text-right">Vencimento</th>' : ''}
+              <th>Observações</th>
             </tr>
           </thead>
           <tbody>
-            ${filteredItems.length === 0 ? `<tr><td colspan="${['expiring', 'expired'].includes(filter) ? 5 : 4}" class="text-center">Nenhum item encontrado para este filtro.</td></tr>` : ''}
+            ${filteredItems.length === 0 ? `<tr><td colspan="${['expiring', 'expired'].includes(filter) ? 6 : 5}" class="text-center">Nenhum item encontrado para este filtro.</td></tr>` : ''}
             ${filteredItems
               .map((item) => {
                 const qty = item.current_quantity ?? 0
@@ -241,6 +242,7 @@ export const exportStockReportPdf = async (
                     <td class="text-right">${min}</td>
                     <td class="text-right font-bold">${qty}</td>
                     ${expiryColumn}
+                    <td>${item.description || '-'}</td>
                   </tr>
                 `
               })
@@ -304,6 +306,7 @@ export const exportStockReportExcel = async (filter: ReportFilter = 'all') => {
   if (['expiring', 'expired'].includes(filter)) {
     headers.push('Vencimento')
   }
+  headers.push('Observações')
 
   const rows = filteredItems.map((item) => {
     const qty = item.current_quantity ?? 0
@@ -320,6 +323,7 @@ export const exportStockReportExcel = async (filter: ReportFilter = 'all') => {
       const nearest = getNearestExpiry(item, movementsData)
       row.push(nearest ? nearest.date.toLocaleDateString('pt-BR') : '-')
     }
+    row.push(item.description || '-')
 
     return row
   })
@@ -378,10 +382,11 @@ export const exportPurchaseSuggestionPdf = async (
               <th class="text-right">Estoque Atual</th>
               <th class="text-right">Sugestão Original</th>
               <th class="text-right">Qtd Comprar</th>
+              <th>Observações</th>
             </tr>
           </thead>
           <tbody>
-            ${suggestions.length === 0 ? '<tr><td colspan="7" class="text-center">Nenhum item com necessidade de compra.</td></tr>' : ''}
+            ${suggestions.length === 0 ? '<tr><td colspan="8" class="text-center">Nenhum item com necessidade de compra.</td></tr>' : ''}
             ${suggestions
               .map((item) => {
                 const isEdited = item.finalSuggestion !== item.suggestion
@@ -397,6 +402,7 @@ export const exportPurchaseSuggestionPdf = async (
                   <td class="text-right">${item.current_quantity}</td>
                   <td class="text-right text-muted">${item.suggestion}</td>
                   <td class="text-right ${highlightClass}">+${finalQtd}</td>
+                  <td>${item.description || '-'}</td>
                 </tr>
               `
               })
@@ -427,6 +433,7 @@ export const exportPurchaseSuggestionExcel = async (suggestions: Array<any>) => 
     'Estoque Atual',
     'Sugestão Original',
     'Qtd Comprar',
+    'Observações',
   ]
   const rows = suggestions.map((item) => [
     item.formattedName || item.name,
@@ -436,6 +443,7 @@ export const exportPurchaseSuggestionExcel = async (suggestions: Array<any>) => 
     item.current_quantity,
     item.suggestion,
     item.finalSuggestion ?? item.suggestion,
+    item.description || '-',
   ])
   return downloadExcel('Sugestao_Compra', headers, rows)
 }
@@ -475,15 +483,15 @@ export const exportTrendsExcel = async (data: Array<any>) => {
 export const exportStaleItemsPdf = async (data: Array<any>) => {
   return exportGenericPdf(
     'Itens sem Movimentação',
-    ['Item', 'Dias Ocioso', 'Estoque Atual'],
-    data.map((d) => [formatItemDisplay(d), d.daysStale, d.current_quantity]),
+    ['Item', 'Dias Ocioso', 'Estoque Atual', 'Observações'],
+    data.map((d) => [formatItemDisplay(d), d.daysStale, d.current_quantity, d.description || '-']),
   )
 }
 
 export const exportStaleItemsExcel = async (data: Array<any>) => {
   return downloadExcel(
     'Itens_Sem_Movimentacao',
-    ['Item', 'Dias Ocioso', 'Estoque Atual'],
-    data.map((d) => [formatItemDisplay(d), d.daysStale, d.current_quantity]),
+    ['Item', 'Dias Ocioso', 'Estoque Atual', 'Observações'],
+    data.map((d) => [formatItemDisplay(d), d.daysStale, d.current_quantity, d.description || '-']),
   )
 }
