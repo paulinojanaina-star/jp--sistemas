@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useTeamStore } from '@/stores/useTeamStore'
 import { Input } from '@/components/ui/input'
-import { Search, Edit, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Search } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { TimeOffRequest } from '@/types/team'
+import { SmartTimeOffCard } from './SmartTimeOffCard'
 
 export function TimeOffList({ onEdit }: { onEdit: (id: string) => void }) {
   const { timeOffRequests, deleteTimeOff } = useTeamStore()
@@ -26,80 +24,13 @@ export function TimeOffList({ onEdit }: { onEdit: (id: string) => void }) {
     }
   }
 
-  const formatDateBR = (dateStr: string) => {
-    const parts = dateStr.split('-')
-    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
-    return dateStr
-  }
-
-  const getBadgeStyle = (type: string) => {
-    if (type === 'FERIAS') return 'bg-amber-500 hover:bg-amber-600 text-white border-transparent'
-    if (type === 'ATESTADO') return 'bg-rose-500 hover:bg-rose-600 text-white border-transparent'
-    if (type === 'FERIADO')
-      return 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent'
-    return 'text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100'
-  }
-
-  const renderRequest = (req: TimeOffRequest) => {
-    const isActive = req.start_date <= todayStr && req.end_date >= todayStr
-    const isSystem = req.id.startsWith('auto-')
-    return (
-      <div
-        key={req.id}
-        className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg shadow-sm transition-colors hover:bg-muted/50 ${isActive ? 'bg-muted/30 border-primary/20' : 'bg-card'}`}
-      >
-        <div className="mb-2 sm:mb-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-sm">{req.employees?.name}</span>
-            <Badge
-              variant={req.type === 'FOLGA' ? 'outline' : 'default'}
-              className={`${getBadgeStyle(req.type)} text-[10px] px-1.5 py-0`}
-            >
-              {req.type}
-            </Badge>
-            {isActive && (
-              <Badge
-                variant="secondary"
-                className="bg-green-100 text-green-700 hover:bg-green-200 border-transparent text-[10px] px-1.5 py-0"
-              >
-                Ativo
-              </Badge>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-            {formatDateBR(req.start_date)} até {formatDateBR(req.end_date)}
-            <span className="text-[10px] opacity-70">({req.employees?.category})</span>
-          </p>
-          {req.notes && (
-            <p className="text-[10px] text-muted-foreground mt-0.5 italic line-clamp-1">
-              "{req.notes}"
-            </p>
-          )}
-        </div>
-        {!isSystem && (
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(req.id)}>
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleDelete(req.id)}
-              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
     <Card className="flex flex-col h-full border-border/50 shadow-sm animate-fade-in-up">
       <CardHeader className="pb-4 border-b">
         <CardTitle className="text-base">Todas as Escalas Programadas</CardTitle>
-        <CardDescription>Visão geral de todas as ausências futuras</CardDescription>
+        <CardDescription>
+          Visão geral de todas as ausências futuras em ordem cronológica
+        </CardDescription>
         <div className="mt-4 relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -124,7 +55,16 @@ export function TimeOffList({ onEdit }: { onEdit: (id: string) => void }) {
             </p>
           </div>
         ) : (
-          upcomingRequests.map(renderRequest)
+          <div className="grid grid-cols-1 gap-3">
+            {upcomingRequests.map((req) => (
+              <SmartTimeOffCard
+                key={req.id}
+                req={req}
+                onEdit={() => onEdit(req.id)}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
         )}
       </CardContent>
     </Card>
