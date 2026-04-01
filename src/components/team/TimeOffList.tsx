@@ -1,181 +1,131 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useTeamStore } from '@/stores/useTeamStore'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { format, isWithinInterval, parseISO, startOfDay, endOfDay } from 'date-fns'
-import { Edit, Search, Trash2 } from 'lucide-react'
+import { Search, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { TimeOffRequest } from '@/types/team'
 
-interface Props {
-  onEdit: (id: string) => void
-}
-
-export function TimeOffList({ onEdit }: Props) {
+export function TimeOffList({ onEdit }: { onEdit: (id: string) => void }) {
   const { timeOffRequests, deleteTimeOff } = useTeamStore()
-  const [search, setSearch] = useState('')
-  const [showHistory, setShowHistory] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const filteredRequests = useMemo(() => {
-    const today = startOfDay(new Date())
+  const todayStr = new Date().toISOString().split('T')[0]
 
-    return timeOffRequests
-      .filter((req) => {
-        const empName = req.employees?.name || 'Sistema'
-        const matchesSearch = empName.toLowerCase().includes(search.toLowerCase())
-
-        if (!matchesSearch) return false
-
-        if (!showHistory) {
-          const endDate = endOfDay(parseISO(req.end_date))
-          if (endDate < today) {
-            return false
-          }
-        }
-
-        return true
-      })
-      .sort((a, b) => parseISO(a.start_date).getTime() - parseISO(b.start_date).getTime())
-  }, [timeOffRequests, search, showHistory])
+  const upcomingRequests = timeOffRequests
+    .filter((r) => r.start_date >= todayStr)
+    .filter((r) =>
+      searchTerm ? r.employees?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : true,
+    )
+    .sort((a, b) => a.start_date.localeCompare(b.start_date))
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta escala?')) {
+    if (window.confirm('Tem certeza que deseja excluir este registro de ausência?')) {
       await deleteTimeOff(id)
     }
   }
 
-  const getBadgeStyle = (type: string) => {
-    if (type === 'FERIAS') return 'bg-amber-500/10 text-amber-600 border-amber-200'
-    if (type === 'ATESTADO') return 'bg-rose-500/10 text-rose-600 border-rose-200'
-    if (type === 'ANIVERSARIO') return 'bg-fuchsia-500/10 text-fuchsia-600 border-fuchsia-200'
-    if (type === 'PONTO_FACULTATIVO') return 'bg-blue-500/10 text-blue-600 border-blue-200'
-    return 'bg-slate-500/10 text-slate-600 border-slate-200'
+  const formatDateBR = (dateStr: string) => {
+    const parts = dateStr.split('-')
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
+    return dateStr
   }
 
-  const getStatus = (start: string, end: string) => {
-    const today = new Date()
-    const startDate = startOfDay(parseISO(start))
-    const endDate = endOfDay(parseISO(end))
+  const getBadgeStyle = (type: string) => {
+    if (type === 'FERIAS') return 'bg-amber-500 hover:bg-amber-600 text-white border-transparent'
+    if (type === 'ATESTADO') return 'bg-rose-500 hover:bg-rose-600 text-white border-transparent'
+    if (type === 'FERIADO')
+      return 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent'
+    return 'text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100'
+  }
 
-    if (isWithinInterval(today, { start: startDate, end: endDate })) {
-      return (
-        <Badge
-          variant="secondary"
-          className="bg-green-500/10 text-green-600 hover:bg-green-500/20 text-[10px] uppercase border-none"
-        >
-          Ativo
-        </Badge>
-      )
-    }
-    if (today < startDate) {
-      return (
-        <Badge
-          variant="secondary"
-          className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 text-[10px] uppercase border-none"
-        >
-          Futuro
-        </Badge>
-      )
-    }
+  const renderRequest = (req: TimeOffRequest) => {
+    const isActive = req.start_date <= todayStr && req.end_date >= todayStr
+    const isSystem = req.id.startsWith('auto-')
     return (
-      <Badge
-        variant="secondary"
-        className="bg-gray-500/10 text-gray-600 hover:bg-gray-500/20 text-[10px] uppercase border-none"
+      <div
+        key={req.id}
+        className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg shadow-sm transition-colors hover:bg-muted/50 ${isActive ? 'bg-muted/30 border-primary/20' : 'bg-card'}`}
       >
-        Concluído
-      </Badge>
+        <div className="mb-2 sm:mb-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-medium text-sm">{req.employees?.name}</span>
+            <Badge
+              variant={req.type === 'FOLGA' ? 'outline' : 'default'}
+              className={`${getBadgeStyle(req.type)} text-[10px] px-1.5 py-0`}
+            >
+              {req.type}
+            </Badge>
+            {isActive && (
+              <Badge
+                variant="secondary"
+                className="bg-green-100 text-green-700 hover:bg-green-200 border-transparent text-[10px] px-1.5 py-0"
+              >
+                Ativo
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            {formatDateBR(req.start_date)} até {formatDateBR(req.end_date)}
+            <span className="text-[10px] opacity-70">({req.employees?.category})</span>
+          </p>
+          {req.notes && (
+            <p className="text-[10px] text-muted-foreground mt-0.5 italic line-clamp-1">
+              "{req.notes}"
+            </p>
+          )}
+        </div>
+        {!isSystem && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(req.id)}>
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleDelete(req.id)}
+              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </div>
     )
   }
 
   return (
-    <Card className="border-none shadow-none bg-transparent">
-      <CardHeader className="px-0 pt-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl">Todas as Escalas Programadas</CardTitle>
-            <CardDescription className="text-base mt-1">
-              Visão geral de todas as ausências ativas e futuras
-            </CardDescription>
-          </div>
+    <Card className="flex flex-col h-full border-border/50 shadow-sm animate-fade-in-up">
+      <CardHeader className="pb-4 border-b">
+        <CardTitle className="text-base">Todas as Escalas Programadas</CardTitle>
+        <CardDescription>Visão geral de todas as ausências futuras</CardDescription>
+        <div className="mt-4 relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por colaborador..."
+            className="pl-9 bg-muted/50"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </CardHeader>
-      <CardContent className="px-0 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome do profissional..."
-              className="pl-9 h-10 bg-background"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch id="show-history" checked={showHistory} onCheckedChange={setShowHistory} />
-            <Label
-              htmlFor="show-history"
-              className="text-sm font-medium cursor-pointer whitespace-nowrap"
-            >
-              Mostrar histórico completo
-            </Label>
-          </div>
-        </div>
-
-        <div className="space-y-4 mt-4">
-          {filteredRequests.map((req) => (
-            <div
-              key={req.id}
-              className="p-4 rounded-xl border bg-card flex flex-col gap-2 transition-colors hover:border-border/80"
-            >
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-base text-foreground">
-                      {req.employees?.name || 'Sistema'}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'text-[10px] uppercase font-bold px-2 py-0.5',
-                        getBadgeStyle(req.type),
-                      )}
-                    >
-                      {req.type}
-                    </Badge>
-                    {getStatus(req.start_date, req.end_date)}
-                  </div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-1">
-                    {format(parseISO(req.start_date), 'dd/MM/yyyy')} até{' '}
-                    {format(parseISO(req.end_date), 'dd/MM/yyyy')}
-                    <span className="uppercase text-xs ml-1">({req.employees?.category})</span>
-                  </div>
-                  {req.notes && (
-                    <div className="text-sm text-muted-foreground italic mt-2">"{req.notes}"</div>
-                  )}
-                </div>
-
-                {!req.id.startsWith('auto-') && (
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(req.id)}>
-                      <Edit className="h-4 w-4 text-foreground" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(req.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                )}
-              </div>
+      <CardContent className="pt-4 space-y-3 flex-1 max-h-[600px] overflow-y-auto">
+        {upcomingRequests.length === 0 ? (
+          <div className="py-12 text-center flex flex-col items-center justify-center border rounded-lg border-dashed">
+            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
+              <Search className="h-6 w-6 text-muted-foreground/50" />
             </div>
-          ))}
-          {filteredRequests.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground border rounded-xl border-dashed bg-background/50">
-              Nenhuma escala encontrada com este nome.
-            </div>
-          )}
-        </div>
+            <p className="text-sm font-medium text-foreground">Nenhuma escala futura encontrada</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {searchTerm
+                ? 'Tente buscar por outro nome'
+                : 'Não há ausências programadas a partir de hoje'}
+            </p>
+          </div>
+        ) : (
+          upcomingRequests.map(renderRequest)
+        )}
       </CardContent>
     </Card>
   )

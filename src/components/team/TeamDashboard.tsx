@@ -2,7 +2,9 @@ import { useTeamStore } from '@/stores/useTeamStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
+  Search,
   Users,
   Palmtree,
   CalendarOff,
@@ -43,8 +45,13 @@ export function TeamDashboard() {
     .filter((r) => r.start_date <= nextWeekEndStr && r.end_date >= tmrStr)
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
 
+  const [searchTerm, setSearchTerm] = useState('')
+
   const upcomingRequests = timeOffRequests
-    .filter((r) => r.end_date >= todayStr)
+    .filter((r) => r.start_date >= todayStr)
+    .filter((r) =>
+      searchTerm ? r.employees?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : true,
+    )
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
 
   const handleDelete = async (id: string) => {
@@ -229,7 +236,16 @@ export function TeamDashboard() {
         <Card className="flex flex-col h-full">
           <CardHeader className="pb-4 border-b">
             <CardTitle className="text-base">Todas as Escalas Programadas</CardTitle>
-            <CardDescription>Visão geral de todas as ausências ativas e futuras</CardDescription>
+            <CardDescription>Visão geral de todas as ausências futuras</CardDescription>
+            <div className="mt-4 relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por colaborador..."
+                className="pl-9 bg-muted/50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </CardHeader>
           <CardContent className="pt-4 space-y-3 flex-1">
             {upcomingRequests.length === 0 ? (
