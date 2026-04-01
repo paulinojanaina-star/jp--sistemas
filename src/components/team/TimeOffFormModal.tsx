@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTeamStore } from '@/stores/useTeamStore'
-import { useToast } from '@/hooks/use-toast'
-import { TimeOffRequest, TimeOffType } from '@/types/team'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,88 +12,79 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2 } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 interface Props {
-  request?: TimeOffRequest | null
-  preselectedEmployeeId?: string | null
+  id: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function TimeOffFormModal({ request, preselectedEmployeeId, open, onOpenChange }: Props) {
-  const { employees, saveTimeOff } = useTeamStore()
+export function TimeOffFormModal({ id, open, onOpenChange }: Props) {
+  const { employees, timeOffRequests, saveTimeOff } = useTeamStore()
   const { toast } = useToast()
-
   const [employeeId, setEmployeeId] = useState('')
-  const [type, setType] = useState<TimeOffType | ''>('')
+  const [type, setType] = useState('FERIAS')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (open) {
-      setEmployeeId(request?.employee_id || preselectedEmployeeId || '')
-      setType(request?.type || '')
-      setStartDate(request?.start_date || '')
-      setEndDate(request?.end_date || '')
-      setNotes(request?.notes || '')
+    if (id && id !== 'new') {
+      const req = timeOffRequests.find((r) => r.id === id)
+      if (req) {
+        setEmployeeId(req.employee_id)
+        setType(req.type)
+        setStartDate(req.start_date)
+        setEndDate(req.end_date)
+        setNotes(req.notes || '')
+      }
+    } else {
+      setEmployeeId('')
+      setType('FERIAS')
+      setStartDate('')
+      setEndDate('')
+      setNotes('')
     }
-  }, [open, request, preselectedEmployeeId])
+  }, [id, open, timeOffRequests])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!employeeId || !type || !startDate || !endDate) return
-    if (startDate > endDate) {
-      toast({
-        title: 'Data inválida',
-        description: 'A data final deve ser maior ou igual à data inicial.',
-        variant: 'destructive',
-      })
-      return
-    }
-
     setLoading(true)
-    const { error } = await saveTimeOff(request?.id || null, {
+    const { error } = await saveTimeOff(id === 'new' ? null : id, {
       employee_id: employeeId,
-      type: type as TimeOffType,
+      type: type as any,
       start_date: startDate,
       end_date: endDate,
-      notes: notes.trim(),
+      notes,
     })
     setLoading(false)
-
     if (error) {
-      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' })
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
     } else {
-      toast({ title: 'Sucesso', description: 'Registro salvo com sucesso.' })
+      toast({ title: 'Sucesso', description: 'Escala salva com sucesso.' })
       onOpenChange(false)
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{request ? 'Editar Ausência' : 'Registrar Ausência'}</DialogTitle>
+          <DialogTitle>{id === 'new' ? 'Nova Escala Programada' : 'Editar Escala'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label>Profissional</Label>
-            <Select
-              value={employeeId}
-              onValueChange={setEmployeeId}
-              required
-              disabled={!!preselectedEmployeeId && !request}
-            >
+            <Select value={employeeId} onValueChange={setEmployeeId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o profissional" />
+                <SelectValue placeholder="Selecione o membro..." />
               </SelectTrigger>
               <SelectContent>
                 {employees.map((emp) => (
                   <SelectItem key={emp.id} value={emp.id}>
-                    {emp.name} - {emp.category}
+                    {emp.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -109,21 +92,20 @@ export function TimeOffFormModal({ request, preselectedEmployeeId, open, onOpenC
           </div>
           <div className="space-y-2">
             <Label>Tipo de Ausência</Label>
-            <Select value={type} onValueChange={(v) => setType(v as TimeOffType)} required>
+            <Select value={type} onValueChange={setType} required>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="FERIAS">Férias</SelectItem>
-                <SelectItem value="FOLGA">Folga / Recesso</SelectItem>
-                <SelectItem value="ATESTADO">Atestado Médico</SelectItem>
-                <SelectItem value="ANIVERSARIO">Aniversário</SelectItem>
+                <SelectItem value="FOLGA">Folga</SelectItem>
+                <SelectItem value="ATESTADO">Atestado</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Data de Início</Label>
+              <Label>Data Início</Label>
               <Input
                 type="date"
                 value={startDate}
@@ -132,7 +114,7 @@ export function TimeOffFormModal({ request, preselectedEmployeeId, open, onOpenC
               />
             </div>
             <div className="space-y-2">
-              <Label>Data de Fim</Label>
+              <Label>Data Fim</Label>
               <Input
                 type="date"
                 value={endDate}
@@ -146,24 +128,18 @@ export function TimeOffFormModal({ request, preselectedEmployeeId, open, onOpenC
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Motivo da ausência, detalhes do atestado..."
-              rows={3}
+              placeholder="Ex: ESAV DENGUE"
+              className="resize-none h-20"
             />
           </div>
-          <DialogFooter className="pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-            >
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Salvar
+              {loading ? 'Salvando...' : 'Salvar'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

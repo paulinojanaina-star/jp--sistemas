@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTeamStore } from '@/stores/useTeamStore'
-import { useToast } from '@/hooks/use-toast'
-import { Employee, EmployeeCategory } from '@/types/team'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,45 +11,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2 } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 interface Props {
-  employee?: Employee | null
+  id: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function EmployeeFormModal({ employee, open, onOpenChange }: Props) {
-  const { saveEmployee } = useTeamStore()
+export function EmployeeFormModal({ id, open, onOpenChange }: Props) {
+  const { employees, saveEmployee } = useTeamStore()
   const { toast } = useToast()
-
   const [name, setName] = useState('')
-  const [category, setCategory] = useState<EmployeeCategory | ''>('')
+  const [category, setCategory] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (open) {
-      setName(employee?.name || '')
-      setCategory(employee?.category || '')
-      setBirthDate(employee?.birth_date || '')
+    if (id && id !== 'new') {
+      const emp = employees.find((e) => e.id === id)
+      if (emp) {
+        setName(emp.name)
+        setCategory(emp.category)
+        setBirthDate(emp.birth_date || '')
+      }
+    } else {
+      setName('')
+      setCategory('')
+      setBirthDate('')
     }
-  }, [open, employee])
+  }, [id, open, employees])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !category) return
-
     setLoading(true)
-    const { error } = await saveEmployee(employee?.id || null, {
-      name: name.trim(),
-      category: category as EmployeeCategory,
+    const { error } = await saveEmployee(id === 'new' ? null : id, {
+      name,
+      category: category as any,
       birth_date: birthDate || null,
     })
     setLoading(false)
-
     if (error) {
-      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' })
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
     } else {
       toast({ title: 'Sucesso', description: 'Profissional salvo com sucesso.' })
       onOpenChange(false)
@@ -66,36 +61,32 @@ export function EmployeeFormModal({ employee, open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{employee ? 'Editar Profissional' : 'Novo Profissional'}</DialogTitle>
+          <DialogTitle>{id === 'new' ? 'Novo Membro da Equipe' : 'Editar Membro'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label>Nome Completo</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="Ex: Dr. João Silva"
+              placeholder="Ex: João da Silva"
             />
           </div>
           <div className="space-y-2">
-            <Label>Categoria</Label>
-            <Select
-              value={category}
-              onValueChange={(v) => setCategory(v as EmployeeCategory)}
-              required
-            >
+            <Label>Categoria Profissional</Label>
+            <Select value={category} onValueChange={setCategory} required>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a categoria" />
+                <SelectValue placeholder="Selecione a categoria..." />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="MEDICO">Médico</SelectItem>
                 <SelectItem value="ENFERMEIRO">Enfermeiro</SelectItem>
-                <SelectItem value="TECNICO">Técnico</SelectItem>
-                <SelectItem value="AUXILIAR">Auxiliar</SelectItem>
-                <SelectItem value="AGENTE">Agente</SelectItem>
+                <SelectItem value="TECNICO">Técnico em Enfermagem</SelectItem>
+                <SelectItem value="AUXILIAR">Auxiliar de Enfermagem</SelectItem>
+                <SelectItem value="AGENTE">Agente Comunitário</SelectItem>
                 <SelectItem value="GERENTE">Gerente</SelectItem>
               </SelectContent>
             </Select>
@@ -103,21 +94,18 @@ export function EmployeeFormModal({ employee, open, onOpenChange }: Props) {
           <div className="space-y-2">
             <Label>Data de Nascimento (Opcional)</Label>
             <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+            <p className="text-[11px] text-muted-foreground">
+              O sistema criará automaticamente ausências para aniversariantes.
+            </p>
           </div>
-          <DialogFooter className="pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-            >
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Salvar
+              {loading ? 'Salvando...' : 'Salvar'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

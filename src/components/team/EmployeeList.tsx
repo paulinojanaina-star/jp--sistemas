@@ -1,223 +1,90 @@
 import { useState } from 'react'
 import { useTeamStore } from '@/stores/useTeamStore'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { UserPlus, Edit2, Trash2, CalendarPlus, CalendarDays } from 'lucide-react'
-import { differenceInYears, parseISO } from 'date-fns'
-import { Employee } from '@/types/team'
-import { EmployeeFormModal } from './EmployeeFormModal'
-import { TimeOffFormModal } from './TimeOffFormModal'
-import { EmployeeTimeOffsModal } from './EmployeeTimeOffsModal'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Search, Edit, Trash2, CalendarDays } from 'lucide-react'
 
-export function EmployeeList() {
+interface Props {
+  onEdit: (id: string) => void
+  onViewTimeOffs: (id: string) => void
+}
+
+export function EmployeeList({ onEdit, onViewTimeOffs }: Props) {
   const { employees, deleteEmployee } = useTeamStore()
+  const [search, setSearch] = useState('')
 
-  const [employeeModalOpen, setEmployeeModalOpen] = useState(false)
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
-
-  const [timeOffModalOpen, setTimeOffModalOpen] = useState(false)
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
-
-  const [timeOffsListOpen, setTimeOffsListOpen] = useState(false)
-  const [viewingEmployee, setViewingEmployee] = useState<Employee | null>(null)
-
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
-
-  const handleEdit = (emp: Employee) => {
-    setEditingEmployee(emp)
-    setEmployeeModalOpen(true)
-  }
-
-  const handleAddAbsence = (empId: string) => {
-    setSelectedEmployeeId(empId)
-    setTimeOffModalOpen(true)
-  }
-
-  const handleViewAbsences = (emp: Employee) => {
-    setViewingEmployee(emp)
-    setTimeOffsListOpen(true)
-  }
+  const filtered = employees.filter((e) => e.name.toLowerCase().includes(search.toLowerCase()))
 
   const handleDelete = async (id: string) => {
-    if (
-      window.confirm(
-        'Tem certeza que deseja excluir este profissional? O histórico de ausências dele também será apagado.',
-      )
-    ) {
+    if (window.confirm('Tem certeza que deseja excluir?')) {
       await deleteEmployee(id)
     }
   }
 
-  const categoryColors: Record<string, string> = {
-    MEDICO: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    ENFERMEIRO: 'bg-blue-100 text-blue-800 border-blue-200',
-    TECNICO: 'bg-purple-100 text-purple-800 border-purple-200',
-    AUXILIAR: 'bg-orange-100 text-orange-800 border-orange-200',
-    AGENTE: 'bg-teal-100 text-teal-800 border-teal-200',
-  }
-
-  const filteredEmployees = employees.filter(
-    (emp) => selectedCategory === 'ALL' || emp.category === selectedCategory,
-  )
-
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h3 className="text-base font-semibold">Gestão de Profissionais</h3>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Todas as Categorias" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todas as Categorias</SelectItem>
-              <SelectItem value="MEDICO">Médico</SelectItem>
-              <SelectItem value="ENFERMEIRO">Enfermeiro</SelectItem>
-              <SelectItem value="TECNICO">Técnico</SelectItem>
-              <SelectItem value="AUXILIAR">Auxiliar</SelectItem>
-              <SelectItem value="AGENTE">Agente</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingEmployee(null)
-              setEmployeeModalOpen(true)
-            }}
-            className="gap-1.5 shrink-0 h-9"
-          >
-            <UserPlus className="h-4 w-4" />
-            <span className="hidden sm:inline">Adicionar</span>
-          </Button>
+    <Card className="border-none shadow-none bg-transparent">
+      <CardHeader className="px-0 pt-0">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl">Membros da Equipe</CardTitle>
+            <CardDescription className="text-base mt-1">
+              Gerencie os profissionais da unidade
+            </CardDescription>
+          </div>
         </div>
-      </div>
+      </CardHeader>
+      <CardContent className="px-0 space-y-4">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome..."
+            className="pl-9 h-10 bg-background"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/30">
-                <TableHead className="py-3">Nome</TableHead>
-                <TableHead className="py-3">Categoria</TableHead>
-                <TableHead className="py-3">Idade</TableHead>
-                <TableHead className="text-right py-3">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEmployees.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                    {employees.length === 0
-                      ? 'Nenhum profissional cadastrado.'
-                      : 'Nenhum profissional encontrado para esta categoria.'}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredEmployees.map((emp) => (
-                  <TableRow key={emp.id}>
-                    <TableCell className="font-medium py-2.5">{emp.name}</TableCell>
-                    <TableCell className="py-2.5">
-                      <Badge
-                        variant="outline"
-                        className={`${categoryColors[emp.category] || ''} text-[10px] px-2 py-0`}
-                      >
-                        {emp.category}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="py-2.5 text-muted-foreground text-sm">
-                      {emp.birth_date
-                        ? `${differenceInYears(new Date(), parseISO(emp.birth_date))} anos`
-                        : '-'}
-                    </TableCell>
-                    <TableCell className="text-right py-2.5">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewAbsences(emp)}
-                          title="Ver Ausências Programadas"
-                          className="text-muted-foreground hover:text-primary"
-                        >
-                          <CalendarDays className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleAddAbsence(emp.id)}
-                          title="Registrar Ausência"
-                          className="text-muted-foreground hover:text-primary"
-                        >
-                          <CalendarPlus className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(emp)}
-                          className="text-muted-foreground hover:text-primary"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(emp.id)}
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <EmployeeFormModal
-        employee={editingEmployee}
-        open={employeeModalOpen}
-        onOpenChange={setEmployeeModalOpen}
-      />
-
-      {timeOffModalOpen && (
-        <TimeOffFormModal
-          preselectedEmployeeId={selectedEmployeeId}
-          open={timeOffModalOpen}
-          onOpenChange={(open) => {
-            setTimeOffModalOpen(open)
-            if (!open) setSelectedEmployeeId(null)
-          }}
-        />
-      )}
-
-      {timeOffsListOpen && (
-        <EmployeeTimeOffsModal
-          employee={viewingEmployee}
-          open={timeOffsListOpen}
-          onOpenChange={(open) => {
-            setTimeOffsListOpen(open)
-            if (!open) setViewingEmployee(null)
-          }}
-        />
-      )}
-    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          {filtered.map((emp) => (
+            <div
+              key={emp.id}
+              className="p-4 rounded-xl border bg-card flex items-center justify-between transition-colors hover:border-border/80"
+            >
+              <div>
+                <h4 className="font-medium text-base">{emp.name}</h4>
+                <p className="text-xs text-muted-foreground uppercase mt-1">{emp.category}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onViewTimeOffs(emp.id)}
+                  title="Ver Escalas"
+                >
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onEdit(emp.id)} title="Editar">
+                  <Edit className="h-4 w-4 text-foreground" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDelete(emp.id)}
+                  title="Excluir"
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && (
+            <div className="col-span-full text-center py-12 text-muted-foreground border rounded-xl border-dashed bg-background/50">
+              Nenhum membro encontrado.
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

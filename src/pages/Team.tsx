@@ -1,110 +1,77 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CalendarDays, Users, CalendarPlus, ShieldAlert, LayoutDashboard } from 'lucide-react'
-import { TeamDashboard } from '@/components/team/TeamDashboard'
-import { TeamCalendar } from '@/components/team/TeamCalendar'
-import { EmployeeList } from '@/components/team/EmployeeList'
-import { Button } from '@/components/ui/button'
 import { useState } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmployeeList } from '@/components/team/EmployeeList'
+import { TimeOffList } from '@/components/team/TimeOffList'
+import { EmployeeFormModal } from '@/components/team/EmployeeFormModal'
 import { TimeOffFormModal } from '@/components/team/TimeOffFormModal'
+import { EmployeeTimeOffsModal } from '@/components/team/EmployeeTimeOffsModal'
+import { useTeamStore } from '@/stores/useTeamStore'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
 export default function Team() {
-  const [timeOffModalOpen, setTimeOffModalOpen] = useState(false)
+  const { employees } = useTeamStore()
+  const [activeTab, setActiveTab] = useState('escalas')
+  const [editEmployeeId, setEditEmployeeId] = useState<string | null>(null)
+  const [editTimeOffId, setEditTimeOffId] = useState<string | null>(null)
+  const [viewTimeOffsEmpId, setViewTimeOffsEmpId] = useState<string | null>(null)
+
+  const viewEmployee = employees.find((e) => e.id === viewTimeOffsEmpId) || null
 
   return (
-    <div className="space-y-8 animate-fade-in-up pb-8">
-      {/* Premium Hero Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/50 shadow-lg mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 min-h-[160px] p-6 lg:p-8">
-        <div
-          className="absolute inset-0 z-0 opacity-40 mix-blend-luminosity"
-          style={{
-            backgroundImage:
-              'url("https://img.usecurling.com/p/1920/600?q=medical%20professionals%20team%20hospital&color=blue&dpr=2")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-900/40 z-0" />
-
-        <div className="relative z-10 flex flex-col gap-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 text-xs font-bold uppercase tracking-wider w-fit backdrop-blur-md shadow-inner">
-            <ShieldAlert className="h-3.5 w-3.5" strokeWidth={2.5} />
-            Capital Humano Corporativo
-          </div>
-          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white drop-shadow-md">
-            Profissionais & Escalas
-          </h1>
-          <p className="text-base text-slate-300 max-w-2xl font-medium drop-shadow-sm">
-            Gestão executiva de profissionais, registro integrado de ausências e monitoramento
-            contínuo de capacidade.
+    <div className="container mx-auto p-4 md:p-8 max-w-5xl space-y-8 animate-fade-in-up">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Equipe e Escalas</h1>
+          <p className="text-muted-foreground">
+            Gerencie os profissionais da unidade e acompanhe as escalas programadas.
           </p>
         </div>
-
-        <div className="relative z-10">
-          <Button
-            onClick={() => setTimeOffModalOpen(true)}
-            size="lg"
-            className="rounded-xl h-12 px-6 shadow-md hover:shadow-lg transition-all duration-300 font-bold gap-2 text-sm bg-primary text-primary-foreground border border-primary/50 hover:bg-primary/90"
-          >
-            <CalendarPlus className="h-5 w-5" strokeWidth={2.5} />
-            Registrar Ausência
-          </Button>
+        <div>
+          {activeTab === 'escalas' ? (
+            <Button onClick={() => setEditTimeOffId('new')}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Escala
+            </Button>
+          ) : (
+            <Button onClick={() => setEditEmployeeId('new')}>
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Membro
+            </Button>
+          )}
         </div>
       </div>
 
-      <Tabs defaultValue="dashboard" className="space-y-6">
-        <div className="bg-card/80 backdrop-blur-xl rounded-xl p-1.5 border border-border/50 shadow-sm inline-flex w-full overflow-x-auto">
-          <TabsList className="flex w-max min-w-full md:w-auto md:grid md:grid-cols-3 h-auto bg-transparent gap-1.5 p-0">
-            <TabsTrigger
-              value="dashboard"
-              className="gap-2 text-sm py-2 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all font-semibold flex-1"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Visão Executiva
-            </TabsTrigger>
-            <TabsTrigger
-              value="calendar"
-              className="gap-2 text-sm py-2 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all font-semibold flex-1"
-            >
-              <CalendarDays className="h-4 w-4" />
-              Calendário
-            </TabsTrigger>
-            <TabsTrigger
-              value="employees"
-              className="gap-2 text-sm py-2 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all font-semibold flex-1"
-            >
-              <Users className="h-4 w-4" />
-              Corpo Clínico
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        <div className="bg-card/90 backdrop-blur-2xl border border-border/50 shadow-lg rounded-2xl p-4 sm:p-6 min-h-[400px]">
-          <TabsContent
-            value="dashboard"
-            className="mt-0 outline-none animate-in fade-in-50 duration-500"
-          >
-            <TeamDashboard />
-          </TabsContent>
-
-          <TabsContent
-            value="calendar"
-            className="mt-0 outline-none animate-in fade-in-50 duration-500"
-          >
-            <TeamCalendar />
-          </TabsContent>
-
-          <TabsContent
-            value="employees"
-            className="mt-0 outline-none animate-in fade-in-50 duration-500"
-          >
-            <EmployeeList />
-          </TabsContent>
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+          <TabsTrigger value="escalas">Escalas Programadas</TabsTrigger>
+          <TabsTrigger value="membros">Membros da Equipe</TabsTrigger>
+        </TabsList>
+        <TabsContent value="escalas" className="mt-8">
+          <TimeOffList onEdit={setEditTimeOffId} />
+        </TabsContent>
+        <TabsContent value="membros" className="mt-8">
+          <EmployeeList onEdit={setEditEmployeeId} onViewTimeOffs={setViewTimeOffsEmpId} />
+        </TabsContent>
       </Tabs>
 
-      {timeOffModalOpen && (
-        <TimeOffFormModal open={timeOffModalOpen} onOpenChange={setTimeOffModalOpen} />
-      )}
+      <EmployeeFormModal
+        id={editEmployeeId}
+        open={!!editEmployeeId}
+        onOpenChange={(open) => !open && setEditEmployeeId(null)}
+      />
+
+      <TimeOffFormModal
+        id={editTimeOffId}
+        open={!!editTimeOffId}
+        onOpenChange={(open) => !open && setEditTimeOffId(null)}
+      />
+
+      <EmployeeTimeOffsModal
+        employee={viewEmployee}
+        open={!!viewTimeOffsEmpId}
+        onOpenChange={(open) => !open && setViewTimeOffsEmpId(null)}
+      />
     </div>
   )
 }
