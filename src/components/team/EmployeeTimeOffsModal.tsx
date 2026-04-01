@@ -21,7 +21,7 @@ export function EmployeeTimeOffsModal({ employee, open, onOpenChange }: Props) {
 
   const employeeRequests = timeOffRequests
     .filter((req) => req.employee_id === employee.id)
-    .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
+    .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja remover este registro?')) {

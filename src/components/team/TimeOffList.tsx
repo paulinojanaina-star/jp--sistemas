@@ -38,12 +38,7 @@ export function TimeOffList({ onEdit }: Props) {
 
         return true
       })
-      .sort((a, b) => {
-        if (showHistory) {
-          return parseISO(b.start_date).getTime() - parseISO(a.start_date).getTime()
-        }
-        return parseISO(a.start_date).getTime() - parseISO(b.start_date).getTime()
-      })
+      .sort((a, b) => parseISO(a.start_date).getTime() - parseISO(b.start_date).getTime())
   }, [timeOffRequests, search, showHistory])
 
   const handleDelete = async (id: string) => {
