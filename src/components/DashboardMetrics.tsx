@@ -134,22 +134,24 @@ export function DashboardMetrics() {
       </Card>
 
       <Card
-        className={`cursor-pointer transition-colors hover:bg-destructive/10 ${itemsExpiredCount > 0 ? 'border-destructive/30 bg-destructive/5' : ''}`}
+        className={`cursor-pointer transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-800 ${itemsExpiredCount > 0 ? 'border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50' : ''}`}
         onClick={() => navigate('/itens?filter=vencidos')}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle
-            className={`text-sm font-medium ${itemsExpiredCount > 0 ? 'text-destructive font-bold' : ''}`}
+            className={`text-sm font-medium ${itemsExpiredCount > 0 ? 'text-slate-900 dark:text-slate-100 font-bold' : ''}`}
           >
             Itens Vencidos
           </CardTitle>
           <AlertTriangle
-            className={`h-4 w-4 ${itemsExpiredCount > 0 ? 'text-destructive' : 'text-muted-foreground'}`}
+            className={`h-4 w-4 ${itemsExpiredCount > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-muted-foreground'}`}
             strokeWidth={1.5}
           />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${itemsExpiredCount > 0 ? 'text-destructive' : ''}`}>
+          <div
+            className={`text-2xl font-bold ${itemsExpiredCount > 0 ? 'text-slate-900 dark:text-slate-100' : ''}`}
+          >
             {itemsExpiredCount}
           </div>
           <p className="text-xs text-muted-foreground mt-1">Lotes com validade expirada</p>
