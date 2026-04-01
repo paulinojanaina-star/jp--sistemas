@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { format, isWithinInterval, parseISO, startOfDay, endOfDay } from 'date-fns'
 import { Edit, Search, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -15,13 +17,34 @@ interface Props {
 export function TimeOffList({ onEdit }: Props) {
   const { timeOffRequests, deleteTimeOff } = useTeamStore()
   const [search, setSearch] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
 
   const filteredRequests = useMemo(() => {
-    return timeOffRequests.filter((req) => {
-      const empName = req.employees?.name || 'Sistema'
-      return empName.toLowerCase().includes(search.toLowerCase())
-    })
-  }, [timeOffRequests, search])
+    const today = startOfDay(new Date())
+
+    return timeOffRequests
+      .filter((req) => {
+        const empName = req.employees?.name || 'Sistema'
+        const matchesSearch = empName.toLowerCase().includes(search.toLowerCase())
+
+        if (!matchesSearch) return false
+
+        if (!showHistory) {
+          const endDate = endOfDay(parseISO(req.end_date))
+          if (endDate < today) {
+            return false
+          }
+        }
+
+        return true
+      })
+      .sort((a, b) => {
+        if (showHistory) {
+          return parseISO(b.start_date).getTime() - parseISO(a.start_date).getTime()
+        }
+        return parseISO(a.start_date).getTime() - parseISO(b.start_date).getTime()
+      })
+  }, [timeOffRequests, search, showHistory])
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir esta escala?')) {
@@ -85,14 +108,25 @@ export function TimeOffList({ onEdit }: Props) {
         </div>
       </CardHeader>
       <CardContent className="px-0 space-y-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome do profissional..."
-            className="pl-9 h-10 bg-background"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome do profissional..."
+              className="pl-9 h-10 bg-background"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch id="show-history" checked={showHistory} onCheckedChange={setShowHistory} />
+            <Label
+              htmlFor="show-history"
+              className="text-sm font-medium cursor-pointer whitespace-nowrap"
+            >
+              Mostrar histórico completo
+            </Label>
+          </div>
         </div>
 
         <div className="space-y-4 mt-4">
