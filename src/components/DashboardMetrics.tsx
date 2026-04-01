@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getNearestExpiry } from '@/utils/expiryLogic'
@@ -52,6 +53,8 @@ export function DashboardMetrics() {
     return days >= 30
   }).length
 
+  const navigate = useNavigate()
+
   // Calculate Expiring Items (<= 180 days) using active batches
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -60,7 +63,15 @@ export function DashboardMetrics() {
     const nearest = getNearestExpiry(item, movements)
     if (!nearest) return false
     const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
-    return diffDays <= 180
+    return diffDays <= 180 && diffDays >= 0
+  }).length
+
+  // Calculate Expired Items (< 0 days)
+  const itemsExpiredCount = items.filter((item) => {
+    const nearest = getNearestExpiry(item, movements)
+    if (!nearest) return false
+    const diffDays = (nearest.date.getTime() - today.getTime()) / (1000 * 3600 * 24)
+    return diffDays < 0
   }).length
 
   // Calculate Stockout Risk (<= 40 days)
@@ -122,7 +133,33 @@ export function DashboardMetrics() {
         </CardContent>
       </Card>
 
-      <Card className={itemsExpiringCount > 0 ? 'border-amber-500/30 bg-amber-500/5' : ''}>
+      <Card
+        className={`cursor-pointer transition-colors hover:bg-destructive/10 ${itemsExpiredCount > 0 ? 'border-destructive/30 bg-destructive/5' : ''}`}
+        onClick={() => navigate('/itens?filter=vencidos')}
+      >
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle
+            className={`text-sm font-medium ${itemsExpiredCount > 0 ? 'text-destructive font-bold' : ''}`}
+          >
+            Itens Vencidos
+          </CardTitle>
+          <AlertTriangle
+            className={`h-4 w-4 ${itemsExpiredCount > 0 ? 'text-destructive' : 'text-muted-foreground'}`}
+            strokeWidth={1.5}
+          />
+        </CardHeader>
+        <CardContent>
+          <div className={`text-2xl font-bold ${itemsExpiredCount > 0 ? 'text-destructive' : ''}`}>
+            {itemsExpiredCount}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Lotes com validade expirada</p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className={`cursor-pointer transition-colors hover:bg-amber-500/10 ${itemsExpiringCount > 0 ? 'border-amber-500/30 bg-amber-500/5' : ''}`}
+        onClick={() => navigate('/itens?filter=vencimento_proximo')}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle
             className={`text-sm font-medium ${itemsExpiringCount > 0 ? 'text-amber-600 font-bold' : ''}`}
