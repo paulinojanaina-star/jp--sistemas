@@ -2,6 +2,8 @@ import { useTeamStore } from '@/stores/useTeamStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import {
   Search,
   Users,
@@ -22,6 +24,7 @@ export function TeamDashboard() {
   const { employees, timeOffRequests, deleteTimeOff } = useTeamStore()
   const [editingRequest, setEditingRequest] = useState<TimeOffRequest | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeTab, setActiveTab] = useState('list')
 
   const todayStr = new Date().toISOString().split('T')[0]
 
@@ -141,95 +144,102 @@ export function TeamDashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12 items-start">
-        <Card className="border-orange-200 shadow-sm bg-orange-50/20 flex flex-col h-full lg:col-span-4">
-          <CardHeader className="pb-4 border-b border-orange-100">
+      <Card className="border-orange-200 shadow-sm bg-orange-50/30">
+        <CardHeader className="pb-3 border-b border-orange-100/50">
+          <div className="flex items-center justify-between">
             <CardTitle className="text-base text-orange-800 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
               Ausências na Próxima Semana
             </CardTitle>
-            <CardDescription className="text-orange-700/80">
-              Profissionais ausentes nos próximos 7 dias
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3 flex-1">
-            {nextWeekAbsences.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center border rounded-lg border-dashed border-orange-200 bg-white/50">
-                Nenhuma ausência programada.
-              </p>
-            ) : (
-              nextWeekAbsences.map((req) => (
-                <SmartTimeOffCard
-                  key={req.id}
-                  req={req}
-                  onEdit={setEditingRequest}
-                  onDelete={handleDelete}
-                />
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="flex flex-col h-full lg:col-span-8 space-y-4">
-          <Tabs defaultValue="list" className="w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <div>
-                <h2 className="text-lg font-bold tracking-tight">Todas as Escalas Programadas</h2>
-                <p className="text-sm text-muted-foreground">Visão geral das ausências e folgas</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar por colaborador..."
-                    className="pl-9 h-9 bg-card"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+            <Badge
+              variant="secondary"
+              className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-none"
+            >
+              {nextWeekAbsences.length} agendadas
+            </Badge>
+          </div>
+          <CardDescription className="text-orange-700/80">
+            Profissionais com ausência programada para os próximos 7 dias
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4">
+          {nextWeekAbsences.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center border rounded-lg border-dashed border-orange-200/50 bg-white/40">
+              Nenhuma ausência programada para os próximos dias. A equipe está completa!
+            </p>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-4 pt-1 scrollbar-thin">
+              {nextWeekAbsences.map((req) => (
+                <div key={req.id} className="min-w-[300px] w-[300px] flex-shrink-0">
+                  <SmartTimeOffCard req={req} onEdit={setEditingRequest} onDelete={handleDelete} />
                 </div>
-                <TabsList className="h-9">
-                  <TabsTrigger value="list" className="px-3">
-                    <LayoutList className="h-4 w-4 mr-2" /> Lista
-                  </TabsTrigger>
-                  <TabsTrigger value="calendar" className="px-3">
-                    <CalendarIcon className="h-4 w-4 mr-2" /> Calendário
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+              ))}
             </div>
+          )}
+        </CardContent>
+      </Card>
 
-            <TabsContent value="list" className="mt-0 animate-fade-in-up">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {upcomingRequests.length === 0 ? (
-                  <div className="col-span-full py-12 text-center flex flex-col items-center justify-center border rounded-xl border-dashed bg-card">
-                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
-                      <Search className="h-6 w-6 text-muted-foreground/50" />
-                    </div>
-                    <p className="text-sm font-medium text-foreground">
-                      Nenhuma escala futura encontrada
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Não há ausências programadas a partir de hoje.
-                    </p>
-                  </div>
-                ) : (
-                  upcomingRequests.map((req) => (
-                    <SmartTimeOffCard
-                      key={req.id}
-                      req={req}
-                      onEdit={setEditingRequest}
-                      onDelete={handleDelete}
-                    />
-                  ))
-                )}
+      <div className="flex flex-col space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-lg font-bold tracking-tight">Todas as Escalas Programadas</h2>
+              <p className="text-sm text-muted-foreground">Visão geral das ausências e folgas</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por colaborador..."
+                  className="pl-9 h-9 bg-card"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-            </TabsContent>
+              <TabsList className="h-9">
+                <TabsTrigger value="list" className="px-3">
+                  <LayoutList className="h-4 w-4 mr-2" /> Lista
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="px-3">
+                  <CalendarIcon className="h-4 w-4 mr-2" /> Calendário
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
 
-            <TabsContent value="calendar" className="mt-0 animate-fade-in-up">
+          <TabsContent value="list" className="mt-0 animate-fade-in-up">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {upcomingRequests.length === 0 ? (
+                <div className="col-span-full py-12 text-center flex flex-col items-center justify-center border rounded-xl border-dashed bg-card">
+                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
+                    <Search className="h-6 w-6 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">
+                    Nenhuma escala futura encontrada
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Não há ausências programadas a partir de hoje.
+                  </p>
+                </div>
+              ) : (
+                upcomingRequests.map((req) => (
+                  <SmartTimeOffCard
+                    key={req.id}
+                    req={req}
+                    onEdit={setEditingRequest}
+                    onDelete={handleDelete}
+                  />
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="calendar" className="mt-0 animate-fade-in-up">
+            <Card className="p-4 shadow-sm border-slate-200">
               <TimeOffCalendar requests={calendarRequests} />
-            </TabsContent>
-          </Tabs>
-        </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <TimeOffFormModal
