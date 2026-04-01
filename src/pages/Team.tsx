@@ -21,7 +21,7 @@ export default function Team() {
   const viewEmployee = employees.find((e) => e.id === viewTimeOffsEmpId) || null
 
   return (
-    <div className="container mx-auto p-4 md:p-8 max-w-5xl space-y-8 animate-fade-in-up">
+    <div className="container mx-auto p-4 md:p-8 max-w-7xl xl:max-w-[1600px] space-y-8 animate-fade-in-up">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Equipe e Escalas</h1>

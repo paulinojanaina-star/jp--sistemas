@@ -155,7 +155,7 @@ export function TeamCalendar() {
                   key={day.toISOString()}
                   onClick={() => setSelectedDate(day)}
                   className={cn(
-                    'min-h-[60px] sm:min-h-[80px] p-1 sm:p-1.5 border rounded-xl cursor-pointer transition-all flex flex-col items-start gap-1 group relative overflow-hidden',
+                    'min-h-[80px] sm:min-h-[100px] xl:min-h-[130px] p-1 sm:p-1.5 border rounded-xl cursor-pointer transition-all flex flex-col items-start gap-1 group relative overflow-hidden',
                     !isCurrentMonth && 'opacity-40 bg-muted/30',
                     isHoliday
                       ? isSelected
@@ -250,11 +250,11 @@ export function TeamCalendar() {
 
                         {/* Desktop view: pills with names */}
                         <div className="hidden sm:flex flex-col gap-1 w-full">
-                          {requests.slice(0, 3).map((req, i) => (
+                          {requests.slice(0, 5).map((req, i) => (
                             <div
                               key={i}
                               className={cn(
-                                'text-[10px] font-semibold px-1.5 py-0.5 rounded-md truncate w-full border border-transparent',
+                                'text-[10px] xl:text-xs font-semibold px-1.5 py-0.5 rounded-md truncate w-full border border-transparent',
                                 req.type === 'FERIAS'
                                   ? 'bg-amber-100 text-amber-700 border-amber-200/50'
                                   : req.type === 'ATESTADO'
@@ -268,9 +268,9 @@ export function TeamCalendar() {
                               {req.employees?.name?.split(' ')[0]}
                             </div>
                           ))}
-                          {requests.length > 3 && (
+                          {requests.length > 5 && (
                             <div className="text-[10px] text-muted-foreground font-medium pl-1">
-                              +{requests.length - 3} mais
+                              +{requests.length - 5} mais
                             </div>
                           )}
                         </div>
@@ -284,7 +284,7 @@ export function TeamCalendar() {
         </CardContent>
       </Card>
 
-      <Card className="w-full xl:w-[340px] shrink-0 shadow-lg border-primary/10 bg-gradient-to-b from-card to-muted/20 h-auto">
+      <Card className="w-full xl:w-[380px] 2xl:w-[420px] shrink-0 shadow-lg border-primary/10 bg-gradient-to-b from-card to-muted/20 h-auto">
         <CardHeader className="pb-3 border-b border-border/50 bg-card/50">
           <CardTitle className="text-base flex items-center gap-3">
             <div className="p-1.5 bg-primary/10 rounded-md text-primary">
@@ -303,7 +303,7 @@ export function TeamCalendar() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="h-[300px] xl:h-[450px] p-3">
+          <ScrollArea className="h-[300px] xl:h-[650px] p-3">
             {selectedDateRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-3">
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border border-border/50">

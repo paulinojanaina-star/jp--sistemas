@@ -79,7 +79,7 @@ export function TimeOffCalendar({ requests }: Props) {
           return (
             <div
               key={d}
-              className={`min-h-[80px] p-1.5 border rounded-lg transition-colors ${isToday ? 'bg-primary/5 border-primary/30 ring-1 ring-primary/20' : 'bg-muted/10 hover:bg-muted/30'}`}
+              className={`min-h-[80px] sm:min-h-[100px] p-1.5 border rounded-lg transition-colors ${isToday ? 'bg-primary/5 border-primary/30 ring-1 ring-primary/20' : 'bg-muted/10 hover:bg-muted/30'}`}
             >
               <div
                 className={`text-xs font-medium mb-1.5 ${isToday ? 'text-primary' : 'text-muted-foreground'}`}
