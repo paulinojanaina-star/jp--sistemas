@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ItemFormModal } from '@/components/ItemFormModal'
 import {
   Table,
   TableBody,
@@ -130,10 +131,14 @@ export default function Items() {
             <FileText className="h-4 w-4" />
             Gerar Relatório
           </Button>
-          <Button className="gap-2 font-bold shadow-sm bg-slate-800 hover:bg-slate-700 text-white">
-            <Plus className="h-4 w-4" />
-            Novo Item
-          </Button>
+          <ItemFormModal
+            trigger={
+              <Button className="gap-2 font-bold shadow-sm bg-slate-800 hover:bg-slate-700 text-white">
+                <Plus className="h-4 w-4" />
+                Novo Item
+              </Button>
+            }
+          />
         </div>
       </div>
 
@@ -464,13 +469,27 @@ export default function Items() {
                       </div>
                     </TableCell>
                     <TableCell className="py-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="font-bold text-primary hover:text-primary/80"
-                      >
-                        Detalhes
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <ItemFormModal
+                          item={item}
+                          trigger={
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="font-bold text-primary hover:bg-primary/10 border-primary/20"
+                            >
+                              Editar
+                            </Button>
+                          }
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="font-bold text-muted-foreground hover:text-foreground"
+                        >
+                          Detalhes
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
