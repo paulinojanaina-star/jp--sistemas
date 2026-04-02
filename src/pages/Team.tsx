@@ -1,135 +1,74 @@
 import { useState, useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useTeamStore } from '@/stores/useTeamStore'
 import {
-  CalendarIcon,
   Users,
-  UserMinus,
   ArrowLeft,
-  Clock,
   CalendarCheck,
   Percent,
   AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
+  Clock,
   Plus,
+  Calendar as CalendarIcon,
+  Briefcase,
 } from 'lucide-react'
-import {
-  format,
-  addDays,
-  startOfDay,
-  endOfDay,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  isSameDay,
-  subMonths,
-  addMonths,
-} from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { startOfDay, addDays, endOfDay } from 'date-fns'
 import { Link } from 'react-router-dom'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { TimeOffFormModal } from '@/components/team/TimeOffFormModal'
+import { TeamCalendar } from '@/components/team/TeamCalendar'
+import { TimeOffList } from '@/components/team/TimeOffList'
+import { EmployeeList } from '@/components/team/EmployeeList'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmployeeFormModal } from '@/components/team/EmployeeFormModal'
 
 export default function Team() {
-  const { employees, timeOffRequests, saveTimeOff } = useTeamStore()
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const { employees, timeOffRequests } = useTeamStore()
+  const [activeTab, setActiveTab] = useState('calendario')
   const [editingRequest, setEditingRequest] = useState<any | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isTimeOffModalOpen, setIsTimeOffModalOpen] = useState(false)
+  const [editingEmployee, setEditingEmployee] = useState<any | null>(null)
+  const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false)
 
   const today = startOfDay(new Date())
   const nextWeekStart = addDays(today, 1)
   const nextWeekEnd = addDays(today, 7)
 
-  const currentMonthStart = startOfMonth(currentDate)
-  const currentMonthEnd = endOfMonth(currentDate)
-  const calendarDays = eachDayOfInterval({ start: currentMonthStart, end: currentMonthEnd })
-
   const upcomingAbsences = useMemo(() => {
-    return timeOffRequests
-      .filter((req) => {
-        const reqStart = startOfDay(new Date(req.start_date))
-        const reqEnd = endOfDay(new Date(req.end_date))
-        return reqStart <= nextWeekEnd && reqEnd >= nextWeekStart
-      })
-      .map((req) => {
-        const emp = employees.find((e) => e.id === req.employee_id)
-        return {
-          ...req,
-          employeeName: emp?.name || 'Colaborador Desconhecido',
-          category: emp?.category || '',
-        }
-      })
-      .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
-  }, [timeOffRequests, employees, nextWeekStart, nextWeekEnd])
+    return timeOffRequests.filter((req) => {
+      const reqStart = startOfDay(new Date(req.start_date))
+      const reqEnd = endOfDay(new Date(req.end_date))
+      return reqStart <= nextWeekEnd && reqEnd >= nextWeekStart
+    })
+  }, [timeOffRequests, nextWeekStart, nextWeekEnd])
 
   const getAbsencesForDay = (date: Date) => {
-    return timeOffRequests
-      .filter((req) => {
-        const reqStart = startOfDay(new Date(req.start_date))
-        const reqEnd = endOfDay(new Date(req.end_date))
-        return date >= reqStart && date <= reqEnd
-      })
-      .map((req) => {
-        const emp = employees.find((e) => e.id === req.employee_id)
-        return { ...req, employeeName: emp?.name || 'Desconhecido', category: emp?.category || '' }
-      })
+    return timeOffRequests.filter((req) => {
+      const reqStart = startOfDay(new Date(req.start_date))
+      const reqEnd = endOfDay(new Date(req.end_date))
+      return date >= reqStart && date <= reqEnd
+    })
   }
 
-  const handleDragStart = (e: React.DragEvent, req: any) => {
-    if (req.id.startsWith('auto-')) {
-      e.preventDefault()
-      return
-    }
-    e.dataTransfer.setData('application/json', JSON.stringify(req))
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
-
-  const handleDrop = async (e: React.DragEvent, targetDate: Date) => {
-    e.preventDefault()
-    try {
-      const data = e.dataTransfer.getData('application/json')
-      if (!data) return
-      const req = JSON.parse(data)
-
-      const oldStart = startOfDay(new Date(req.start_date))
-      const diffTime = targetDate.getTime() - oldStart.getTime()
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
-
-      if (diffDays === 0) return
-
-      const newStart = addDays(new Date(req.start_date), diffDays)
-      const newEnd = addDays(new Date(req.end_date), diffDays)
-
-      await saveTimeOff(req.id, {
-        employee_id: req.employee_id,
-        type: req.type,
-        start_date: format(newStart, 'yyyy-MM-dd'),
-        end_date: format(newEnd, 'yyyy-MM-dd'),
-        notes: req.notes,
-      })
-    } catch (err) {
-      console.error(err)
+  const handleEditTimeOff = (id: string) => {
+    const req = timeOffRequests.find((r) => r.id === id)
+    if (req) {
+      setEditingRequest(req)
+      setIsTimeOffModalOpen(true)
     }
   }
 
-  const handleDayClick = (date: Date) => {
-    setEditingRequest(null)
-    setIsModalOpen(true)
+  const handleEditEmployee = (id: string) => {
+    const emp = employees.find((e) => e.id === id)
+    if (emp) {
+      setEditingEmployee(emp)
+      setIsEmployeeModalOpen(true)
+    }
   }
 
-  const handleEditRequest = (e: React.MouseEvent, req: any) => {
-    e.stopPropagation()
-    if (req.id.startsWith('auto-')) return
-    setEditingRequest(req)
-    setIsModalOpen(true)
+  const handleViewTimeOffs = (id: string) => {
+    setActiveTab('ausencias')
   }
 
   const totalEmployees = employees.length
@@ -225,191 +164,84 @@ export default function Team() {
         </Card>
       </div>
 
-      <div className="grid gap-8 grid-cols-1 xl:grid-cols-4">
-        <div className="xl:col-span-3 space-y-6">
-          <Card className="shadow-lg border-border/50 rounded-2xl overflow-hidden bg-card/50 backdrop-blur-sm">
-            <CardHeader className="bg-slate-50/50 dark:bg-slate-900/20 border-b border-border/50 pb-4">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <CardTitle className="flex items-center gap-2 text-xl font-bold">
-                  <CalendarIcon className="h-6 w-6 text-primary" />
-                  Calendário de Escalas Interativo
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-                    className="h-9 w-9 rounded-full shadow-sm hover:shadow-md transition-all"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <div className="text-sm font-bold bg-primary/10 text-primary px-5 py-2 rounded-full capitalize min-w-[160px] text-center shadow-inner">
-                    {format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-                    className="h-9 w-9 rounded-full shadow-sm hover:shadow-md transition-all"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="w-full grid grid-cols-7 border-b border-border/50 bg-slate-50/80 dark:bg-slate-900/40">
-                {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-                  <div
-                    key={day}
-                    className="py-3 text-center text-sm font-bold text-muted-foreground border-r border-border/50 last:border-0 uppercase tracking-wider"
-                  >
-                    {day}
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-7 w-full auto-rows-[minmax(120px,auto)] bg-card">
-                {Array.from({ length: currentMonthStart.getDay() }).map((_, i) => (
-                  <div
-                    key={`empty-${i}`}
-                    className="border-r border-b border-border/50 bg-slate-50/30 dark:bg-slate-900/10"
-                  />
-                ))}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 h-auto p-1 bg-muted/50 rounded-xl gap-1">
+          <TabsTrigger
+            value="calendario"
+            className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2"
+          >
+            <CalendarIcon className="h-4 w-4" />
+            <span>Calendário de Escala</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="ausencias"
+            className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2"
+          >
+            <Clock className="h-4 w-4" />
+            <span>Lançamentos de Ausências</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="profissionais"
+            className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2"
+          >
+            <Briefcase className="h-4 w-4" />
+            <span>Gestão de Profissionais</span>
+          </TabsTrigger>
+        </TabsList>
 
-                {calendarDays.map((day, idx) => {
-                  const dayAbsences = getAbsencesForDay(day)
-                  const isTodayDate = isSameDay(day, today)
+        <TabsContent value="calendario" className="space-y-6 outline-none focus-visible:ring-0">
+          <TeamCalendar />
+        </TabsContent>
 
-                  return (
-                    <div
-                      key={day.toString()}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, day)}
-                      onClick={() => handleDayClick(day)}
-                      className={cn(
-                        'border-r border-b border-border/50 p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/20 group relative cursor-pointer flex flex-col',
-                        isTodayDate && 'bg-blue-50/30 dark:bg-blue-900/10',
-                      )}
-                    >
-                      <div className="flex justify-between items-start mb-2 shrink-0">
-                        <span
-                          className={cn(
-                            'text-sm font-bold h-7 w-7 flex items-center justify-center rounded-full transition-all',
-                            isTodayDate
-                              ? 'bg-primary text-primary-foreground shadow-sm'
-                              : 'text-foreground group-hover:text-primary',
-                          )}
-                        >
-                          {format(day, 'd')}
-                        </span>
-                        <div className="flex gap-1 items-center">
-                          {dayAbsences.length > 0 && (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] px-1.5 h-5 font-bold bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30"
-                            >
-                              {dayAbsences.length}
-                            </Badge>
-                          )}
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded-full">
-                            <Plus className="h-3 w-3 text-muted-foreground hover:text-primary" />
-                          </div>
-                        </div>
-                      </div>
+        <TabsContent value="ausencias" className="space-y-6 outline-none focus-visible:ring-0">
+          <div className="flex justify-end mb-4">
+            <Button
+              onClick={() => {
+                setEditingRequest(null)
+                setIsTimeOffModalOpen(true)
+              }}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Nova Ausência
+            </Button>
+          </div>
+          <TimeOffList onEdit={handleEditTimeOff} />
+        </TabsContent>
 
-                      <div className="space-y-1.5 overflow-y-auto flex-1 scrollbar-hide">
-                        {dayAbsences.map(
-                          (req, j) =>
-                            req && (
-                              <div
-                                key={`${req.id}-${j}`}
-                                draggable={!req.id.startsWith('auto-')}
-                                onDragStart={(e) => handleDragStart(e, req)}
-                                onClick={(e) => handleEditRequest(e, req)}
-                                className={cn(
-                                  'text-[11px] leading-tight px-1.5 py-1 rounded font-semibold border truncate transition-all',
-                                  req.id.startsWith('auto-')
-                                    ? 'bg-emerald-100/80 text-emerald-700 border-emerald-200 cursor-default dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'
-                                    : 'bg-blue-100/80 text-blue-700 border-blue-200 cursor-grab hover:shadow-sm hover:brightness-95 active:cursor-grabbing dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
-                                )}
-                                title={`${req.employeeName} - ${req.type}`}
-                              >
-                                {req.employeeName.split(' ')[0]} ({req.category.substring(0, 3)})
-                              </div>
-                            ),
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <TabsContent value="profissionais" className="space-y-6 outline-none focus-visible:ring-0">
+          <div className="flex justify-end mb-4">
+            <Button
+              onClick={() => {
+                setEditingEmployee(null)
+                setIsEmployeeModalOpen(true)
+              }}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Novo Profissional
+            </Button>
+          </div>
+          <EmployeeList onEdit={handleEditEmployee} onViewTimeOffs={handleViewTimeOffs} />
+        </TabsContent>
+      </Tabs>
 
-        <div className="space-y-6">
-          <Card className="shadow-lg border-orange-200 dark:border-orange-500/30 bg-gradient-to-b from-orange-50/80 to-white dark:from-orange-500/10 dark:to-slate-950 rounded-2xl overflow-hidden h-fit">
-            <CardHeader className="pb-3 border-b border-orange-100 dark:border-orange-500/20 bg-orange-100/50 dark:bg-orange-500/10">
-              <CardTitle className="flex items-center gap-2 text-lg font-black text-orange-700 dark:text-orange-400">
-                <Clock className="h-5 w-5" />
-                Ausências Próxima Sem.
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 px-4 pb-4">
-              {upcomingAbsences.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground flex flex-col items-center">
-                  <UserMinus className="h-10 w-10 text-slate-300 dark:text-slate-700 mb-3" />
-                  <p className="font-bold">Nenhuma ausência prevista</p>
-                  <p className="text-sm mt-1">Equipe completa para os próximos 7 dias.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {upcomingAbsences.map((absence) => (
-                    <div
-                      key={absence.id}
-                      className="flex items-start justify-between bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-orange-100 dark:border-orange-500/20 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-                    >
-                      <div className="min-w-0 pr-2">
-                        <p className="font-bold text-sm text-foreground truncate">
-                          {absence.employeeName}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mt-0.5">
-                          {absence.category}
-                        </p>
-                        <p className="text-xs font-bold mt-1.5 text-orange-600 dark:text-orange-400 flex items-center gap-1">
-                          <CalendarIcon className="h-3 w-3" />
-                          {format(new Date(absence.start_date), 'dd/MM')} -{' '}
-                          {format(new Date(absence.end_date), 'dd/MM')}
-                        </p>
-                      </div>
-                      <Badge
-                        variant="secondary"
-                        className={cn(
-                          'text-[10px] font-bold uppercase tracking-wider shrink-0',
-                          absence.type === 'FERIAS'
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
-                            : absence.type === 'ATESTADO'
-                              ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
-                              : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-                        )}
-                      >
-                        {absence.type}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
       <TimeOffFormModal
-        open={isModalOpen}
+        open={isTimeOffModalOpen}
         onOpenChange={(open) => {
-          setIsModalOpen(open)
+          setIsTimeOffModalOpen(open)
           if (!open) setEditingRequest(null)
         }}
         request={editingRequest}
+      />
+
+      <EmployeeFormModal
+        open={isEmployeeModalOpen}
+        onOpenChange={(open) => {
+          setIsEmployeeModalOpen(open)
+          if (!open) setEditingEmployee(null)
+        }}
+        employee={editingEmployee}
       />
     </div>
   )
