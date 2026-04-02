@@ -46,6 +46,10 @@ export function TeamDashboard() {
   nextWeekEndDate.setDate(nextWeekEndDate.getDate() + 7)
   const nextWeekEndStr = nextWeekEndDate.toISOString().split('T')[0]
 
+  const absentToday = timeOffRequests
+    .filter((r) => r.start_date <= todayStr && r.end_date >= todayStr)
+    .sort((a, b) => (a.employees?.name || '').localeCompare(b.employees?.name || ''))
+
   const nextWeekAbsences = timeOffRequests
     .filter((r) => r.start_date <= nextWeekEndStr && r.end_date >= tmrStr)
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
@@ -144,11 +148,75 @@ export function TeamDashboard() {
         </Card>
       </div>
 
+      <Card
+        className={cn(
+          'shadow-sm',
+          absentToday.length > 0
+            ? 'border-rose-200 bg-rose-50/30'
+            : 'border-emerald-200 bg-emerald-50/30',
+        )}
+      >
+        <CardHeader
+          className={cn(
+            'pb-3 border-b',
+            absentToday.length > 0 ? 'border-rose-100/50' : 'border-emerald-100/50',
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <CardTitle
+              className={cn(
+                'text-base flex items-center gap-2',
+                absentToday.length > 0 ? 'text-rose-800' : 'text-emerald-800',
+              )}
+            >
+              <AlertTriangle
+                className={cn(
+                  'h-5 w-5',
+                  absentToday.length > 0 ? 'text-rose-600' : 'text-emerald-600',
+                )}
+              />
+              Ausentes Hoje
+            </CardTitle>
+            <Badge
+              variant="secondary"
+              className={cn(
+                'border-none',
+                absentToday.length > 0
+                  ? 'bg-rose-100 text-rose-800 hover:bg-rose-200'
+                  : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200',
+              )}
+            >
+              {absentToday.length} ausentes
+            </Badge>
+          </div>
+          <CardDescription
+            className={absentToday.length > 0 ? 'text-rose-700/80' : 'text-emerald-700/80'}
+          >
+            Profissionais que não estão disponíveis no dia de hoje
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4">
+          {absentToday.length === 0 ? (
+            <p className="text-sm text-emerald-700/80 py-6 text-center border rounded-lg border-dashed border-emerald-200/50 bg-white/40">
+              Nenhum profissional ausente hoje. A equipe está completa!
+            </p>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-4 pt-1 scrollbar-thin">
+              {absentToday.map((req) => (
+                <div key={req.id} className="min-w-[300px] w-[300px] flex-shrink-0">
+                  <SmartTimeOffCard req={req} onEdit={setEditingRequest} onDelete={handleDelete} />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="border-orange-200 shadow-sm bg-orange-50/30">
         <CardHeader className="pb-3 border-b border-orange-100/50">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base text-orange-800 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              <CalendarOff className="h-5 w-5 text-orange-600" />
               Ausências na Próxima Semana
             </CardTitle>
             <Badge
