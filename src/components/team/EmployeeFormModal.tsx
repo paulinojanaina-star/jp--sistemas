@@ -32,15 +32,18 @@ export function EmployeeFormModal({
   const { toast } = useToast()
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
+  const [birthDate, setBirthDate] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (employee && open) {
       setName(employee.name || '')
       setCategory(employee.category || '')
+      setBirthDate(employee.birth_date || '')
     } else if (open) {
       setName('')
       setCategory('')
+      setBirthDate('')
     }
   }, [employee, open])
 
@@ -57,7 +60,7 @@ export function EmployeeFormModal({
     setIsSubmitting(true)
     try {
       if (saveEmployee) {
-        await saveEmployee(employee?.id, { name, category })
+        await saveEmployee(employee?.id, { name, category, birth_date: birthDate || null })
       }
       toast({
         title: 'Sucesso',
@@ -106,6 +109,15 @@ export function EmployeeFormModal({
                 <SelectItem value="GERENTE">Gerente</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="birthDate">Data de Nascimento (Opcional)</Label>
+            <Input
+              id="birthDate"
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+            />
           </div>
         </div>
         <DialogFooter>

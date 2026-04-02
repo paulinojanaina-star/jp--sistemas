@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search, Edit, Trash2, CalendarDays } from 'lucide-react'
+import { differenceInYears } from 'date-fns'
 
 interface Props {
   onEdit: (id: string) => void
@@ -53,7 +54,17 @@ export function EmployeeList({ onEdit, onViewTimeOffs }: Props) {
             >
               <div>
                 <h4 className="font-medium text-base">{emp.name}</h4>
-                <p className="text-xs text-muted-foreground uppercase mt-1">{emp.category}</p>
+                <p className="text-xs text-muted-foreground uppercase mt-1 flex items-center gap-2">
+                  <span>{emp.category}</span>
+                  {emp.birth_date && (
+                    <>
+                      <span className="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                      <span>
+                        {differenceInYears(new Date(), new Date(emp.birth_date + 'T00:00:00'))} anos
+                      </span>
+                    </>
+                  )}
+                </p>
               </div>
               <div className="flex items-center gap-1">
                 <Button
