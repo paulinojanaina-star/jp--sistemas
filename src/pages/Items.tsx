@@ -95,7 +95,10 @@ export default function Items() {
         isExpired = diffDays < 0
       }
 
-      const { isStockoutRisk, monthlyConsumption } = calculateConsumption(item, movements)
+      const { isStockoutRisk, monthlyConsumption, daysUntilStockout } = calculateConsumption(
+        item,
+        movements,
+      )
 
       return {
         ...item,
@@ -106,6 +109,7 @@ export default function Items() {
         isExpired,
         isStockoutRisk,
         monthlyConsumption,
+        daysUntilStockout,
         isZerado: currentQty <= 0,
         isCritico: currentQty > 0 && currentQty < minQty,
       }
@@ -405,6 +409,9 @@ export default function Items() {
                 <TableHead className="font-bold h-12">Estoque Atual</TableHead>
                 <TableHead className="font-bold h-12">Estoque Mín.</TableHead>
                 <TableHead className="font-bold h-12">Média Mensal</TableHead>
+                {currentFilter === 'ruptura' && (
+                  <TableHead className="font-bold h-12">Duração Est.</TableHead>
+                )}
                 <TableHead className="font-bold h-12">Status</TableHead>
                 <TableHead className="font-bold h-12 text-right">Ações</TableHead>
               </TableRow>
@@ -412,7 +419,10 @@ export default function Items() {
             <TableBody>
               {filteredItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-16 text-muted-foreground">
+                  <TableCell
+                    colSpan={currentFilter === 'ruptura' ? 7 : 6}
+                    className="text-center py-16 text-muted-foreground"
+                  >
                     <PackageX className="h-10 w-10 mx-auto text-slate-300 dark:text-slate-700 mb-3" />
                     <p className="font-bold text-lg">Nenhum item encontrado</p>
                     <p className="text-sm">Ajuste os filtros ou o termo de busca.</p>
@@ -448,6 +458,15 @@ export default function Items() {
                         </span>
                       </div>
                     </TableCell>
+                    {currentFilter === 'ruptura' && (
+                      <TableCell className="py-4">
+                        <div className="font-bold text-purple-600 dark:text-purple-400">
+                          {item.daysUntilStockout !== Infinity
+                            ? `${Math.ceil(item.daysUntilStockout)} dias`
+                            : '-'}
+                        </div>
+                      </TableCell>
+                    )}
                     <TableCell className="py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {item.isExpired && (
