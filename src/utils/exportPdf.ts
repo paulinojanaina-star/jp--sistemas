@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase/client'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { getNearestExpiry } from '@/utils/expiryLogic'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 export type ReportFilter = 'all' | 'critical' | 'zero' | 'expiring' | 'expired'
 
@@ -520,4 +522,121 @@ export const exportDetailsExcel = async (data: Array<any>) => {
       d.description || '-',
     ]),
   )
+}
+
+export const exportCalendarPdf = async (currentDate: Date, timeOffRequests: any[]) => {
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) return { error: new Error('Popup blocked') }
+
+  const monthStart = startOfMonth(currentDate)
+  const monthEnd = endOfMonth(currentDate)
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  const monthName = format(currentDate, 'MMMM yyyy', { locale: ptBR })
+
+  const isDateInRange = (date: Date, startStr: string, endStr: string) => {
+    const dStr = format(date, 'yyyy-MM-dd')
+    return dStr >= startStr && dStr <= endStr
+  }
+
+  const rows: any[] = []
+  days.forEach((day) => {
+    const dayRequests = timeOffRequests.filter((req) =>
+      isDateInRange(day, req.start_date, req.end_date),
+    )
+    if (dayRequests.length > 0) {
+      const dateStr = format(day, 'dd/MM/yyyy')
+      const weekDayStr = format(day, 'EEEE', { locale: ptBR })
+
+      dayRequests.forEach((req, idx) => {
+        const isSystem = req.type === 'FERIADO' || req.type === 'PONTO_FACULTATIVO'
+        const name = isSystem
+          ? req.notes || (req.type === 'FERIADO' ? 'Feriado' : 'Ponto Facultativo')
+          : req.employees?.name || 'Desconhecido'
+        const type = isSystem
+          ? req.type === 'FERIADO'
+            ? 'Feriado Nacional'
+            : 'Decreto Municipal'
+          : req.type
+        const notes = isSystem ? '' : req.notes || ''
+
+        rows.push([
+          idx === 0 ? dateStr : '',
+          idx === 0 ? `<span style="text-transform: capitalize;">${weekDayStr}</span>` : '',
+          name,
+          type,
+          notes,
+        ])
+      })
+    }
+  })
+
+  const now = new Date()
+  const formattedDate = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <title>JP Sistemas - Escala de ${monthName}</title>
+        <style>
+          body { font-family: system-ui, sans-serif; padding: 40px; color: #1e293b; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
+          h1 { color: #0f172a; margin: 0 0 10px 0; font-size: 24px; text-transform: capitalize; }
+          .meta { color: #64748b; font-size: 14px; margin: 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; font-size: 14px; vertical-align: top; }
+          th { background-color: #f8fafc; font-weight: 600; color: #334155; }
+          .text-center { text-align: center; }
+          tr.new-day td { border-top: 2px solid #94a3b8; }
+          @media print {
+            body { padding: 0; }
+            .header { margin-bottom: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>JP Sistemas - Escala de ${monthName}</h1>
+          <p class="meta">Data de emissão: ${formattedDate}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th width="12%">Data</th>
+              <th width="15%">Dia</th>
+              <th width="30%">Colaborador / Evento</th>
+              <th width="18%">Tipo</th>
+              <th width="25%">Observações</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.length === 0 ? '<tr><td colspan="5" class="text-center">Nenhuma ausência ou feriado registrado neste mês.</td></tr>' : ''}
+            ${rows
+              .map((row) => {
+                const isNewDay = row[0] !== ''
+                return `
+                <tr class="${isNewDay ? 'new-day' : ''}">
+                  <td><strong>${row[0]}</strong></td>
+                  <td class="meta">${row[1]}</td>
+                  <td><strong>${row[2]}</strong></td>
+                  <td>${row[3]}</td>
+                  <td class="meta">${row[4]}</td>
+                </tr>
+              `
+              })
+              .join('')}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `
+
+  printWindow.document.write(html)
+  printWindow.document.close()
+  setTimeout(() => {
+    printWindow.print()
+    printWindow.close()
+  }, 300)
+  return { error: null }
 }

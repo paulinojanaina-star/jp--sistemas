@@ -8,6 +8,7 @@ import {
   Calendar as CalendarIcon,
   Info,
   PartyPopper,
+  Download,
   Music,
   Heart,
   Landmark,
@@ -37,6 +38,7 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { exportCalendarPdf } from '@/utils/exportPdf'
 
 const getHolidayIcon = (notes?: string | null) => {
   if (!notes) return CalendarHeart
@@ -100,26 +102,37 @@ export function TeamCalendar() {
             <CalendarIcon className="h-5 w-5 text-primary" />
             Calendário de Escalas
           </CardTitle>
-          <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-full border border-border/50">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="rounded-full h-8 w-8 p-0 hover:bg-background shadow-sm"
-              onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+              className="h-8 gap-1.5 rounded-full px-3 shadow-sm border-primary/20 hover:bg-primary/5 hover:text-primary transition-colors"
+              onClick={() => exportCalendarPdf(currentDate, timeOffRequests)}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <Download className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline text-xs font-semibold">Exportar PDF</span>
             </Button>
-            <h2 className="text-sm font-bold capitalize w-28 sm:w-32 text-center tracking-tight">
-              {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-full h-8 w-8 p-0 hover:bg-background shadow-sm"
-              onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-full border border-border/50 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full h-8 w-8 p-0 hover:bg-background shadow-sm"
+                onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h2 className="text-sm font-bold capitalize w-28 sm:w-32 text-center tracking-tight">
+                {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full h-8 w-8 p-0 hover:bg-background shadow-sm"
+                onClick={() => setCurrentDate(addMonths(currentDate, 1))}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-3 sm:p-4">
