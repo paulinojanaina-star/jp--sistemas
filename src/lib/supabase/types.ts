@@ -206,6 +206,30 @@ export type Database = {
         }
         Relationships: []
       }
+      system_holidays: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          name: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
       time_off_requests: {
         Row: {
           created_at: string
@@ -440,6 +464,12 @@ export const Constants = {
 //   email: text (not null)
 //   full_name: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
+// Table: system_holidays
+//   id: uuid (not null, default: gen_random_uuid())
+//   name: text (not null)
+//   date: date (not null)
+//   type: text (not null, default: 'PONTO_FACULTATIVO'::text)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: time_off_requests
 //   id: uuid (not null, default: gen_random_uuid())
 //   employee_id: uuid (not null)
@@ -469,6 +499,8 @@ export const Constants = {
 // Table: profiles
 //   FOREIGN KEY profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
+// Table: system_holidays
+//   PRIMARY KEY system_holidays_pkey: PRIMARY KEY (id)
 // Table: time_off_requests
 //   FOREIGN KEY time_off_requests_employee_id_fkey: FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
 //   PRIMARY KEY time_off_requests_pkey: PRIMARY KEY (id)
@@ -509,6 +541,15 @@ export const Constants = {
 //     USING: true
 // Table: profiles
 //   Policy "authenticated_select_profiles" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+// Table: system_holidays
+//   Policy "authenticated_delete_system_holidays" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_insert_system_holidays" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
+//   Policy "authenticated_select_system_holidays" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_update_system_holidays" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 // Table: time_off_requests
 //   Policy "authenticated_all_time_off" (ALL, PERMISSIVE) roles={authenticated}

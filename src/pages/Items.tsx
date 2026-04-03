@@ -17,6 +17,17 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { useToast } from '@/hooks/use-toast'
+import {
   Search,
   Plus,
   FileText,
@@ -25,13 +36,37 @@ import {
   TrendingDown,
   Clock,
   AlertOctagon,
+  Trash,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function Items() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const { items, movements } = useInventoryStore()
+  const { items, movements, deleteItem } = useInventoryStore()
   const [searchQuery, setSearchQuery] = useState('')
+  const [itemToDelete, setItemToDelete] = useState<any>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const { toast } = useToast()
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return
+    setIsDeleting(true)
+    const { error } = await deleteItem(itemToDelete.id)
+    setIsDeleting(false)
+
+    if (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível excluir o item.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    toast({ title: 'Sucesso!', description: 'Item excluído com sucesso.' })
+    setItemToDelete(null)
+  }
 
   const currentFilter = searchParams.get('filter') || 'todos'
 
@@ -60,7 +95,7 @@ export default function Items() {
         isExpired = diffDays < 0
       }
 
-      const { isStockoutRisk } = calculateConsumption(item, movements)
+      const { isStockoutRisk, monthlyConsumption } = calculateConsumption(item, movements)
 
       return {
         ...item,
@@ -70,6 +105,7 @@ export default function Items() {
         diffDays,
         isExpired,
         isStockoutRisk,
+        monthlyConsumption,
         isZerado: currentQty <= 0,
         isCritico: currentQty > 0 && currentQty < minQty,
       }
@@ -368,6 +404,7 @@ export default function Items() {
                 <TableHead className="font-bold h-12">Item</TableHead>
                 <TableHead className="font-bold h-12">Estoque Atual</TableHead>
                 <TableHead className="font-bold h-12">Estoque Mín.</TableHead>
+                <TableHead className="font-bold h-12">Média Mensal</TableHead>
                 <TableHead className="font-bold h-12">Status</TableHead>
                 <TableHead className="font-bold h-12 text-right">Ações</TableHead>
               </TableRow>
@@ -402,6 +439,14 @@ export default function Items() {
                     </TableCell>
                     <TableCell className="py-4">
                       <div className="font-bold text-muted-foreground">{item.minQty}</div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="font-bold text-slate-600 dark:text-slate-400">
+                        {item.monthlyConsumption}{' '}
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                          /mês
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="py-4">
                       <div className="flex flex-wrap gap-1.5">
@@ -485,9 +530,11 @@ export default function Items() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="font-bold text-muted-foreground hover:text-foreground"
+                          onClick={() => setItemToDelete(item)}
+                          className="font-bold text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          title="Excluir item"
                         >
-                          Detalhes
+                          <Trash className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -498,6 +545,31 @@ export default function Items() {
           </Table>
         </div>
       </Card>
+
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza que deseja excluir este item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. A exclusão deste item removerá também todo o
+              histórico de movimentações associado a ele no banco de dados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleDelete()
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
