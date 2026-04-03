@@ -495,3 +495,29 @@ export const exportStaleItemsExcel = async (data: Array<any>) => {
     data.map((d) => [formatItemDisplay(d), d.daysStale, d.current_quantity, d.description || '-']),
   )
 }
+
+export const exportDetailsPdf = async (data: Array<any>) => {
+  return exportGenericPdf(
+    'Detalhes dos Itens',
+    ['Nome do Item', 'Unidade', 'Validade Mais Próxima', 'Observações'],
+    data.map((d) => [
+      formatItemDisplay(d),
+      d.unit_type || '-',
+      d.nearestExpiry ? d.nearestExpiry.toLocaleDateString('pt-BR') : '-',
+      d.description || '-',
+    ]),
+  )
+}
+
+export const exportDetailsExcel = async (data: Array<any>) => {
+  return downloadExcel(
+    'Detalhes_Itens',
+    ['Nome do Item', 'Unidade', 'Validade Mais Próxima', 'Observações'],
+    data.map((d) => [
+      formatItemDisplay(d),
+      d.unit_type || '-',
+      d.nearestExpiry ? d.nearestExpiry.toLocaleDateString('pt-BR') : '-',
+      d.description || '-',
+    ]),
+  )
+}

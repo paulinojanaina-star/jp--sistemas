@@ -12,6 +12,8 @@ import { ConsumptionReport } from '@/components/reports/ConsumptionReport'
 import { ItemTrendReport } from '@/components/reports/ItemTrendReport'
 import { StockPositionReport } from '@/components/reports/StockPositionReport'
 import { PurchaseSuggestionReport } from '@/components/reports/PurchaseSuggestionReport'
+import { ItemDetailsReport } from '@/components/reports/ItemDetailsReport'
+import { Info } from 'lucide-react'
 
 export default function Reports() {
   return (
@@ -46,7 +48,7 @@ export default function Reports() {
 
       <Tabs defaultValue="stock" className="space-y-8">
         <div className="bg-card/80 backdrop-blur-xl rounded-[1.5rem] p-2 border border-border/50 shadow-lg inline-flex w-full overflow-x-auto overflow-y-hidden hide-scrollbar">
-          <TabsList className="grid w-full lg:w-auto grid-cols-5 h-auto bg-transparent gap-2">
+          <TabsList className="flex w-full min-w-max h-auto bg-transparent gap-2">
             <TabsTrigger
               value="stock"
               className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
@@ -87,6 +89,14 @@ export default function Reports() {
               <span className="hidden sm:inline">Inativos</span>
               <span className="sm:hidden">Inativos</span>
             </TabsTrigger>
+            <TabsTrigger
+              value="details"
+              className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
+            >
+              <Info className="h-5 w-5" />
+              <span className="hidden sm:inline">Detalhes</span>
+              <span className="sm:hidden">Detalhes</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -120,6 +130,12 @@ export default function Reports() {
             className="mt-0 outline-none animate-in fade-in-50 duration-500 slide-in-from-bottom-4"
           >
             <StaleItemsReport />
+          </TabsContent>
+          <TabsContent
+            value="details"
+            className="mt-0 outline-none animate-in fade-in-50 duration-500 slide-in-from-bottom-4"
+          >
+            <ItemDetailsReport />
           </TabsContent>
         </div>
       </Tabs>
