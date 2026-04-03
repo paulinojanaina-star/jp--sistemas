@@ -26,12 +26,49 @@ interface TeamContextType {
   deleteTimeOff: (id: string) => Promise<{ error?: any }>
 }
 
+export interface SystemHoliday {
+  id: string
+  name: string
+  date: string
+  type: string
+}
+
+interface TeamContextType {
+  employees: Employee[]
+  timeOffRequests: TimeOffRequest[]
+  systemHolidays: SystemHoliday[]
+  loading: boolean
+  refreshData: () => Promise<void>
+  saveEmployee: (
+    id: string | null,
+    data: { name: string; category: EmployeeCategory; birth_date?: string | null },
+  ) => Promise<{ error?: any }>
+  deleteEmployee: (id: string) => Promise<{ error?: any }>
+  saveTimeOff: (
+    id: string | null,
+    data: {
+      employee_id: string
+      type: TimeOffType
+      start_date: string
+      end_date: string
+      notes?: string
+    },
+  ) => Promise<{ error?: any }>
+  deleteTimeOff: (id: string) => Promise<{ error?: any }>
+  saveSystemHoliday: (
+    id: string | null,
+    data: { name: string; date: string },
+  ) => Promise<{ error?: any }>
+  deleteSystemHoliday: (id: string) => Promise<{ error?: any }>
+}
+
 export const TeamContext = createContext<TeamContextType | null>(null)
 
 export const TeamProvider = ({ children }: { children: ReactNode }) => {
   const { session } = useAuth()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([])
+  const [systemHolidays, setSystemHolidays] = useState<SystemHoliday[]>([])
   const [loading, setLoading] = useState(true)
 
   const refreshData = async () => {
@@ -50,6 +87,14 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
         .order('start_date', { ascending: true })
 
       if (!timeOffsError && timeOffs) {
+        const { data: dbHolidays } = await supabase
+          .from('system_holidays')
+          .select('*')
+          .order('date', { ascending: true })
+        if (dbHolidays) {
+          setSystemHolidays(dbHolidays as SystemHoliday[])
+        }
+
         const currentYear = new Date().getFullYear()
         const birthdayTimeOffs: TimeOffRequest[] = []
 
@@ -202,6 +247,12 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
           }
         })
 
+        if (dbHolidays) {
+          dbHolidays.forEach((h: any) => {
+            holidays.push(createOptionalReq(`db-${h.id}`, h.name, h.date))
+          })
+        }
+
         const allTimeOffs = [
           ...(timeOffs as any as TimeOffRequest[]),
           ...birthdayTimeOffs,
@@ -220,6 +271,7 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setEmployees([])
       setTimeOffRequests([])
+      setSystemHolidays([])
     }
   }, [session?.user?.id])
 
@@ -284,17 +336,39 @@ export const TeamProvider = ({ children }: { children: ReactNode }) => {
     return {}
   }
 
+  const saveSystemHoliday = async (id: string | null, data: { name: string; date: string }) => {
+    let result
+    if (id) {
+      result = await supabase.from('system_holidays').update(data).eq('id', id)
+    } else {
+      result = await supabase.from('system_holidays').insert(data)
+    }
+    if (result.error) return { error: result.error }
+    await refreshData()
+    return {}
+  }
+
+  const deleteSystemHoliday = async (id: string) => {
+    const { error } = await supabase.from('system_holidays').delete().eq('id', id)
+    if (error) return { error }
+    await refreshData()
+    return {}
+  }
+
   return (
     <TeamContext.Provider
       value={{
         employees,
         timeOffRequests,
+        systemHolidays,
         loading,
         refreshData,
         saveEmployee,
         deleteEmployee,
         saveTimeOff,
         deleteTimeOff,
+        saveSystemHoliday,
+        deleteSystemHoliday,
       }}
     >
       {children}

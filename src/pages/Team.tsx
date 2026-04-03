@@ -22,14 +22,19 @@ import { TimeOffList } from '@/components/team/TimeOffList'
 import { EmployeeList } from '@/components/team/EmployeeList'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmployeeFormModal } from '@/components/team/EmployeeFormModal'
+import { Umbrella } from 'lucide-react'
+import { SystemHolidayList } from '@/components/team/SystemHolidayList'
+import { SystemHolidayFormModal } from '@/components/team/SystemHolidayFormModal'
 
 export default function Team() {
-  const { employees, timeOffRequests } = useTeamStore()
+  const { employees, timeOffRequests, systemHolidays } = useTeamStore()
   const [activeTab, setActiveTab] = useState('calendario')
   const [editingRequest, setEditingRequest] = useState<any | null>(null)
   const [isTimeOffModalOpen, setIsTimeOffModalOpen] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState<any | null>(null)
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false)
+  const [editingSystemHoliday, setEditingSystemHoliday] = useState<any | null>(null)
+  const [isSystemHolidayModalOpen, setIsSystemHolidayModalOpen] = useState(false)
 
   const today = startOfDay(new Date())
   const nextWeekStart = addDays(today, 1)
@@ -69,6 +74,14 @@ export default function Team() {
 
   const handleViewTimeOffs = (id: string) => {
     setActiveTab('ausencias')
+  }
+
+  const handleEditSystemHoliday = (id: string) => {
+    const sh = systemHolidays.find((h) => h.id === id)
+    if (sh) {
+      setEditingSystemHoliday(sh)
+      setIsSystemHolidayModalOpen(true)
+    }
   }
 
   const totalEmployees = employees.length
@@ -165,7 +178,7 @@ export default function Team() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 h-auto p-1 bg-muted/50 rounded-xl gap-1">
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 h-auto p-1 bg-muted/50 rounded-xl gap-1">
           <TabsTrigger
             value="calendario"
             className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2"
@@ -186,6 +199,13 @@ export default function Team() {
           >
             <Briefcase className="h-4 w-4" />
             <span>Gestão de Profissionais</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="pontos-facultativos"
+            className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2"
+          >
+            <Umbrella className="h-4 w-4" />
+            <span className="truncate">Pontos Facultativos</span>
           </TabsTrigger>
         </TabsList>
 
@@ -224,6 +244,25 @@ export default function Team() {
           </div>
           <EmployeeList onEdit={handleEditEmployee} onViewTimeOffs={handleViewTimeOffs} />
         </TabsContent>
+
+        <TabsContent
+          value="pontos-facultativos"
+          className="space-y-6 outline-none focus-visible:ring-0"
+        >
+          <div className="flex justify-end mb-4">
+            <Button
+              onClick={() => {
+                setEditingSystemHoliday(null)
+                setIsSystemHolidayModalOpen(true)
+              }}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Novo Ponto Facultativo
+            </Button>
+          </div>
+          <SystemHolidayList onEdit={handleEditSystemHoliday} />
+        </TabsContent>
       </Tabs>
 
       <TimeOffFormModal
@@ -242,6 +281,15 @@ export default function Team() {
           if (!open) setEditingEmployee(null)
         }}
         employee={editingEmployee}
+      />
+
+      <SystemHolidayFormModal
+        open={isSystemHolidayModalOpen}
+        onOpenChange={(open) => {
+          setIsSystemHolidayModalOpen(open)
+          if (!open) setEditingSystemHoliday(null)
+        }}
+        holiday={editingSystemHoliday}
       />
     </div>
   )
