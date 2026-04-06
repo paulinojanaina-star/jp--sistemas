@@ -33,6 +33,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const itemSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -45,6 +46,7 @@ const itemSchema = z.object({
   batch_number: z.string().optional(),
   manufacturing_date: z.string().optional(),
   expiry_date: z.string().optional(),
+  is_indefinite_expiry: z.boolean().default(false),
   supplier: z.string().optional(),
 })
 
@@ -98,6 +100,7 @@ export function ItemFormModal({
       batch_number: '',
       manufacturing_date: '',
       expiry_date: '',
+      is_indefinite_expiry: false,
       supplier: item?.supplier || '',
     },
   })
@@ -118,6 +121,7 @@ export function ItemFormModal({
           expiry_date: latestInMovement?.expiry_date
             ? latestInMovement.expiry_date.split('T')[0]
             : '',
+          is_indefinite_expiry: !!latestInMovement && !latestInMovement.expiry_date,
           supplier: item.supplier || '',
         })
       } else {
@@ -130,6 +134,7 @@ export function ItemFormModal({
           batch_number: '',
           manufacturing_date: '',
           expiry_date: '',
+          is_indefinite_expiry: false,
           supplier: '',
         })
       }
@@ -145,11 +150,13 @@ export function ItemFormModal({
       batch_number,
       manufacturing_date,
       expiry_date,
+      is_indefinite_expiry,
       supplier,
       ...itemData
     } = values
 
     const parsedSupplier = supplier?.trim() || null
+    const finalExpiryDate = is_indefinite_expiry ? null : expiry_date || null
 
     if (isEditing && item) {
       const { error } = await updateItem(item.id, { ...itemData, supplier: parsedSupplier })
@@ -167,7 +174,7 @@ export function ItemFormModal({
       const { error: batchError } = await updateItemBatchInfo(item.id, {
         batch_number: batch_number?.trim() || null,
         manufacturing_date: manufacturing_date || null,
-        expiry_date: expiry_date || null,
+        expiry_date: finalExpiryDate,
       })
 
       if (batchError && (batch_number || manufacturing_date || expiry_date)) {
@@ -185,7 +192,7 @@ export function ItemFormModal({
       const movementData = {
         batch_number: batch_number?.trim() || null,
         manufacturing_date: manufacturing_date || null,
-        expiry_date: expiry_date || null,
+        expiry_date: finalExpiryDate,
       }
 
       const { error } = await addItem(
@@ -367,24 +374,51 @@ export function ItemFormModal({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="expiry_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col mt-2 md:mt-0">
-                    <FormLabel className="mb-1">Validade</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
-                        value={field.value || ''}
-                        className="w-full text-sm"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="flex flex-col mt-2 md:mt-0 gap-2">
+                <FormField
+                  control={form.control}
+                  name="expiry_date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col flex-1">
+                      <FormLabel className="mb-1">Validade</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          value={field.value || ''}
+                          className="w-full text-sm"
+                          disabled={form.watch('is_indefinite_expiry')}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="is_indefinite_expiry"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-2 space-y-0 rounded-md p-1">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked)
+                            if (checked) {
+                              form.setValue('expiry_date', '')
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-xs font-normal cursor-pointer text-muted-foreground">
+                          Tempo Indeterminado
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             <FormField
