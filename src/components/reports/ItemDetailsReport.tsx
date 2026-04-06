@@ -124,7 +124,9 @@ export function ItemDetailsReport() {
                             {item.nearestExpiry.toLocaleDateString('pt-BR')}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground">-</span>
+                          <span className="text-muted-foreground font-medium">
+                            Tempo Indeterminado
+                          </span>
                         )}
                       </TableCell>
                       <TableCell className="max-w-[400px]">{item.description || '-'}</TableCell>

@@ -182,7 +182,7 @@ export function ItemTableRow({
             )}
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs italic">N/A</span>
+          <span className="text-muted-foreground text-xs font-medium">Tempo Indeterminado</span>
         )}
       </TableCell>
       <TableCell className="text-right">
