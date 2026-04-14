@@ -121,6 +121,8 @@ export default function Items() {
       zerado: itemsWithStats.filter((i) => i.isZerado).length,
       critico: itemsWithStats.filter((i) => i.isCritico).length,
       ruptura: itemsWithStats.filter((i) => i.isStockoutRisk).length,
+      dias180: itemsWithStats.filter((i) => !i.isExpired && i.diffDays <= 180 && i.diffDays > 120)
+        .length,
       dias120: itemsWithStats.filter((i) => !i.isExpired && i.diffDays <= 120 && i.diffDays > 60)
         .length,
       dias60: itemsWithStats.filter((i) => !i.isExpired && i.diffDays <= 60).length,
@@ -144,6 +146,8 @@ export default function Items() {
           return item.isCritico
         case 'ruptura':
           return item.isStockoutRisk
+        case '180dias':
+          return !item.isExpired && item.diffDays <= 180 && item.diffDays > 120
         case '120dias':
         case 'vencimento_proximo':
           return !item.isExpired && item.diffDays <= 120 && item.diffDays > 60
@@ -234,6 +238,24 @@ export default function Items() {
               <TrendingDown className="h-4 w-4 opacity-70" />
             </div>
             <div className="text-3xl font-black text-purple-600">{stats.ruptura}</div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={cn(
+            'min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start',
+            currentFilter === '180dias'
+              ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-500/10 border-blue-200'
+              : 'bg-blue-50/50 dark:bg-blue-500/5 border-blue-100',
+          )}
+          onClick={() => setFilter(currentFilter === '180dias' ? 'todos' : '180dias')}
+        >
+          <CardContent className="p-4 flex flex-col justify-between h-full min-h-[100px]">
+            <div className="flex items-start justify-between text-blue-700 mb-2">
+              <span className="font-bold text-xs tracking-wider uppercase">≤ 180 Dias</span>
+              <Clock className="h-4 w-4 opacity-70" />
+            </div>
+            <div className="text-3xl font-black text-blue-600">{stats.dias180}</div>
           </CardContent>
         </Card>
 
@@ -341,6 +363,19 @@ export default function Items() {
               onClick={() => setFilter('zerado')}
             >
               Zerado
+            </Button>
+            <Button
+              variant={currentFilter === '180dias' ? 'default' : 'ghost'}
+              size="sm"
+              className={cn(
+                'rounded-lg text-sm font-bold whitespace-nowrap',
+                currentFilter === '180dias'
+                  ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-sm'
+                  : 'text-blue-600 dark:text-blue-400',
+              )}
+              onClick={() => setFilter('180dias')}
+            >
+              ≤ 180 Dias
             </Button>
             <Button
               variant={
@@ -517,12 +552,20 @@ export default function Items() {
                             ≤ 120d
                           </Badge>
                         )}
+                        {!item.isExpired && item.diffDays > 120 && item.diffDays <= 180 && (
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/30 font-bold uppercase text-[10px]"
+                          >
+                            ≤ 180d
+                          </Badge>
+                        )}
 
                         {!item.isExpired &&
                           !item.isZerado &&
                           !item.isCritico &&
                           !item.isStockoutRisk &&
-                          item.diffDays > 120 && (
+                          item.diffDays > 180 && (
                             <Badge
                               variant="outline"
                               className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30 font-bold uppercase text-[10px]"
