@@ -86863,13 +86863,16 @@ var exportCalendarPdf = async (currentDate, timeOffRequests) => {
 	};
 	const rows = [];
 	days.forEach((day) => {
+		if (day.getDay() === 0 || day.getDay() === 6) return;
 		const dayRequests = timeOffRequests.filter((req) => isDateInRange(day, req.start_date, req.end_date));
 		if (dayRequests.length > 0) {
 			const dateStr = format$1(day, "dd/MM/yyyy");
 			const weekDayStr = format$1(day, "EEEE", { locale: ptBR });
 			dayRequests.forEach((req, idx) => {
 				const isSystem = req.type === "FERIADO" || req.type === "PONTO_FACULTATIVO";
-				const name = isSystem ? req.notes || (req.type === "FERIADO" ? "Feriado" : "Ponto Facultativo") : req.employees?.name || "Desconhecido";
+				let employeeLabel = req.employees?.name || "Desconhecido";
+				if (req.employees?.category) employeeLabel += ` - ${req.employees.category}`;
+				const name = isSystem ? req.notes || (req.type === "FERIADO" ? "Feriado" : "Ponto Facultativo") : employeeLabel;
 				const type = isSystem ? req.type === "FERIADO" ? "Feriado Nacional" : "Decreto Municipal" : req.type;
 				const notes = isSystem ? "" : req.notes || "";
 				rows.push([
@@ -91840,4 +91843,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-lCbywiKL.js.map
+//# sourceMappingURL=index-BB9Da8z8.js.map

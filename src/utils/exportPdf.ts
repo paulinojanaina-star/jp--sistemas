@@ -540,6 +540,8 @@ export const exportCalendarPdf = async (currentDate: Date, timeOffRequests: any[
 
   const rows: any[] = []
   days.forEach((day) => {
+    if (day.getDay() === 0 || day.getDay() === 6) return
+
     const dayRequests = timeOffRequests.filter((req) =>
       isDateInRange(day, req.start_date, req.end_date),
     )
@@ -549,9 +551,16 @@ export const exportCalendarPdf = async (currentDate: Date, timeOffRequests: any[
 
       dayRequests.forEach((req, idx) => {
         const isSystem = req.type === 'FERIADO' || req.type === 'PONTO_FACULTATIVO'
+
+        let employeeLabel = req.employees?.name || 'Desconhecido'
+        if (req.employees?.category) {
+          employeeLabel += ` - ${req.employees.category}`
+        }
+
         const name = isSystem
           ? req.notes || (req.type === 'FERIADO' ? 'Feriado' : 'Ponto Facultativo')
-          : req.employees?.name || 'Desconhecido'
+          : employeeLabel
+
         const type = isSystem
           ? req.type === 'FERIADO'
             ? 'Feriado Nacional'
