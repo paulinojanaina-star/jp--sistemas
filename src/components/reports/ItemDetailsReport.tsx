@@ -39,9 +39,19 @@ export function ItemDetailsReport() {
 
       const details = items.map((item) => {
         const nearest = getNearestExpiry(item, movements || [])
+        const itemMovements = (movements || []).filter((m) => m.item_id === item.id)
+
+        const expiryDates = Array.from(
+          new Set(itemMovements.map((m) => m.expiry_date).filter((date): date is string => !!date)),
+        )
+          .map((dateStr) => new Date(dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`))
+          .filter((d) => !isNaN(d.getTime()))
+          .sort((a, b) => a.getTime() - b.getTime())
+
         return {
           ...item,
           nearestExpiry: nearest ? nearest.date : null,
+          allExpiries: expiryDates,
         }
       })
 
@@ -87,7 +97,7 @@ export function ItemDetailsReport() {
                 <TableRow>
                   <TableHead className="w-[300px]">Item</TableHead>
                   <TableHead>Unidade</TableHead>
-                  <TableHead>Validade Mais Próxima</TableHead>
+                  <TableHead>Validades Disponíveis</TableHead>
                   <TableHead>Observações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -115,7 +125,22 @@ export function ItemDetailsReport() {
                       </TableCell>
                       <TableCell>{item.unit_type || '-'}</TableCell>
                       <TableCell>
-                        {item.nearestExpiry ? (
+                        {item.allExpiries && item.allExpiries.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {item.allExpiries.map((date: Date, idx: number) => (
+                              <span
+                                key={idx}
+                                className={`inline-flex px-2 py-1 rounded-md text-xs font-medium border ${
+                                  date <= new Date()
+                                    ? 'bg-destructive/10 text-destructive border-destructive/20'
+                                    : 'bg-secondary text-secondary-foreground border-border'
+                                }`}
+                              >
+                                {date.toLocaleDateString('pt-BR')}
+                              </span>
+                            ))}
+                          </div>
+                        ) : item.nearestExpiry ? (
                           <span
                             className={
                               item.nearestExpiry <= new Date() ? 'text-destructive font-bold' : ''
