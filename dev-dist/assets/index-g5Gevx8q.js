@@ -88194,6 +88194,7 @@ function PurchaseSuggestionReport() {
 function ItemDetailsReport() {
 	const [data, setData] = (0, import_react.useState)([]);
 	const [loading, setLoading] = (0, import_react.useState)(true);
+	const [sortOrder, setSortOrder] = (0, import_react.useState)("alpha");
 	const { toast } = useToast();
 	(0, import_react.useEffect)(() => {
 		fetchData();
@@ -88227,179 +88228,221 @@ function ItemDetailsReport() {
 			setLoading(false);
 		}
 	};
+	const sortedData = [...data].sort((a, b) => {
+		if (sortOrder === "nearest") {
+			if (!a.nearestExpiry && !b.nearestExpiry) return formatItemDisplay(a).localeCompare(formatItemDisplay(b), "pt-BR");
+			if (!a.nearestExpiry) return 1;
+			if (!b.nearestExpiry) return -1;
+			return a.nearestExpiry.getTime() - b.nearestExpiry.getTime();
+		}
+		return formatItemDisplay(a).localeCompare(formatItemDisplay(b), "pt-BR");
+	});
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/reports/ItemDetailsReport.tsx:72:5",
+		"data-uid": "src/components/reports/ItemDetailsReport.tsx:91:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/components/reports/ItemDetailsReport.tsx:73:7",
+			"data-uid": "src/components/reports/ItemDetailsReport.tsx:92:7",
 			"data-prohibitions": "[]",
 			className: "flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/reports/ItemDetailsReport.tsx:74:9",
+				"data-uid": "src/components/reports/ItemDetailsReport.tsx:93:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-					"data-uid": "src/components/reports/ItemDetailsReport.tsx:75:11",
+					"data-uid": "src/components/reports/ItemDetailsReport.tsx:94:11",
 					"data-prohibitions": "[]",
 					className: "text-2xl font-bold tracking-tight",
 					children: "Detalhes e Especificações"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/components/reports/ItemDetailsReport.tsx:76:11",
+					"data-uid": "src/components/reports/ItemDetailsReport.tsx:95:11",
 					"data-prohibitions": "[]",
 					className: "text-muted-foreground",
 					children: "Visualize as observações e a validade mais próxima de cada item do catálogo."
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/reports/ItemDetailsReport.tsx:80:9",
+				"data-uid": "src/components/reports/ItemDetailsReport.tsx:99:9",
 				"data-prohibitions": "[]",
-				className: "flex flex-wrap gap-2",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/components/reports/ItemDetailsReport.tsx:81:11",
-					"data-prohibitions": "[]",
-					variant: "outline",
-					onClick: () => exportDetailsPdf(data),
-					disabled: loading,
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-						"data-uid": "src/components/reports/ItemDetailsReport.tsx:82:13",
-						"data-prohibitions": "[editContent]",
-						className: "mr-2 h-4 w-4"
-					}), "Exportar PDF"]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/components/reports/ItemDetailsReport.tsx:85:11",
-					"data-prohibitions": "[]",
-					variant: "outline",
-					onClick: () => exportDetailsExcel(data),
-					disabled: loading,
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-						"data-uid": "src/components/reports/ItemDetailsReport.tsx:86:13",
-						"data-prohibitions": "[editContent]",
-						className: "mr-2 h-4 w-4"
-					}), "Exportar Excel"]
-				})]
+				className: "flex flex-wrap gap-2 items-center",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+						"data-uid": "src/components/reports/ItemDetailsReport.tsx:100:11",
+						"data-prohibitions": "[]",
+						value: sortOrder,
+						onValueChange: (v) => setSortOrder(v),
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+							"data-uid": "src/components/reports/ItemDetailsReport.tsx:101:13",
+							"data-prohibitions": "[]",
+							className: "w-[200px]",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+								"data-uid": "src/components/reports/ItemDetailsReport.tsx:102:15",
+								"data-prohibitions": "[editContent]",
+								placeholder: "Ordenar por..."
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+							"data-uid": "src/components/reports/ItemDetailsReport.tsx:104:13",
+							"data-prohibitions": "[]",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+								"data-uid": "src/components/reports/ItemDetailsReport.tsx:105:15",
+								"data-prohibitions": "[]",
+								value: "alpha",
+								children: "Ordem Alfabética"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+								"data-uid": "src/components/reports/ItemDetailsReport.tsx:106:15",
+								"data-prohibitions": "[]",
+								value: "nearest",
+								children: "Vencimento Iminente"
+							})]
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						"data-uid": "src/components/reports/ItemDetailsReport.tsx:109:11",
+						"data-prohibitions": "[]",
+						variant: "outline",
+						onClick: () => exportDetailsPdf(sortedData),
+						disabled: loading,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
+							"data-uid": "src/components/reports/ItemDetailsReport.tsx:110:13",
+							"data-prohibitions": "[editContent]",
+							className: "mr-2 h-4 w-4"
+						}), "Exportar PDF"]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						"data-uid": "src/components/reports/ItemDetailsReport.tsx:113:11",
+						"data-prohibitions": "[]",
+						variant: "outline",
+						onClick: () => exportDetailsExcel(sortedData),
+						disabled: loading,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
+							"data-uid": "src/components/reports/ItemDetailsReport.tsx:118:13",
+							"data-prohibitions": "[editContent]",
+							className: "mr-2 h-4 w-4"
+						}), "Exportar Excel"]
+					})
+				]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-			"data-uid": "src/components/reports/ItemDetailsReport.tsx:92:7",
+			"data-uid": "src/components/reports/ItemDetailsReport.tsx:124:7",
 			"data-prohibitions": "[editContent]",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-				"data-uid": "src/components/reports/ItemDetailsReport.tsx:93:9",
+				"data-uid": "src/components/reports/ItemDetailsReport.tsx:125:9",
 				"data-prohibitions": "[editContent]",
 				className: "p-0",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScrollArea, {
-					"data-uid": "src/components/reports/ItemDetailsReport.tsx:94:11",
+					"data-uid": "src/components/reports/ItemDetailsReport.tsx:126:11",
 					"data-prohibitions": "[editContent]",
 					className: "h-[500px] rounded-md border",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-						"data-uid": "src/components/reports/ItemDetailsReport.tsx:95:13",
+						"data-uid": "src/components/reports/ItemDetailsReport.tsx:127:13",
 						"data-prohibitions": "[editContent]",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-							"data-uid": "src/components/reports/ItemDetailsReport.tsx:96:15",
+							"data-uid": "src/components/reports/ItemDetailsReport.tsx:128:15",
 							"data-prohibitions": "[]",
 							className: "bg-muted/50 sticky top-0 z-10 backdrop-blur-sm",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-								"data-uid": "src/components/reports/ItemDetailsReport.tsx:97:17",
+								"data-uid": "src/components/reports/ItemDetailsReport.tsx:129:17",
 								"data-prohibitions": "[]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:98:19",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:130:19",
 										"data-prohibitions": "[]",
 										className: "w-[300px]",
 										children: "Item"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:99:19",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:131:19",
 										"data-prohibitions": "[]",
 										children: "Unidade"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:100:19",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:132:19",
 										"data-prohibitions": "[]",
 										children: "Validades Disponíveis"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:101:19",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:133:19",
 										"data-prohibitions": "[]",
 										children: "Observações"
 									})
 								]
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-							"data-uid": "src/components/reports/ItemDetailsReport.tsx:104:15",
+							"data-uid": "src/components/reports/ItemDetailsReport.tsx:136:15",
 							"data-prohibitions": "[editContent]",
 							children: loading ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-								"data-uid": "src/components/reports/ItemDetailsReport.tsx:106:19",
+								"data-uid": "src/components/reports/ItemDetailsReport.tsx:138:19",
 								"data-prohibitions": "[]",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/reports/ItemDetailsReport.tsx:107:21",
+									"data-uid": "src/components/reports/ItemDetailsReport.tsx:139:21",
 									"data-prohibitions": "[]",
 									colSpan: 4,
 									className: "h-32 text-center",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:108:23",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:140:23",
 										"data-prohibitions": "[editContent]",
 										className: "h-6 w-6 animate-spin mx-auto text-muted-foreground"
 									})
 								})
-							}) : data.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-								"data-uid": "src/components/reports/ItemDetailsReport.tsx:112:19",
+							}) : sortedData.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
+								"data-uid": "src/components/reports/ItemDetailsReport.tsx:144:19",
 								"data-prohibitions": "[]",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/reports/ItemDetailsReport.tsx:113:21",
+									"data-uid": "src/components/reports/ItemDetailsReport.tsx:145:21",
 									"data-prohibitions": "[]",
 									colSpan: 4,
 									className: "h-32 text-center text-muted-foreground",
 									children: "Nenhum item encontrado."
 								})
-							}) : data.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-								"data-uid": "src/components/reports/ItemDetailsReport.tsx:119:21",
+							}) : sortedData.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
+								"data-uid": "src/components/reports/ItemDetailsReport.tsx:151:21",
 								"data-prohibitions": "[editContent]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:120:23",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:152:23",
 										"data-prohibitions": "[editContent]",
 										className: "font-medium",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/reports/ItemDetailsReport.tsx:121:25",
+											"data-uid": "src/components/reports/ItemDetailsReport.tsx:153:25",
 											"data-prohibitions": "[editContent]",
 											className: "flex items-center gap-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Info, {
-												"data-uid": "src/components/reports/ItemDetailsReport.tsx:122:27",
+												"data-uid": "src/components/reports/ItemDetailsReport.tsx:154:27",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 text-muted-foreground"
 											}), formatItemDisplay(item)]
 										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:126:23",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:158:23",
 										"data-prohibitions": "[editContent]",
 										children: item.unit_type || "-"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:127:23",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:159:23",
 										"data-prohibitions": "[editContent]",
 										children: item.allExpiries && item.allExpiries.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/components/reports/ItemDetailsReport.tsx:129:27",
+											"data-uid": "src/components/reports/ItemDetailsReport.tsx:161:27",
 											"data-prohibitions": "[editContent]",
 											className: "flex flex-wrap gap-1",
 											children: item.allExpiries.map((date, idx) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/components/reports/ItemDetailsReport.tsx:131:31",
+												"data-uid": "src/components/reports/ItemDetailsReport.tsx:163:31",
 												"data-prohibitions": "[editContent]",
 												className: `inline-flex px-2 py-1 rounded-md text-xs font-medium border ${date <= /* @__PURE__ */ new Date() ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-secondary text-secondary-foreground border-border"}`,
 												children: date.toLocaleDateString("pt-BR")
 											}, idx))
 										}) : item.nearestExpiry ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											"data-uid": "src/components/reports/ItemDetailsReport.tsx:144:27",
+											"data-uid": "src/components/reports/ItemDetailsReport.tsx:176:27",
 											"data-prohibitions": "[editContent]",
 											className: item.nearestExpiry <= /* @__PURE__ */ new Date() ? "text-destructive font-bold" : "",
 											children: item.nearestExpiry.toLocaleDateString("pt-BR")
 										}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											"data-uid": "src/components/reports/ItemDetailsReport.tsx:152:27",
+											"data-uid": "src/components/reports/ItemDetailsReport.tsx:184:27",
 											"data-prohibitions": "[]",
 											className: "text-muted-foreground font-medium",
 											children: "Tempo Indeterminado"
 										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/ItemDetailsReport.tsx:157:23",
+										"data-uid": "src/components/reports/ItemDetailsReport.tsx:189:23",
 										"data-prohibitions": "[editContent]",
 										className: "max-w-[400px]",
 										children: item.description || "-"
@@ -91856,4 +91899,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DZ7WD2CG.js.map
+//# sourceMappingURL=index-g5Gevx8q.js.map

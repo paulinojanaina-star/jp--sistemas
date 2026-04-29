@@ -16,10 +16,18 @@ import { getNearestExpiry } from '@/utils/expiryLogic'
 import { exportDetailsPdf, exportDetailsExcel } from '@/utils/exportPdf'
 import { useToast } from '@/hooks/use-toast'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function ItemDetailsReport() {
   const [data, setData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [sortOrder, setSortOrder] = useState<'alpha' | 'nearest'>('alpha')
   const { toast } = useToast()
 
   useEffect(() => {
@@ -68,6 +76,17 @@ export function ItemDetailsReport() {
     }
   }
 
+  const sortedData = [...data].sort((a, b) => {
+    if (sortOrder === 'nearest') {
+      if (!a.nearestExpiry && !b.nearestExpiry)
+        return formatItemDisplay(a).localeCompare(formatItemDisplay(b), 'pt-BR')
+      if (!a.nearestExpiry) return 1
+      if (!b.nearestExpiry) return -1
+      return a.nearestExpiry.getTime() - b.nearestExpiry.getTime()
+    }
+    return formatItemDisplay(a).localeCompare(formatItemDisplay(b), 'pt-BR')
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
@@ -77,12 +96,25 @@ export function ItemDetailsReport() {
             Visualize as observações e a validade mais próxima de cada item do catálogo.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => exportDetailsPdf(data)} disabled={loading}>
+        <div className="flex flex-wrap gap-2 items-center">
+          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as 'alpha' | 'nearest')}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Ordenar por..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="alpha">Ordem Alfabética</SelectItem>
+              <SelectItem value="nearest">Vencimento Iminente</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" onClick={() => exportDetailsPdf(sortedData)} disabled={loading}>
             <FileText className="mr-2 h-4 w-4" />
             Exportar PDF
           </Button>
-          <Button variant="outline" onClick={() => exportDetailsExcel(data)} disabled={loading}>
+          <Button
+            variant="outline"
+            onClick={() => exportDetailsExcel(sortedData)}
+            disabled={loading}
+          >
             <Download className="mr-2 h-4 w-4" />
             Exportar Excel
           </Button>
@@ -108,14 +140,14 @@ export function ItemDetailsReport() {
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
-                ) : data.length === 0 ? (
+                ) : sortedData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                       Nenhum item encontrado.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.map((item) => (
+                  sortedData.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
