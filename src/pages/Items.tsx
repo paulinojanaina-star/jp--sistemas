@@ -41,18 +41,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-function FinancialTab() {
-  return (
-    <div className="p-8 text-center border rounded-xl bg-card shadow-sm">
-      <h3 className="text-lg font-bold text-foreground mb-2">Controle Financeiro</h3>
-      <p className="text-sm text-muted-foreground">
-        Edite o valor unitário individualmente nas configurações de cada item. O valor consolidado
-        do estoque é exibido no Dashboard.
-      </p>
-    </div>
-  )
-}
+import { FinancialTab } from '@/components/FinancialTab'
 
 export default function Items() {
   const [searchParams, setSearchParams] = useSearchParams()
