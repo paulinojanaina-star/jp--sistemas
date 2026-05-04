@@ -89367,26 +89367,26 @@ function getDuplicateGroups(items) {
 //#endregion
 //#region src/pages/DataHealth.tsx
 var EmptyState = ({ msg }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-	"data-uid": "src/pages/DataHealth.tsx:33:3",
+	"data-uid": "src/pages/DataHealth.tsx:37:3",
 	"data-prohibitions": "[editContent]",
 	children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-		"data-uid": "src/pages/DataHealth.tsx:34:5",
+		"data-uid": "src/pages/DataHealth.tsx:38:5",
 		"data-prohibitions": "[editContent]",
 		className: "flex flex-col items-center justify-center h-40 text-center",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-				"data-uid": "src/pages/DataHealth.tsx:35:7",
+				"data-uid": "src/pages/DataHealth.tsx:39:7",
 				"data-prohibitions": "[editContent]",
 				className: "h-8 w-8 text-green-500 mb-3 opacity-80"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				"data-uid": "src/pages/DataHealth.tsx:36:7",
+				"data-uid": "src/pages/DataHealth.tsx:40:7",
 				"data-prohibitions": "[]",
 				className: "font-medium text-foreground",
 				children: "Excelente!"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				"data-uid": "src/pages/DataHealth.tsx:37:7",
+				"data-uid": "src/pages/DataHealth.tsx:41:7",
 				"data-prohibitions": "[editContent]",
 				className: "text-sm text-muted-foreground",
 				children: msg
@@ -89394,73 +89394,167 @@ var EmptyState = ({ msg }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, 
 		]
 	})
 });
+var PriceUpdateRow = ({ item, onUpdate }) => {
+	const [val, setVal] = (0, import_react.useState)("");
+	const [saving, setSaving] = (0, import_react.useState)(false);
+	const handleSave = async () => {
+		const num = parseFloat(val.replace(",", "."));
+		if (!isNaN(num) && num > 0) {
+			setSaving(true);
+			try {
+				await onUpdate(item.id, num);
+				toast.success("Preço atualizado!");
+			} catch (err) {} finally {
+				setSaving(false);
+			}
+		} else toast.error("Insira um valor válido.");
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
+		"data-uid": "src/pages/DataHealth.tsx:74:5",
+		"data-prohibitions": "[editContent]",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+				"data-uid": "src/pages/DataHealth.tsx:75:7",
+				"data-prohibitions": "[editContent]",
+				className: "font-medium",
+				children: formatItemDisplay(item)
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+				"data-uid": "src/pages/DataHealth.tsx:76:7",
+				"data-prohibitions": "[editContent]",
+				children: item.unit_type
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+				"data-uid": "src/pages/DataHealth.tsx:77:7",
+				"data-prohibitions": "[editContent]",
+				className: "text-right font-mono",
+				children: item.current_quantity
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+				"data-uid": "src/pages/DataHealth.tsx:78:7",
+				"data-prohibitions": "[]",
+				className: "w-[180px]",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					"data-uid": "src/pages/DataHealth.tsx:79:9",
+					"data-prohibitions": "[]",
+					className: "flex items-center gap-2",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						"data-uid": "src/pages/DataHealth.tsx:80:11",
+						"data-prohibitions": "[]",
+						className: "text-muted-foreground text-sm font-medium",
+						children: "R$"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+						"data-uid": "src/pages/DataHealth.tsx:81:11",
+						"data-prohibitions": "[editContent]",
+						type: "number",
+						step: "0.01",
+						className: "flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+						value: val,
+						onChange: (e) => setVal(e.target.value),
+						placeholder: "0.00"
+					})]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+				"data-uid": "src/pages/DataHealth.tsx:91:7",
+				"data-prohibitions": "[editContent]",
+				className: "text-center w-[120px]",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+					"data-uid": "src/pages/DataHealth.tsx:92:9",
+					"data-prohibitions": "[editContent]",
+					size: "sm",
+					onClick: handleSave,
+					disabled: saving || !val,
+					className: "w-full",
+					children: [saving ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
+						"data-uid": "src/pages/DataHealth.tsx:94:13",
+						"data-prohibitions": "[editContent]",
+						className: "h-4 w-4 animate-spin mr-2"
+					}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
+						"data-uid": "src/pages/DataHealth.tsx:96:13",
+						"data-prohibitions": "[editContent]",
+						className: "h-4 w-4 mr-2"
+					}), "Salvar"]
+				})
+			})
+		]
+	});
+};
 function DataHealth() {
-	const { items, movements } = useInventoryStore();
+	const { items, movements, updateItem } = useInventoryStore();
 	const duplicateGroups = (0, import_react.useMemo)(() => getDuplicateGroups(items), [items]);
 	const itemsWithoutSupplier = (0, import_react.useMemo)(() => items.filter((i) => !i.supplier || i.supplier.trim() === ""), [items]);
 	const itemsWithoutExpiry = (0, import_react.useMemo)(() => items.filter((i) => Number(i.current_quantity) > 0 && !getNearestExpiry(i, movements)), [items, movements]);
+	const itemsWithoutPrice = (0, import_react.useMemo)(() => items.filter((i) => !i.unit_price || Number(i.unit_price) === 0), [items]);
 	const [mergeItem, setMergeItem] = (0, import_react.useState)(null);
+	const handleUpdatePrice = async (id, price) => {
+		const { error } = await updateItem(id, { unit_price: price });
+		if (error) {
+			toast.error("Erro ao atualizar preço.");
+			throw error;
+		}
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/DataHealth.tsx:58:5",
+		"data-uid": "src/pages/DataHealth.tsx:133:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 animate-fade-in-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/DataHealth.tsx:59:7",
+				"data-uid": "src/pages/DataHealth.tsx:134:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", {
-					"data-uid": "src/pages/DataHealth.tsx:60:9",
+					"data-uid": "src/pages/DataHealth.tsx:135:9",
 					"data-prohibitions": "[]",
 					className: "text-2xl font-bold tracking-tight flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Activity, {
-						"data-uid": "src/pages/DataHealth.tsx:61:11",
+						"data-uid": "src/pages/DataHealth.tsx:136:11",
 						"data-prohibitions": "[editContent]",
 						className: "h-6 w-6 text-primary"
 					}), "Saúde dos Dados"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/pages/DataHealth.tsx:64:9",
+					"data-uid": "src/pages/DataHealth.tsx:139:9",
 					"data-prohibitions": "[]",
 					className: "text-muted-foreground",
 					children: "Diagnóstico e auditoria do seu inventário. Corrija inconsistências para melhorar o planejamento."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/DataHealth.tsx:70:7",
+				"data-uid": "src/pages/DataHealth.tsx:145:7",
 				"data-prohibitions": "[editContent]",
-				className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6",
+				className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-						"data-uid": "src/pages/DataHealth.tsx:71:9",
+						"data-uid": "src/pages/DataHealth.tsx:146:9",
 						"data-prohibitions": "[editContent]",
 						className: duplicateGroups.length > 0 ? "border-amber-500/30 bg-amber-500/5" : "border-green-500/30 bg-green-500/5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-							"data-uid": "src/pages/DataHealth.tsx:78:11",
+							"data-uid": "src/pages/DataHealth.tsx:153:11",
 							"data-prohibitions": "[editContent]",
 							className: "flex flex-row items-center justify-between space-y-0 pb-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-								"data-uid": "src/pages/DataHealth.tsx:79:13",
+								"data-uid": "src/pages/DataHealth.tsx:154:13",
 								"data-prohibitions": "[]",
 								className: "text-sm font-medium",
 								children: "Itens Duplicados"
 							}), duplicateGroups.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Copy, {
-								"data-uid": "src/pages/DataHealth.tsx:81:15",
+								"data-uid": "src/pages/DataHealth.tsx:156:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-4 w-4 text-amber-500"
 							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-								"data-uid": "src/pages/DataHealth.tsx:83:15",
+								"data-uid": "src/pages/DataHealth.tsx:158:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-4 w-4 text-green-500"
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/DataHealth.tsx:86:11",
+							"data-uid": "src/pages/DataHealth.tsx:161:11",
 							"data-prohibitions": "[editContent]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/DataHealth.tsx:87:13",
+								"data-uid": "src/pages/DataHealth.tsx:162:13",
 								"data-prohibitions": "[editContent]",
 								className: `text-2xl font-bold ${duplicateGroups.length > 0 ? "text-amber-600" : "text-green-600"}`,
 								children: duplicateGroups.length
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/DataHealth.tsx:92:13",
+								"data-uid": "src/pages/DataHealth.tsx:167:13",
 								"data-prohibitions": "[]",
 								className: "text-xs text-muted-foreground mt-1",
 								children: "Grupos de itens similares"
@@ -89468,37 +89562,37 @@ function DataHealth() {
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-						"data-uid": "src/pages/DataHealth.tsx:96:9",
+						"data-uid": "src/pages/DataHealth.tsx:171:9",
 						"data-prohibitions": "[editContent]",
 						className: itemsWithoutSupplier.length > 0 ? "border-blue-500/30 bg-blue-500/5" : "border-green-500/30 bg-green-500/5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-							"data-uid": "src/pages/DataHealth.tsx:103:11",
+							"data-uid": "src/pages/DataHealth.tsx:178:11",
 							"data-prohibitions": "[editContent]",
 							className: "flex flex-row items-center justify-between space-y-0 pb-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-								"data-uid": "src/pages/DataHealth.tsx:104:13",
+								"data-uid": "src/pages/DataHealth.tsx:179:13",
 								"data-prohibitions": "[]",
 								className: "text-sm font-medium",
 								children: "Sem Fornecedor"
 							}), itemsWithoutSupplier.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Building2, {
-								"data-uid": "src/pages/DataHealth.tsx:106:15",
+								"data-uid": "src/pages/DataHealth.tsx:181:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-4 w-4 text-blue-500"
 							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-								"data-uid": "src/pages/DataHealth.tsx:108:15",
+								"data-uid": "src/pages/DataHealth.tsx:183:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-4 w-4 text-green-500"
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/DataHealth.tsx:111:11",
+							"data-uid": "src/pages/DataHealth.tsx:186:11",
 							"data-prohibitions": "[editContent]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/DataHealth.tsx:112:13",
+								"data-uid": "src/pages/DataHealth.tsx:187:13",
 								"data-prohibitions": "[editContent]",
 								className: `text-2xl font-bold ${itemsWithoutSupplier.length > 0 ? "text-blue-600" : "text-green-600"}`,
 								children: itemsWithoutSupplier.length
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/DataHealth.tsx:117:13",
+								"data-uid": "src/pages/DataHealth.tsx:192:13",
 								"data-prohibitions": "[]",
 								className: "text-xs text-muted-foreground mt-1",
 								children: "Requerem atualização cadastral"
@@ -89506,70 +89600,108 @@ function DataHealth() {
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-						"data-uid": "src/pages/DataHealth.tsx:121:9",
+						"data-uid": "src/pages/DataHealth.tsx:196:9",
 						"data-prohibitions": "[editContent]",
 						className: itemsWithoutExpiry.length > 0 ? "border-purple-500/30 bg-purple-500/5" : "border-green-500/30 bg-green-500/5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-							"data-uid": "src/pages/DataHealth.tsx:128:11",
+							"data-uid": "src/pages/DataHealth.tsx:203:11",
 							"data-prohibitions": "[editContent]",
 							className: "flex flex-row items-center justify-between space-y-0 pb-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-								"data-uid": "src/pages/DataHealth.tsx:129:13",
+								"data-uid": "src/pages/DataHealth.tsx:204:13",
 								"data-prohibitions": "[]",
 								className: "text-sm font-medium",
 								children: "Sem Validade"
 							}), itemsWithoutExpiry.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarOff, {
-								"data-uid": "src/pages/DataHealth.tsx:131:15",
+								"data-uid": "src/pages/DataHealth.tsx:206:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-4 w-4 text-purple-500"
 							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-								"data-uid": "src/pages/DataHealth.tsx:133:15",
+								"data-uid": "src/pages/DataHealth.tsx:208:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-4 w-4 text-green-500"
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/DataHealth.tsx:136:11",
+							"data-uid": "src/pages/DataHealth.tsx:211:11",
 							"data-prohibitions": "[editContent]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/DataHealth.tsx:137:13",
+								"data-uid": "src/pages/DataHealth.tsx:212:13",
 								"data-prohibitions": "[editContent]",
 								className: `text-2xl font-bold ${itemsWithoutExpiry.length > 0 ? "text-purple-600" : "text-green-600"}`,
 								children: itemsWithoutExpiry.length
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/DataHealth.tsx:142:13",
+								"data-uid": "src/pages/DataHealth.tsx:217:13",
 								"data-prohibitions": "[]",
 								className: "text-xs text-muted-foreground mt-1",
 								children: "Itens em estoque sem data"
+							})]
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+						"data-uid": "src/pages/DataHealth.tsx:221:9",
+						"data-prohibitions": "[editContent]",
+						className: itemsWithoutPrice.length > 0 ? "border-emerald-500/30 bg-emerald-500/5" : "border-green-500/30 bg-green-500/5",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
+							"data-uid": "src/pages/DataHealth.tsx:228:11",
+							"data-prohibitions": "[editContent]",
+							className: "flex flex-row items-center justify-between space-y-0 pb-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
+								"data-uid": "src/pages/DataHealth.tsx:229:13",
+								"data-prohibitions": "[]",
+								className: "text-sm font-medium",
+								children: "Sem Preço"
+							}), itemsWithoutPrice.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DollarSign, {
+								"data-uid": "src/pages/DataHealth.tsx:231:15",
+								"data-prohibitions": "[editContent]",
+								className: "h-4 w-4 text-emerald-500"
+							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
+								"data-uid": "src/pages/DataHealth.tsx:233:15",
+								"data-prohibitions": "[editContent]",
+								className: "h-4 w-4 text-green-500"
+							})]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+							"data-uid": "src/pages/DataHealth.tsx:236:11",
+							"data-prohibitions": "[editContent]",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/pages/DataHealth.tsx:237:13",
+								"data-prohibitions": "[editContent]",
+								className: `text-2xl font-bold ${itemsWithoutPrice.length > 0 ? "text-emerald-600" : "text-green-600"}`,
+								children: itemsWithoutPrice.length
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-uid": "src/pages/DataHealth.tsx:242:13",
+								"data-prohibitions": "[]",
+								className: "text-xs text-muted-foreground mt-1",
+								children: "Requerem valor financeiro"
 							})]
 						})]
 					})
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
-				"data-uid": "src/pages/DataHealth.tsx:147:7",
+				"data-uid": "src/pages/DataHealth.tsx:247:7",
 				"data-prohibitions": "[editContent]",
-				defaultValue: "duplicates",
+				defaultValue: "price",
 				className: "space-y-4",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
-						"data-uid": "src/pages/DataHealth.tsx:148:9",
+						"data-uid": "src/pages/DataHealth.tsx:248:9",
 						"data-prohibitions": "[editContent]",
-						className: "grid w-full sm:max-w-2xl grid-cols-1 sm:grid-cols-3 h-auto gap-1",
+						className: "grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 h-auto gap-1",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/DataHealth.tsx:149:11",
+								"data-uid": "src/pages/DataHealth.tsx:249:11",
 								"data-prohibitions": "[editContent]",
 								value: "duplicates",
 								className: "gap-2",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Copy, {
-										"data-uid": "src/pages/DataHealth.tsx:150:13",
+										"data-uid": "src/pages/DataHealth.tsx:250:13",
 										"data-prohibitions": "[editContent]",
 										className: "h-4 w-4"
 									}),
 									" Duplicatas",
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-										"data-uid": "src/pages/DataHealth.tsx:151:13",
+										"data-uid": "src/pages/DataHealth.tsx:251:13",
 										"data-prohibitions": "[editContent]",
 										variant: "secondary",
 										className: "ml-1 rounded-full h-5 px-1.5",
@@ -89578,19 +89710,19 @@ function DataHealth() {
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/DataHealth.tsx:155:11",
+								"data-uid": "src/pages/DataHealth.tsx:255:11",
 								"data-prohibitions": "[editContent]",
 								value: "suppliers",
 								className: "gap-2",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Building2, {
-										"data-uid": "src/pages/DataHealth.tsx:156:13",
+										"data-uid": "src/pages/DataHealth.tsx:256:13",
 										"data-prohibitions": "[editContent]",
 										className: "h-4 w-4"
 									}),
 									" Sem Fornecedor",
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-										"data-uid": "src/pages/DataHealth.tsx:157:13",
+										"data-uid": "src/pages/DataHealth.tsx:257:13",
 										"data-prohibitions": "[editContent]",
 										variant: "secondary",
 										className: "ml-1 rounded-full h-5 px-1.5",
@@ -89599,56 +89731,77 @@ function DataHealth() {
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/DataHealth.tsx:161:11",
+								"data-uid": "src/pages/DataHealth.tsx:261:11",
 								"data-prohibitions": "[editContent]",
 								value: "expiry",
 								className: "gap-2",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarOff, {
-										"data-uid": "src/pages/DataHealth.tsx:162:13",
+										"data-uid": "src/pages/DataHealth.tsx:262:13",
 										"data-prohibitions": "[editContent]",
 										className: "h-4 w-4"
 									}),
 									" Sem Validade",
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-										"data-uid": "src/pages/DataHealth.tsx:163:13",
+										"data-uid": "src/pages/DataHealth.tsx:263:13",
 										"data-prohibitions": "[editContent]",
 										variant: "secondary",
 										className: "ml-1 rounded-full h-5 px-1.5",
 										children: itemsWithoutExpiry.length
 									})
 								]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+								"data-uid": "src/pages/DataHealth.tsx:267:11",
+								"data-prohibitions": "[editContent]",
+								value: "price",
+								className: "gap-2",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DollarSign, {
+										"data-uid": "src/pages/DataHealth.tsx:268:13",
+										"data-prohibitions": "[editContent]",
+										className: "h-4 w-4"
+									}),
+									" Sem Preço",
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+										"data-uid": "src/pages/DataHealth.tsx:269:13",
+										"data-prohibitions": "[editContent]",
+										variant: "secondary",
+										className: "ml-1 rounded-full h-5 px-1.5",
+										children: itemsWithoutPrice.length
+									})
+								]
 							})
 						]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-						"data-uid": "src/pages/DataHealth.tsx:169:9",
+						"data-uid": "src/pages/DataHealth.tsx:275:9",
 						"data-prohibitions": "[editContent]",
 						value: "duplicates",
 						className: "space-y-4",
 						children: duplicateGroups.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EmptyState, {
-							"data-uid": "src/pages/DataHealth.tsx:171:13",
+							"data-uid": "src/pages/DataHealth.tsx:277:13",
 							"data-prohibitions": "[editContent]",
 							msg: "Nenhum item duplicado encontrado na sua base de dados."
 						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/DataHealth.tsx:173:13",
+							"data-uid": "src/pages/DataHealth.tsx:279:13",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-6",
 							children: duplicateGroups.map((group, idx) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-								"data-uid": "src/pages/DataHealth.tsx:175:17",
+								"data-uid": "src/pages/DataHealth.tsx:281:17",
 								"data-prohibitions": "[editContent]",
 								className: "overflow-hidden",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardHeader, {
-									"data-uid": "src/pages/DataHealth.tsx:176:19",
+									"data-uid": "src/pages/DataHealth.tsx:282:19",
 									"data-prohibitions": "[editContent]",
 									className: "py-3 bg-muted/50 border-b",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-										"data-uid": "src/pages/DataHealth.tsx:177:21",
+										"data-uid": "src/pages/DataHealth.tsx:283:21",
 										"data-prohibitions": "[editContent]",
 										className: "text-base flex items-center gap-2",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, {
-												"data-uid": "src/pages/DataHealth.tsx:178:23",
+												"data-uid": "src/pages/DataHealth.tsx:284:23",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 text-amber-500"
 											}),
@@ -89657,7 +89810,7 @@ function DataHealth() {
 											":",
 											" ",
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/pages/DataHealth.tsx:180:23",
+												"data-uid": "src/pages/DataHealth.tsx:286:23",
 												"data-prohibitions": "[editContent]",
 												className: "font-semibold",
 												children: formatItemDisplay(group[0])
@@ -89665,38 +89818,38 @@ function DataHealth() {
 										]
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-									"data-uid": "src/pages/DataHealth.tsx:183:19",
+									"data-uid": "src/pages/DataHealth.tsx:289:19",
 									"data-prohibitions": "[editContent]",
 									className: "p-0",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-										"data-uid": "src/pages/DataHealth.tsx:184:21",
+										"data-uid": "src/pages/DataHealth.tsx:290:21",
 										"data-prohibitions": "[editContent]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-											"data-uid": "src/pages/DataHealth.tsx:185:23",
+											"data-uid": "src/pages/DataHealth.tsx:291:23",
 											"data-prohibitions": "[]",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-												"data-uid": "src/pages/DataHealth.tsx:186:25",
+												"data-uid": "src/pages/DataHealth.tsx:292:25",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-														"data-uid": "src/pages/DataHealth.tsx:187:27",
+														"data-uid": "src/pages/DataHealth.tsx:293:27",
 														"data-prohibitions": "[]",
 														children: "Nome"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-														"data-uid": "src/pages/DataHealth.tsx:188:27",
+														"data-uid": "src/pages/DataHealth.tsx:294:27",
 														"data-prohibitions": "[]",
 														children: "Unidade"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-														"data-uid": "src/pages/DataHealth.tsx:189:27",
+														"data-uid": "src/pages/DataHealth.tsx:295:27",
 														"data-prohibitions": "[]",
 														className: "text-right",
 														children: "Estoque"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-														"data-uid": "src/pages/DataHealth.tsx:190:27",
+														"data-uid": "src/pages/DataHealth.tsx:296:27",
 														"data-prohibitions": "[]",
 														className: "w-[120px] text-center",
 														children: "Ação"
@@ -89704,42 +89857,42 @@ function DataHealth() {
 												]
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-											"data-uid": "src/pages/DataHealth.tsx:193:23",
+											"data-uid": "src/pages/DataHealth.tsx:299:23",
 											"data-prohibitions": "[editContent]",
 											children: group.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-												"data-uid": "src/pages/DataHealth.tsx:195:27",
+												"data-uid": "src/pages/DataHealth.tsx:301:27",
 												"data-prohibitions": "[editContent]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-														"data-uid": "src/pages/DataHealth.tsx:196:29",
+														"data-uid": "src/pages/DataHealth.tsx:302:29",
 														"data-prohibitions": "[editContent]",
 														className: "font-medium",
 														children: item.name
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-														"data-uid": "src/pages/DataHealth.tsx:197:29",
+														"data-uid": "src/pages/DataHealth.tsx:303:29",
 														"data-prohibitions": "[editContent]",
 														children: item.unit_type
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-														"data-uid": "src/pages/DataHealth.tsx:198:29",
+														"data-uid": "src/pages/DataHealth.tsx:304:29",
 														"data-prohibitions": "[editContent]",
 														className: "text-right font-mono",
 														children: item.current_quantity
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-														"data-uid": "src/pages/DataHealth.tsx:201:29",
+														"data-uid": "src/pages/DataHealth.tsx:307:29",
 														"data-prohibitions": "[]",
 														className: "text-center",
 														children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-															"data-uid": "src/pages/DataHealth.tsx:202:31",
+															"data-uid": "src/pages/DataHealth.tsx:308:31",
 															"data-prohibitions": "[]",
 															variant: "outline",
 															size: "sm",
 															onClick: () => setMergeItem(item),
 															className: "w-full",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Merge, {
-																"data-uid": "src/pages/DataHealth.tsx:208:33",
+																"data-uid": "src/pages/DataHealth.tsx:314:33",
 																"data-prohibitions": "[editContent]",
 																className: "h-3 w-3 mr-2"
 															}), " Mesclar"]
@@ -89754,51 +89907,51 @@ function DataHealth() {
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-						"data-uid": "src/pages/DataHealth.tsx:222:9",
+						"data-uid": "src/pages/DataHealth.tsx:328:9",
 						"data-prohibitions": "[editContent]",
 						value: "suppliers",
 						className: "space-y-4",
 						children: itemsWithoutSupplier.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EmptyState, {
-							"data-uid": "src/pages/DataHealth.tsx:224:13",
+							"data-uid": "src/pages/DataHealth.tsx:330:13",
 							"data-prohibitions": "[editContent]",
 							msg: "Todos os seus itens possuem fornecedor vinculado."
 						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-							"data-uid": "src/pages/DataHealth.tsx:226:13",
+							"data-uid": "src/pages/DataHealth.tsx:332:13",
 							"data-prohibitions": "[editContent]",
 							className: "overflow-hidden",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-								"data-uid": "src/pages/DataHealth.tsx:227:15",
+								"data-uid": "src/pages/DataHealth.tsx:333:15",
 								"data-prohibitions": "[editContent]",
 								className: "p-0",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-									"data-uid": "src/pages/DataHealth.tsx:228:17",
+									"data-uid": "src/pages/DataHealth.tsx:334:17",
 									"data-prohibitions": "[editContent]",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-										"data-uid": "src/pages/DataHealth.tsx:229:19",
+										"data-uid": "src/pages/DataHealth.tsx:335:19",
 										"data-prohibitions": "[]",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-											"data-uid": "src/pages/DataHealth.tsx:230:21",
+											"data-uid": "src/pages/DataHealth.tsx:336:21",
 											"data-prohibitions": "[]",
 											className: "bg-muted/30",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/DataHealth.tsx:231:23",
+													"data-uid": "src/pages/DataHealth.tsx:337:23",
 													"data-prohibitions": "[]",
 													children: "Item"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/DataHealth.tsx:232:23",
+													"data-uid": "src/pages/DataHealth.tsx:338:23",
 													"data-prohibitions": "[]",
 													children: "Unidade"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/DataHealth.tsx:233:23",
+													"data-uid": "src/pages/DataHealth.tsx:339:23",
 													"data-prohibitions": "[]",
 													className: "text-right",
 													children: "Estoque"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/DataHealth.tsx:234:23",
+													"data-uid": "src/pages/DataHealth.tsx:340:23",
 													"data-prohibitions": "[]",
 													className: "w-[120px] text-center",
 													children: "Ação"
@@ -89806,45 +89959,45 @@ function DataHealth() {
 											]
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-										"data-uid": "src/pages/DataHealth.tsx:237:19",
+										"data-uid": "src/pages/DataHealth.tsx:343:19",
 										"data-prohibitions": "[editContent]",
 										children: itemsWithoutSupplier.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-											"data-uid": "src/pages/DataHealth.tsx:239:23",
+											"data-uid": "src/pages/DataHealth.tsx:345:23",
 											"data-prohibitions": "[editContent]",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/DataHealth.tsx:240:25",
+													"data-uid": "src/pages/DataHealth.tsx:346:25",
 													"data-prohibitions": "[editContent]",
 													className: "font-medium",
 													children: formatItemDisplay(item)
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/DataHealth.tsx:241:25",
+													"data-uid": "src/pages/DataHealth.tsx:347:25",
 													"data-prohibitions": "[editContent]",
 													children: item.unit_type
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/DataHealth.tsx:242:25",
+													"data-uid": "src/pages/DataHealth.tsx:348:25",
 													"data-prohibitions": "[editContent]",
 													className: "text-right font-mono",
 													children: item.current_quantity
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/DataHealth.tsx:245:25",
+													"data-uid": "src/pages/DataHealth.tsx:351:25",
 													"data-prohibitions": "[]",
 													className: "text-center",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ItemFormModal, {
-														"data-uid": "src/pages/DataHealth.tsx:246:27",
+														"data-uid": "src/pages/DataHealth.tsx:352:27",
 														"data-prohibitions": "[editContent]",
 														item,
 														trigger: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-															"data-uid": "src/pages/DataHealth.tsx:249:31",
+															"data-uid": "src/pages/DataHealth.tsx:355:31",
 															"data-prohibitions": "[]",
 															variant: "outline",
 															size: "sm",
 															className: "w-full text-blue-600 border-blue-200 hover:bg-blue-50",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
-																"data-uid": "src/pages/DataHealth.tsx:254:33",
+																"data-uid": "src/pages/DataHealth.tsx:360:33",
 																"data-prohibitions": "[editContent]",
 																className: "h-3 w-3 mr-2"
 															}), " Vincular"]
@@ -89859,51 +90012,51 @@ function DataHealth() {
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-						"data-uid": "src/pages/DataHealth.tsx:268:9",
+						"data-uid": "src/pages/DataHealth.tsx:374:9",
 						"data-prohibitions": "[editContent]",
 						value: "expiry",
 						className: "space-y-4",
 						children: itemsWithoutExpiry.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EmptyState, {
-							"data-uid": "src/pages/DataHealth.tsx:270:13",
+							"data-uid": "src/pages/DataHealth.tsx:376:13",
 							"data-prohibitions": "[editContent]",
 							msg: "Todos os itens em estoque possuem data de validade registrada."
 						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-							"data-uid": "src/pages/DataHealth.tsx:272:13",
+							"data-uid": "src/pages/DataHealth.tsx:378:13",
 							"data-prohibitions": "[editContent]",
 							className: "overflow-hidden",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-								"data-uid": "src/pages/DataHealth.tsx:273:15",
+								"data-uid": "src/pages/DataHealth.tsx:379:15",
 								"data-prohibitions": "[editContent]",
 								className: "p-0",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-									"data-uid": "src/pages/DataHealth.tsx:274:17",
+									"data-uid": "src/pages/DataHealth.tsx:380:17",
 									"data-prohibitions": "[editContent]",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-										"data-uid": "src/pages/DataHealth.tsx:275:19",
+										"data-uid": "src/pages/DataHealth.tsx:381:19",
 										"data-prohibitions": "[]",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-											"data-uid": "src/pages/DataHealth.tsx:276:21",
+											"data-uid": "src/pages/DataHealth.tsx:382:21",
 											"data-prohibitions": "[]",
 											className: "bg-muted/30",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/DataHealth.tsx:277:23",
+													"data-uid": "src/pages/DataHealth.tsx:383:23",
 													"data-prohibitions": "[]",
 													children: "Item"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/DataHealth.tsx:278:23",
+													"data-uid": "src/pages/DataHealth.tsx:384:23",
 													"data-prohibitions": "[]",
 													children: "Unidade"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/DataHealth.tsx:279:23",
+													"data-uid": "src/pages/DataHealth.tsx:385:23",
 													"data-prohibitions": "[]",
 													className: "text-right",
 													children: "Estoque"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/DataHealth.tsx:280:23",
+													"data-uid": "src/pages/DataHealth.tsx:386:23",
 													"data-prohibitions": "[]",
 													className: "w-[120px] text-center",
 													children: "Ação"
@@ -89911,45 +90064,45 @@ function DataHealth() {
 											]
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-										"data-uid": "src/pages/DataHealth.tsx:283:19",
+										"data-uid": "src/pages/DataHealth.tsx:389:19",
 										"data-prohibitions": "[editContent]",
 										children: itemsWithoutExpiry.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-											"data-uid": "src/pages/DataHealth.tsx:285:23",
+											"data-uid": "src/pages/DataHealth.tsx:391:23",
 											"data-prohibitions": "[editContent]",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/DataHealth.tsx:286:25",
+													"data-uid": "src/pages/DataHealth.tsx:392:25",
 													"data-prohibitions": "[editContent]",
 													className: "font-medium",
 													children: formatItemDisplay(item)
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/DataHealth.tsx:287:25",
+													"data-uid": "src/pages/DataHealth.tsx:393:25",
 													"data-prohibitions": "[editContent]",
 													children: item.unit_type
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/DataHealth.tsx:288:25",
+													"data-uid": "src/pages/DataHealth.tsx:394:25",
 													"data-prohibitions": "[editContent]",
 													className: "text-right font-mono",
 													children: item.current_quantity
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/DataHealth.tsx:291:25",
+													"data-uid": "src/pages/DataHealth.tsx:397:25",
 													"data-prohibitions": "[]",
 													className: "text-center",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ItemFormModal, {
-														"data-uid": "src/pages/DataHealth.tsx:292:27",
+														"data-uid": "src/pages/DataHealth.tsx:398:27",
 														"data-prohibitions": "[editContent]",
 														item,
 														trigger: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-															"data-uid": "src/pages/DataHealth.tsx:295:31",
+															"data-uid": "src/pages/DataHealth.tsx:401:31",
 															"data-prohibitions": "[]",
 															variant: "outline",
 															size: "sm",
 															className: "w-full text-purple-600 border-purple-200 hover:bg-purple-50",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
-																"data-uid": "src/pages/DataHealth.tsx:300:33",
+																"data-uid": "src/pages/DataHealth.tsx:406:33",
 																"data-prohibitions": "[editContent]",
 																className: "h-3 w-3 mr-2"
 															}), " Registrar"]
@@ -89962,11 +90115,82 @@ function DataHealth() {
 								})
 							})
 						})
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+						"data-uid": "src/pages/DataHealth.tsx:420:9",
+						"data-prohibitions": "[editContent]",
+						value: "price",
+						className: "space-y-4",
+						children: itemsWithoutPrice.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EmptyState, {
+							"data-uid": "src/pages/DataHealth.tsx:422:13",
+							"data-prohibitions": "[editContent]",
+							msg: "Todos os seus itens possuem preço cadastrado."
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+							"data-uid": "src/pages/DataHealth.tsx:424:13",
+							"data-prohibitions": "[editContent]",
+							className: "overflow-hidden",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
+								"data-uid": "src/pages/DataHealth.tsx:425:15",
+								"data-prohibitions": "[editContent]",
+								className: "p-0",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
+									"data-uid": "src/pages/DataHealth.tsx:426:17",
+									"data-prohibitions": "[editContent]",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
+										"data-uid": "src/pages/DataHealth.tsx:427:19",
+										"data-prohibitions": "[]",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
+											"data-uid": "src/pages/DataHealth.tsx:428:21",
+											"data-prohibitions": "[]",
+											className: "bg-muted/30",
+											children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/DataHealth.tsx:429:23",
+													"data-prohibitions": "[]",
+													children: "Item"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/DataHealth.tsx:430:23",
+													"data-prohibitions": "[]",
+													children: "Unidade"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/DataHealth.tsx:431:23",
+													"data-prohibitions": "[]",
+													className: "text-right",
+													children: "Estoque"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/DataHealth.tsx:432:23",
+													"data-prohibitions": "[]",
+													children: "Preço Unitário"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/DataHealth.tsx:433:23",
+													"data-prohibitions": "[]",
+													className: "w-[140px] text-center",
+													children: "Ação"
+												})
+											]
+										})
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
+										"data-uid": "src/pages/DataHealth.tsx:436:19",
+										"data-prohibitions": "[editContent]",
+										children: itemsWithoutPrice.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PriceUpdateRow, {
+											"data-uid": "src/pages/DataHealth.tsx:438:23",
+											"data-prohibitions": "[editContent]",
+											item,
+											onUpdate: handleUpdatePrice
+										}, item.id))
+									})]
+								})
+							})
+						})
 					})
 				]
 			}),
 			mergeItem && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MergeItemModal, {
-				"data-uid": "src/pages/DataHealth.tsx:316:9",
+				"data-uid": "src/pages/DataHealth.tsx:449:9",
 				"data-prohibitions": "[editContent]",
 				item: mergeItem,
 				open: !!mergeItem,
@@ -92250,4 +92474,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CukSo-Bi.js.map
+//# sourceMappingURL=index-BppePIs5.js.map

@@ -17,6 +17,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   CalendarOff,
+  DollarSign,
+  Save,
+  Loader2,
 } from 'lucide-react'
 import { Item } from '@/types/inventory'
 import {
@@ -28,6 +31,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 
 const EmptyState = ({ msg }: { msg: string }) => (
   <Card>
@@ -39,8 +43,67 @@ const EmptyState = ({ msg }: { msg: string }) => (
   </Card>
 )
 
+const PriceUpdateRow = ({
+  item,
+  onUpdate,
+}: {
+  item: Item
+  onUpdate: (id: string, val: number) => Promise<void>
+}) => {
+  const [val, setVal] = useState<string>('')
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    const num = parseFloat(val.replace(',', '.'))
+    if (!isNaN(num) && num > 0) {
+      setSaving(true)
+      try {
+        await onUpdate(item.id, num)
+        toast.success('Preço atualizado!')
+      } catch (err) {
+        // Erro é tratado pelo componente pai
+      } finally {
+        setSaving(false)
+      }
+    } else {
+      toast.error('Insira um valor válido.')
+    }
+  }
+
+  return (
+    <TableRow>
+      <TableCell className="font-medium">{formatItemDisplay(item)}</TableCell>
+      <TableCell>{item.unit_type}</TableCell>
+      <TableCell className="text-right font-mono">{item.current_quantity}</TableCell>
+      <TableCell className="w-[180px]">
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground text-sm font-medium">R$</span>
+          <input
+            type="number"
+            step="0.01"
+            className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            placeholder="0.00"
+          />
+        </div>
+      </TableCell>
+      <TableCell className="text-center w-[120px]">
+        <Button size="sm" onClick={handleSave} disabled={saving || !val} className="w-full">
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
+          Salvar
+        </Button>
+      </TableCell>
+    </TableRow>
+  )
+}
+
 export default function DataHealth() {
-  const { items, movements } = useInventoryStore()
+  const { items, movements, updateItem } = useInventoryStore()
 
   const duplicateGroups = useMemo(() => getDuplicateGroups(items), [items])
   const itemsWithoutSupplier = useMemo(
@@ -51,8 +114,20 @@ export default function DataHealth() {
     () => items.filter((i) => Number(i.current_quantity) > 0 && !getNearestExpiry(i, movements)),
     [items, movements],
   )
+  const itemsWithoutPrice = useMemo(
+    () => items.filter((i) => !i.unit_price || Number(i.unit_price) === 0),
+    [items],
+  )
 
   const [mergeItem, setMergeItem] = useState<Item | null>(null)
+
+  const handleUpdatePrice = async (id: string, price: number) => {
+    const { error } = await updateItem(id, { unit_price: price })
+    if (error) {
+      toast.error('Erro ao atualizar preço.')
+      throw error
+    }
+  }
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -67,7 +142,7 @@ export default function DataHealth() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <Card
           className={
             duplicateGroups.length > 0
@@ -142,10 +217,35 @@ export default function DataHealth() {
             <p className="text-xs text-muted-foreground mt-1">Itens em estoque sem data</p>
           </CardContent>
         </Card>
+
+        <Card
+          className={
+            itemsWithoutPrice.length > 0
+              ? 'border-emerald-500/30 bg-emerald-500/5'
+              : 'border-green-500/30 bg-green-500/5'
+          }
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Sem Preço</CardTitle>
+            {itemsWithoutPrice.length > 0 ? (
+              <DollarSign className="h-4 w-4 text-emerald-500" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+            )}
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${itemsWithoutPrice.length > 0 ? 'text-emerald-600' : 'text-green-600'}`}
+            >
+              {itemsWithoutPrice.length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Requerem valor financeiro</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <Tabs defaultValue="duplicates" className="space-y-4">
-        <TabsList className="grid w-full sm:max-w-2xl grid-cols-1 sm:grid-cols-3 h-auto gap-1">
+      <Tabs defaultValue="price" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 h-auto gap-1">
           <TabsTrigger value="duplicates" className="gap-2">
             <Copy className="h-4 w-4" /> Duplicatas
             <Badge variant="secondary" className="ml-1 rounded-full h-5 px-1.5">
@@ -162,6 +262,12 @@ export default function DataHealth() {
             <CalendarOff className="h-4 w-4" /> Sem Validade
             <Badge variant="secondary" className="ml-1 rounded-full h-5 px-1.5">
               {itemsWithoutExpiry.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="price" className="gap-2">
+            <DollarSign className="h-4 w-4" /> Sem Preço
+            <Badge variant="secondary" className="ml-1 rounded-full h-5 px-1.5">
+              {itemsWithoutPrice.length}
             </Badge>
           </TabsTrigger>
         </TabsList>
@@ -303,6 +409,33 @@ export default function DataHealth() {
                           />
                         </TableCell>
                       </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="price" className="space-y-4">
+          {itemsWithoutPrice.length === 0 ? (
+            <EmptyState msg="Todos os seus itens possuem preço cadastrado." />
+          ) : (
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/30">
+                      <TableHead>Item</TableHead>
+                      <TableHead>Unidade</TableHead>
+                      <TableHead className="text-right">Estoque</TableHead>
+                      <TableHead>Preço Unitário</TableHead>
+                      <TableHead className="w-[140px] text-center">Ação</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {itemsWithoutPrice.map((item) => (
+                      <PriceUpdateRow key={item.id} item={item} onUpdate={handleUpdatePrice} />
                     ))}
                   </TableBody>
                 </Table>
