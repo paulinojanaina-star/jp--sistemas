@@ -83016,6 +83016,167 @@ function ItemFormModal({ item, open: controlledOpen, onOpenChange: controlledOnO
 	});
 }
 //#endregion
+//#region ../../cache/modules/controle-estoque-saude-cb168/node_modules/.pnpm/@radix-ui+react-tabs@1.1.13_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@_2ad0945e3cb98dc5bbfaaf29c105e977/node_modules/@radix-ui/react-tabs/dist/index.mjs
+var TABS_NAME = "Tabs";
+var [createTabsContext, createTabsScope] = createContextScope$1(TABS_NAME, [createRovingFocusGroupScope]);
+var useRovingFocusGroupScope = createRovingFocusGroupScope();
+var [TabsProvider, useTabsContext] = createTabsContext(TABS_NAME);
+var Tabs$1 = import_react.forwardRef((props, forwardedRef) => {
+	const { __scopeTabs, value: valueProp, onValueChange, defaultValue, orientation = "horizontal", dir, activationMode = "automatic", ...tabsProps } = props;
+	const direction = useDirection(dir);
+	const [value, setValue] = useControllableState({
+		prop: valueProp,
+		onChange: onValueChange,
+		defaultProp: defaultValue ?? "",
+		caller: TABS_NAME
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsProvider, {
+		scope: __scopeTabs,
+		baseId: useId(),
+		value,
+		onValueChange: setValue,
+		orientation,
+		dir: direction,
+		activationMode,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
+			dir: direction,
+			"data-orientation": orientation,
+			...tabsProps,
+			ref: forwardedRef
+		})
+	});
+});
+Tabs$1.displayName = TABS_NAME;
+var TAB_LIST_NAME = "TabsList";
+var TabsList$1 = import_react.forwardRef((props, forwardedRef) => {
+	const { __scopeTabs, loop = true, ...listProps } = props;
+	const context = useTabsContext(TAB_LIST_NAME, __scopeTabs);
+	const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$3, {
+		asChild: true,
+		...rovingFocusGroupScope,
+		orientation: context.orientation,
+		dir: context.dir,
+		loop,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
+			role: "tablist",
+			"aria-orientation": context.orientation,
+			...listProps,
+			ref: forwardedRef
+		})
+	});
+});
+TabsList$1.displayName = TAB_LIST_NAME;
+var TRIGGER_NAME$1 = "TabsTrigger";
+var TabsTrigger$1 = import_react.forwardRef((props, forwardedRef) => {
+	const { __scopeTabs, value, disabled = false, ...triggerProps } = props;
+	const context = useTabsContext(TRIGGER_NAME$1, __scopeTabs);
+	const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
+	const triggerId = makeTriggerId(context.baseId, value);
+	const contentId = makeContentId(context.baseId, value);
+	const isSelected = value === context.value;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Item$1, {
+		asChild: true,
+		...rovingFocusGroupScope,
+		focusable: !disabled,
+		active: isSelected,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.button, {
+			type: "button",
+			role: "tab",
+			"aria-selected": isSelected,
+			"aria-controls": contentId,
+			"data-state": isSelected ? "active" : "inactive",
+			"data-disabled": disabled ? "" : void 0,
+			disabled,
+			id: triggerId,
+			...triggerProps,
+			ref: forwardedRef,
+			onMouseDown: composeEventHandlers(props.onMouseDown, (event) => {
+				if (!disabled && event.button === 0 && event.ctrlKey === false) context.onValueChange(value);
+				else event.preventDefault();
+			}),
+			onKeyDown: composeEventHandlers(props.onKeyDown, (event) => {
+				if ([" ", "Enter"].includes(event.key)) context.onValueChange(value);
+			}),
+			onFocus: composeEventHandlers(props.onFocus, () => {
+				const isAutomaticActivation = context.activationMode !== "manual";
+				if (!isSelected && !disabled && isAutomaticActivation) context.onValueChange(value);
+			})
+		})
+	});
+});
+TabsTrigger$1.displayName = TRIGGER_NAME$1;
+var CONTENT_NAME$1 = "TabsContent";
+var TabsContent$1 = import_react.forwardRef((props, forwardedRef) => {
+	const { __scopeTabs, value, forceMount, children, ...contentProps } = props;
+	const context = useTabsContext(CONTENT_NAME$1, __scopeTabs);
+	const triggerId = makeTriggerId(context.baseId, value);
+	const contentId = makeContentId(context.baseId, value);
+	const isSelected = value === context.value;
+	const isMountAnimationPreventedRef = import_react.useRef(isSelected);
+	import_react.useEffect(() => {
+		const rAF = requestAnimationFrame(() => isMountAnimationPreventedRef.current = false);
+		return () => cancelAnimationFrame(rAF);
+	}, []);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Presence, {
+		present: forceMount || isSelected,
+		children: ({ present }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
+			"data-state": isSelected ? "active" : "inactive",
+			"data-orientation": context.orientation,
+			role: "tabpanel",
+			"aria-labelledby": triggerId,
+			hidden: !present,
+			id: contentId,
+			tabIndex: 0,
+			...contentProps,
+			ref: forwardedRef,
+			style: {
+				...props.style,
+				animationDuration: isMountAnimationPreventedRef.current ? "0s" : void 0
+			},
+			children: present && children
+		})
+	});
+});
+TabsContent$1.displayName = CONTENT_NAME$1;
+function makeTriggerId(baseId, value) {
+	return `${baseId}-trigger-${value}`;
+}
+function makeContentId(baseId, value) {
+	return `${baseId}-content-${value}`;
+}
+var Root2$1 = Tabs$1;
+var List = TabsList$1;
+var Trigger = TabsTrigger$1;
+var Content = TabsContent$1;
+//#endregion
+//#region src/components/ui/tabs.tsx
+var Tabs = Root2$1;
+var TabsList = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(List, {
+	"data-uid": "src/components/ui/tabs.tsx:13:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground", className),
+	...props
+}));
+TabsList.displayName = List.displayName;
+var TabsTrigger = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trigger, {
+	"data-uid": "src/components/ui/tabs.tsx:28:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm", className),
+	...props
+}));
+TabsTrigger.displayName = Trigger.displayName;
+var TabsContent = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Content, {
+	"data-uid": "src/components/ui/tabs.tsx:43:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", className),
+	...props
+}));
+TabsContent.displayName = Content.displayName;
+//#endregion
 //#region src/components/ui/table.tsx
 var Table = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 	"data-uid": "src/components/ui/table.tsx:8:5",
@@ -83101,7 +83262,7 @@ var AlertDialog$1 = (props) => {
 	});
 };
 AlertDialog$1.displayName = ROOT_NAME;
-var TRIGGER_NAME$1 = "AlertDialogTrigger";
+var TRIGGER_NAME = "AlertDialogTrigger";
 var AlertDialogTrigger$1 = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeAlertDialog, ...triggerProps } = props;
 	const dialogScope = useDialogScope(__scopeAlertDialog);
@@ -83111,7 +83272,7 @@ var AlertDialogTrigger$1 = import_react.forwardRef((props, forwardedRef) => {
 		ref: forwardedRef
 	});
 });
-AlertDialogTrigger$1.displayName = TRIGGER_NAME$1;
+AlertDialogTrigger$1.displayName = TRIGGER_NAME;
 var PORTAL_NAME = "AlertDialogPortal";
 var AlertDialogPortal$1 = (props) => {
 	const { __scopeAlertDialog, ...portalProps } = props;
@@ -83133,8 +83294,8 @@ var AlertDialogOverlay$1 = import_react.forwardRef((props, forwardedRef) => {
 	});
 });
 AlertDialogOverlay$1.displayName = OVERLAY_NAME;
-var CONTENT_NAME$1 = "AlertDialogContent";
-var [AlertDialogContentProvider, useAlertDialogContentContext] = createAlertDialogContext(CONTENT_NAME$1);
+var CONTENT_NAME = "AlertDialogContent";
+var [AlertDialogContentProvider, useAlertDialogContentContext] = createAlertDialogContext(CONTENT_NAME);
 var Slottable = /* @__PURE__ */ createSlottable("AlertDialogContent");
 var AlertDialogContent$1 = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeAlertDialog, children, ...contentProps } = props;
@@ -83143,7 +83304,7 @@ var AlertDialogContent$1 = import_react.forwardRef((props, forwardedRef) => {
 	const composedRefs = useComposedRefs(forwardedRef, contentRef);
 	const cancelRef = import_react.useRef(null);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarningProvider, {
-		contentName: CONTENT_NAME$1,
+		contentName: CONTENT_NAME,
 		titleName: TITLE_NAME,
 		docsSlug: "alert-dialog",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogContentProvider, {
@@ -83165,7 +83326,7 @@ var AlertDialogContent$1 = import_react.forwardRef((props, forwardedRef) => {
 		})
 	});
 });
-AlertDialogContent$1.displayName = CONTENT_NAME$1;
+AlertDialogContent$1.displayName = CONTENT_NAME;
 var TITLE_NAME = "AlertDialogTitle";
 var AlertDialogTitle$1 = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeAlertDialog, ...titleProps } = props;
@@ -83213,11 +83374,11 @@ var AlertDialogCancel$1 = import_react.forwardRef((props, forwardedRef) => {
 });
 AlertDialogCancel$1.displayName = CANCEL_NAME;
 var DescriptionWarning = ({ contentRef }) => {
-	const MESSAGE = `\`${CONTENT_NAME$1}\` requires a description for the component to be accessible for screen reader users.
+	const MESSAGE = `\`${CONTENT_NAME}\` requires a description for the component to be accessible for screen reader users.
 
-You can add a description to the \`${CONTENT_NAME$1}\` by passing a \`${DESCRIPTION_NAME}\` component as a child, which also benefits sighted users by adding visible context to the dialog.
+You can add a description to the \`${CONTENT_NAME}\` by passing a \`${DESCRIPTION_NAME}\` component as a child, which also benefits sighted users by adding visible context to the dialog.
 
-Alternatively, you can use your own component as a description by assigning it an \`id\` and passing the same value to the \`aria-describedby\` prop in \`${CONTENT_NAME$1}\`. If the description is confusing or duplicative for sighted users, you can use the \`@radix-ui/react-visually-hidden\` primitive as a wrapper around your description component.
+Alternatively, you can use your own component as a description by assigning it an \`id\` and passing the same value to the \`aria-describedby\` prop in \`${CONTENT_NAME}\`. If the description is confusing or duplicative for sighted users, you can use the \`@radix-ui/react-visually-hidden\` primitive as a wrapper around your description component.
 
 For more information, see https://radix-ui.com/primitives/docs/components/alert-dialog`;
 	import_react.useEffect(() => {
@@ -83225,7 +83386,7 @@ For more information, see https://radix-ui.com/primitives/docs/components/alert-
 	}, [MESSAGE, contentRef]);
 	return null;
 };
-var Root2$1 = AlertDialog$1;
+var Root2 = AlertDialog$1;
 var Trigger2 = AlertDialogTrigger$1;
 var Portal2 = AlertDialogPortal$1;
 var Overlay2 = AlertDialogOverlay$1;
@@ -83236,7 +83397,7 @@ var Title2 = AlertDialogTitle$1;
 var Description2 = AlertDialogDescription$1;
 //#endregion
 //#region src/components/ui/alert-dialog.tsx
-var AlertDialog = Root2$1;
+var AlertDialog = Root2;
 var AlertDialogTrigger = Trigger2;
 var AlertDialogPortal = Portal2;
 var AlertDialogOverlay = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Overlay2, {
@@ -83310,6 +83471,24 @@ var AlertDialogCancel = import_react.forwardRef(({ className, ...props }, ref) =
 AlertDialogCancel.displayName = Cancel.displayName;
 //#endregion
 //#region src/pages/Items.tsx
+function FinancialTab() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		"data-uid": "src/pages/Items.tsx:47:5",
+		"data-prohibitions": "[]",
+		className: "p-8 text-center border rounded-xl bg-card shadow-sm",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+			"data-uid": "src/pages/Items.tsx:48:7",
+			"data-prohibitions": "[]",
+			className: "text-lg font-bold text-foreground mb-2",
+			children: "Controle Financeiro"
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+			"data-uid": "src/pages/Items.tsx:49:7",
+			"data-prohibitions": "[]",
+			className: "text-sm text-muted-foreground",
+			children: "Edite o valor unitário individualmente nas configurações de cada item. O valor consolidado do estoque é exibido no Dashboard."
+		})]
+	});
+}
 function Items() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { items, movements, deleteItem } = useInventoryStore();
@@ -83412,50 +83591,50 @@ function Items() {
 		currentFilter
 	]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Items.tsx:165:5",
+		"data-uid": "src/pages/Items.tsx:178:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 p-4 md:p-8 animate-fade-in-up max-w-7xl mx-auto",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Items.tsx:166:7",
+			"data-uid": "src/pages/Items.tsx:179:7",
 			"data-prohibitions": "[]",
 			className: "flex flex-col md:flex-row md:items-center justify-between gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Items.tsx:167:9",
+				"data-uid": "src/pages/Items.tsx:180:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-					"data-uid": "src/pages/Items.tsx:168:11",
+					"data-uid": "src/pages/Items.tsx:181:11",
 					"data-prohibitions": "[]",
 					className: "text-3xl font-black tracking-tight text-foreground",
 					children: "Catálogo de Itens"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/pages/Items.tsx:169:11",
+					"data-uid": "src/pages/Items.tsx:182:11",
 					"data-prohibitions": "[]",
 					className: "text-muted-foreground font-medium mt-1",
 					children: "Gerencie todos os materiais e medicamentos da unidade."
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Items.tsx:173:9",
+				"data-uid": "src/pages/Items.tsx:186:9",
 				"data-prohibitions": "[]",
 				className: "flex items-center gap-3",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/pages/Items.tsx:174:11",
+					"data-uid": "src/pages/Items.tsx:187:11",
 					"data-prohibitions": "[]",
 					variant: "outline",
 					className: "gap-2 font-bold shadow-sm",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-						"data-uid": "src/pages/Items.tsx:175:13",
+						"data-uid": "src/pages/Items.tsx:188:13",
 						"data-prohibitions": "[editContent]",
 						className: "h-4 w-4"
 					}), "Gerar Relatório"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ItemFormModal, {
-					"data-uid": "src/pages/Items.tsx:178:11",
+					"data-uid": "src/pages/Items.tsx:191:11",
 					"data-prohibitions": "[editContent]",
 					trigger: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/pages/Items.tsx:180:15",
+						"data-uid": "src/pages/Items.tsx:193:15",
 						"data-prohibitions": "[]",
 						className: "gap-2 font-bold shadow-sm bg-slate-800 hover:bg-slate-700 text-white",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/pages/Items.tsx:181:17",
+							"data-uid": "src/pages/Items.tsx:194:17",
 							"data-prohibitions": "[editContent]",
 							className: "h-4 w-4"
 						}), "Novo Item"]
@@ -83463,23 +83642,23 @@ function Items() {
 				})]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
-			"data-uid": "src/pages/Items.tsx:189:7",
+			"data-uid": "src/pages/Items.tsx:202:7",
 			"data-prohibitions": "[editContent]",
 			defaultValue: "catalogo",
 			className: "w-full",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
-					"data-uid": "src/pages/Items.tsx:190:9",
+					"data-uid": "src/pages/Items.tsx:203:9",
 					"data-prohibitions": "[]",
 					className: "grid w-full grid-cols-2 max-w-[400px] mb-6",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-						"data-uid": "src/pages/Items.tsx:191:11",
+						"data-uid": "src/pages/Items.tsx:204:11",
 						"data-prohibitions": "[]",
 						value: "catalogo",
 						className: "font-bold",
 						children: "Catálogo e Estoque"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-						"data-uid": "src/pages/Items.tsx:194:11",
+						"data-uid": "src/pages/Items.tsx:207:11",
 						"data-prohibitions": "[]",
 						value: "financeiro",
 						className: "font-bold",
@@ -83487,41 +83666,41 @@ function Items() {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-					"data-uid": "src/pages/Items.tsx:198:9",
+					"data-uid": "src/pages/Items.tsx:211:9",
 					"data-prohibitions": "[editContent]",
 					value: "catalogo",
 					className: "space-y-6 animate-fade-in",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/pages/Items.tsx:199:11",
+							"data-uid": "src/pages/Items.tsx:212:11",
 							"data-prohibitions": "[editContent]",
 							className: "flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-									"data-uid": "src/pages/Items.tsx:200:13",
+									"data-uid": "src/pages/Items.tsx:213:13",
 									"data-prohibitions": "[editContent]",
 									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "zerado" ? "ring-2 ring-red-500 bg-red-50 dark:bg-red-500/10 border-red-200" : "bg-red-50/50 dark:bg-red-500/5 border-red-100"),
 									onClick: () => setFilter(currentFilter === "zerado" ? "todos" : "zerado"),
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-										"data-uid": "src/pages/Items.tsx:209:15",
+										"data-uid": "src/pages/Items.tsx:222:15",
 										"data-prohibitions": "[editContent]",
 										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:210:17",
+											"data-uid": "src/pages/Items.tsx:223:17",
 											"data-prohibitions": "[]",
 											className: "flex items-start justify-between text-red-600 mb-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/pages/Items.tsx:211:19",
+												"data-uid": "src/pages/Items.tsx:224:19",
 												"data-prohibitions": "[]",
 												className: "font-bold text-xs tracking-wider uppercase",
 												children: "Zerado"
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PackageX, {
-												"data-uid": "src/pages/Items.tsx:212:19",
+												"data-uid": "src/pages/Items.tsx:225:19",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 opacity-70"
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:214:17",
+											"data-uid": "src/pages/Items.tsx:227:17",
 											"data-prohibitions": "[editContent]",
 											className: "text-3xl font-black text-red-500",
 											children: stats.zerado
@@ -83529,30 +83708,30 @@ function Items() {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-									"data-uid": "src/pages/Items.tsx:218:13",
+									"data-uid": "src/pages/Items.tsx:231:13",
 									"data-prohibitions": "[editContent]",
 									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "critico" ? "ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-500/10 border-orange-200" : "bg-orange-50/50 dark:bg-orange-500/5 border-orange-100"),
 									onClick: () => setFilter(currentFilter === "critico" ? "todos" : "critico"),
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-										"data-uid": "src/pages/Items.tsx:227:15",
+										"data-uid": "src/pages/Items.tsx:240:15",
 										"data-prohibitions": "[editContent]",
 										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:228:17",
+											"data-uid": "src/pages/Items.tsx:241:17",
 											"data-prohibitions": "[]",
 											className: "flex items-start justify-between text-orange-700 mb-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/pages/Items.tsx:229:19",
+												"data-uid": "src/pages/Items.tsx:242:19",
 												"data-prohibitions": "[]",
 												className: "font-bold text-xs tracking-wider uppercase",
 												children: "Crítico"
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, {
-												"data-uid": "src/pages/Items.tsx:230:19",
+												"data-uid": "src/pages/Items.tsx:243:19",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 opacity-70"
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:232:17",
+											"data-uid": "src/pages/Items.tsx:245:17",
 											"data-prohibitions": "[editContent]",
 											className: "text-3xl font-black text-orange-600",
 											children: stats.critico
@@ -83560,30 +83739,30 @@ function Items() {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-									"data-uid": "src/pages/Items.tsx:236:13",
+									"data-uid": "src/pages/Items.tsx:249:13",
 									"data-prohibitions": "[editContent]",
 									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "ruptura" ? "ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-500/10 border-purple-200" : "bg-purple-50/50 dark:bg-purple-500/5 border-purple-100"),
 									onClick: () => setFilter(currentFilter === "ruptura" ? "todos" : "ruptura"),
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-										"data-uid": "src/pages/Items.tsx:245:15",
+										"data-uid": "src/pages/Items.tsx:258:15",
 										"data-prohibitions": "[editContent]",
 										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:246:17",
+											"data-uid": "src/pages/Items.tsx:259:17",
 											"data-prohibitions": "[]",
 											className: "flex items-start justify-between text-purple-700 mb-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/pages/Items.tsx:247:19",
+												"data-uid": "src/pages/Items.tsx:260:19",
 												"data-prohibitions": "[]",
 												className: "font-bold text-xs tracking-wider uppercase",
 												children: "Ruptura"
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TrendingDown, {
-												"data-uid": "src/pages/Items.tsx:248:19",
+												"data-uid": "src/pages/Items.tsx:261:19",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 opacity-70"
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:250:17",
+											"data-uid": "src/pages/Items.tsx:263:17",
 											"data-prohibitions": "[editContent]",
 											className: "text-3xl font-black text-purple-600",
 											children: stats.ruptura
@@ -83591,30 +83770,30 @@ function Items() {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-									"data-uid": "src/pages/Items.tsx:254:13",
+									"data-uid": "src/pages/Items.tsx:267:13",
 									"data-prohibitions": "[editContent]",
 									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "180dias" ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-500/10 border-blue-200" : "bg-blue-50/50 dark:bg-blue-500/5 border-blue-100"),
 									onClick: () => setFilter(currentFilter === "180dias" ? "todos" : "180dias"),
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-										"data-uid": "src/pages/Items.tsx:263:15",
+										"data-uid": "src/pages/Items.tsx:276:15",
 										"data-prohibitions": "[editContent]",
 										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:264:17",
+											"data-uid": "src/pages/Items.tsx:277:17",
 											"data-prohibitions": "[]",
 											className: "flex items-start justify-between text-blue-700 mb-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/pages/Items.tsx:265:19",
+												"data-uid": "src/pages/Items.tsx:278:19",
 												"data-prohibitions": "[]",
 												className: "font-bold text-xs tracking-wider uppercase",
 												children: "≤ 180 Dias"
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-												"data-uid": "src/pages/Items.tsx:266:19",
+												"data-uid": "src/pages/Items.tsx:279:19",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 opacity-70"
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:268:17",
+											"data-uid": "src/pages/Items.tsx:281:17",
 											"data-prohibitions": "[editContent]",
 											className: "text-3xl font-black text-blue-600",
 											children: stats.dias180
@@ -83622,30 +83801,30 @@ function Items() {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-									"data-uid": "src/pages/Items.tsx:272:13",
+									"data-uid": "src/pages/Items.tsx:285:13",
 									"data-prohibitions": "[editContent]",
 									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "120dias" || currentFilter === "vencimento_proximo" ? "ring-2 ring-yellow-600 bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200" : "bg-yellow-50/50 dark:bg-yellow-500/5 border-yellow-100"),
 									onClick: () => setFilter(currentFilter === "120dias" ? "todos" : "120dias"),
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-										"data-uid": "src/pages/Items.tsx:281:15",
+										"data-uid": "src/pages/Items.tsx:294:15",
 										"data-prohibitions": "[editContent]",
 										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:282:17",
+											"data-uid": "src/pages/Items.tsx:295:17",
 											"data-prohibitions": "[]",
 											className: "flex items-start justify-between text-yellow-700 mb-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/pages/Items.tsx:283:19",
+												"data-uid": "src/pages/Items.tsx:296:19",
 												"data-prohibitions": "[]",
 												className: "font-bold text-xs tracking-wider uppercase",
 												children: "≤ 120 Dias"
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-												"data-uid": "src/pages/Items.tsx:284:19",
+												"data-uid": "src/pages/Items.tsx:297:19",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 opacity-70"
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:286:17",
+											"data-uid": "src/pages/Items.tsx:299:17",
 											"data-prohibitions": "[editContent]",
 											className: "text-3xl font-black text-yellow-600",
 											children: stats.dias120
@@ -83653,30 +83832,30 @@ function Items() {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-									"data-uid": "src/pages/Items.tsx:290:13",
+									"data-uid": "src/pages/Items.tsx:303:13",
 									"data-prohibitions": "[editContent]",
 									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "60dias" ? "ring-2 ring-amber-600 bg-amber-50 dark:bg-amber-600/10 border-amber-200" : "bg-amber-50/50 dark:bg-amber-600/5 border-amber-100"),
 									onClick: () => setFilter(currentFilter === "60dias" ? "todos" : "60dias"),
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-										"data-uid": "src/pages/Items.tsx:299:15",
+										"data-uid": "src/pages/Items.tsx:312:15",
 										"data-prohibitions": "[editContent]",
 										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:300:17",
+											"data-uid": "src/pages/Items.tsx:313:17",
 											"data-prohibitions": "[]",
 											className: "flex items-start justify-between text-amber-700 mb-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/pages/Items.tsx:301:19",
+												"data-uid": "src/pages/Items.tsx:314:19",
 												"data-prohibitions": "[]",
 												className: "font-bold text-xs tracking-wider uppercase",
 												children: "≤ 60 Dias"
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-												"data-uid": "src/pages/Items.tsx:302:19",
+												"data-uid": "src/pages/Items.tsx:315:19",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 opacity-70"
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:304:17",
+											"data-uid": "src/pages/Items.tsx:317:17",
 											"data-prohibitions": "[editContent]",
 											className: "text-3xl font-black text-amber-600",
 											children: stats.dias60
@@ -83684,30 +83863,30 @@ function Items() {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-									"data-uid": "src/pages/Items.tsx:308:13",
+									"data-uid": "src/pages/Items.tsx:321:13",
 									"data-prohibitions": "[editContent]",
 									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start border-destructive/30", currentFilter === "vencidos" ? "ring-2 ring-destructive bg-destructive/10" : "bg-destructive/5"),
 									onClick: () => setFilter(currentFilter === "vencidos" ? "todos" : "vencidos"),
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-										"data-uid": "src/pages/Items.tsx:317:15",
+										"data-uid": "src/pages/Items.tsx:330:15",
 										"data-prohibitions": "[editContent]",
 										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:318:17",
+											"data-uid": "src/pages/Items.tsx:331:17",
 											"data-prohibitions": "[]",
 											className: "flex items-start justify-between text-destructive mb-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/pages/Items.tsx:319:19",
+												"data-uid": "src/pages/Items.tsx:332:19",
 												"data-prohibitions": "[]",
 												className: "font-bold text-xs tracking-wider uppercase",
 												children: "Vencidos"
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OctagonAlert, {
-												"data-uid": "src/pages/Items.tsx:320:19",
+												"data-uid": "src/pages/Items.tsx:333:19",
 												"data-prohibitions": "[editContent]",
 												className: "h-4 w-4 opacity-70"
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:322:17",
+											"data-uid": "src/pages/Items.tsx:335:17",
 											"data-prohibitions": "[editContent]",
 											className: "text-3xl font-black text-destructive",
 											children: stats.vencidos
@@ -83717,23 +83896,23 @@ function Items() {
 							]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-							"data-uid": "src/pages/Items.tsx:327:11",
+							"data-uid": "src/pages/Items.tsx:340:11",
 							"data-prohibitions": "[editContent]",
 							className: "rounded-2xl border-border/50 shadow-sm overflow-hidden",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Items.tsx:328:13",
+								"data-uid": "src/pages/Items.tsx:341:13",
 								"data-prohibitions": "[editContent]",
 								className: "p-4 border-b border-border/50 flex flex-col xl:flex-row gap-4 items-center justify-between bg-card",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Items.tsx:329:15",
+									"data-uid": "src/pages/Items.tsx:342:15",
 									"data-prohibitions": "[]",
 									className: "relative w-full xl:w-96",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
-										"data-uid": "src/pages/Items.tsx:330:17",
+										"data-uid": "src/pages/Items.tsx:343:17",
 										"data-prohibitions": "[editContent]",
 										className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/pages/Items.tsx:331:17",
+										"data-uid": "src/pages/Items.tsx:344:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Pesquisar por nome ou código...",
 										className: "pl-9 bg-background rounded-xl",
@@ -83741,12 +83920,12 @@ function Items() {
 										onChange: (e) => setSearchQuery(e.target.value)
 									})]
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Items.tsx:339:15",
+									"data-uid": "src/pages/Items.tsx:352:15",
 									"data-prohibitions": "[editContent]",
 									className: "flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-border/50 overflow-x-auto w-full xl:w-auto",
 									children: [
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Items.tsx:340:17",
+											"data-uid": "src/pages/Items.tsx:353:17",
 											"data-prohibitions": "[editContent]",
 											variant: currentFilter === "todos" ? "default" : "ghost",
 											size: "sm",
@@ -83755,7 +83934,7 @@ function Items() {
 											children: "Todos"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Items.tsx:351:17",
+											"data-uid": "src/pages/Items.tsx:364:17",
 											"data-prohibitions": "[editContent]",
 											variant: currentFilter === "critico" ? "default" : "ghost",
 											size: "sm",
@@ -83764,7 +83943,7 @@ function Items() {
 											children: "Crítico"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Items.tsx:364:17",
+											"data-uid": "src/pages/Items.tsx:377:17",
 											"data-prohibitions": "[editContent]",
 											variant: currentFilter === "zerado" ? "default" : "ghost",
 											size: "sm",
@@ -83773,7 +83952,7 @@ function Items() {
 											children: "Zerado"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Items.tsx:377:17",
+											"data-uid": "src/pages/Items.tsx:390:17",
 											"data-prohibitions": "[editContent]",
 											variant: currentFilter === "180dias" ? "default" : "ghost",
 											size: "sm",
@@ -83782,7 +83961,7 @@ function Items() {
 											children: "≤ 180 Dias"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Items.tsx:390:17",
+											"data-uid": "src/pages/Items.tsx:403:17",
 											"data-prohibitions": "[editContent]",
 											variant: currentFilter === "120dias" || currentFilter === "vencimento_proximo" ? "default" : "ghost",
 											size: "sm",
@@ -83791,7 +83970,7 @@ function Items() {
 											children: "≤ 120 Dias"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Items.tsx:407:17",
+											"data-uid": "src/pages/Items.tsx:420:17",
 											"data-prohibitions": "[editContent]",
 											variant: currentFilter === "60dias" ? "default" : "ghost",
 											size: "sm",
@@ -83800,7 +83979,7 @@ function Items() {
 											children: "≤ 60 Dias"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Items.tsx:420:17",
+											"data-uid": "src/pages/Items.tsx:433:17",
 											"data-prohibitions": "[editContent]",
 											variant: currentFilter === "ruptura" ? "default" : "ghost",
 											size: "sm",
@@ -83809,7 +83988,7 @@ function Items() {
 											children: "Ruptura"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Items.tsx:433:17",
+											"data-uid": "src/pages/Items.tsx:446:17",
 											"data-prohibitions": "[editContent]",
 											variant: currentFilter === "vencidos" ? "default" : "ghost",
 											size: "sm",
@@ -83820,58 +83999,58 @@ function Items() {
 									]
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Items.tsx:449:13",
+								"data-uid": "src/pages/Items.tsx:462:13",
 								"data-prohibitions": "[editContent]",
 								className: "overflow-x-auto",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-									"data-uid": "src/pages/Items.tsx:450:15",
+									"data-uid": "src/pages/Items.tsx:463:15",
 									"data-prohibitions": "[editContent]",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-										"data-uid": "src/pages/Items.tsx:451:17",
+										"data-uid": "src/pages/Items.tsx:464:17",
 										"data-prohibitions": "[editContent]",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-											"data-uid": "src/pages/Items.tsx:452:19",
+											"data-uid": "src/pages/Items.tsx:465:19",
 											"data-prohibitions": "[editContent]",
 											className: "bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-900/50",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/Items.tsx:453:21",
+													"data-uid": "src/pages/Items.tsx:466:21",
 													"data-prohibitions": "[]",
 													className: "font-bold h-12",
 													children: "Item"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/Items.tsx:454:21",
+													"data-uid": "src/pages/Items.tsx:467:21",
 													"data-prohibitions": "[]",
 													className: "font-bold h-12",
 													children: "Estoque Atual"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/Items.tsx:455:21",
+													"data-uid": "src/pages/Items.tsx:468:21",
 													"data-prohibitions": "[]",
 													className: "font-bold h-12",
 													children: "Estoque Mín."
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/Items.tsx:456:21",
+													"data-uid": "src/pages/Items.tsx:469:21",
 													"data-prohibitions": "[]",
 													className: "font-bold h-12",
 													children: "Média Mensal"
 												}),
 												currentFilter === "ruptura" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/Items.tsx:458:23",
+													"data-uid": "src/pages/Items.tsx:471:23",
 													"data-prohibitions": "[]",
 													className: "font-bold h-12",
 													children: "Duração Est."
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/Items.tsx:460:21",
+													"data-uid": "src/pages/Items.tsx:473:21",
 													"data-prohibitions": "[]",
 													className: "font-bold h-12",
 													children: "Status"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-													"data-uid": "src/pages/Items.tsx:461:21",
+													"data-uid": "src/pages/Items.tsx:474:21",
 													"data-prohibitions": "[]",
 													className: "font-bold h-12 text-right",
 													children: "Ações"
@@ -83879,30 +84058,30 @@ function Items() {
 											]
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-										"data-uid": "src/pages/Items.tsx:464:17",
+										"data-uid": "src/pages/Items.tsx:477:17",
 										"data-prohibitions": "[editContent]",
 										children: filteredItems.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-											"data-uid": "src/pages/Items.tsx:466:21",
+											"data-uid": "src/pages/Items.tsx:479:21",
 											"data-prohibitions": "[]",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableCell, {
-												"data-uid": "src/pages/Items.tsx:467:23",
+												"data-uid": "src/pages/Items.tsx:480:23",
 												"data-prohibitions": "[]",
 												colSpan: currentFilter === "ruptura" ? 7 : 6,
 												className: "text-center py-16 text-muted-foreground",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PackageX, {
-														"data-uid": "src/pages/Items.tsx:471:25",
+														"data-uid": "src/pages/Items.tsx:484:25",
 														"data-prohibitions": "[editContent]",
 														className: "h-10 w-10 mx-auto text-slate-300 dark:text-slate-700 mb-3"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-														"data-uid": "src/pages/Items.tsx:472:25",
+														"data-uid": "src/pages/Items.tsx:485:25",
 														"data-prohibitions": "[]",
 														className: "font-bold text-lg",
 														children: "Nenhum item encontrado"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-														"data-uid": "src/pages/Items.tsx:473:25",
+														"data-uid": "src/pages/Items.tsx:486:25",
 														"data-prohibitions": "[]",
 														className: "text-sm",
 														children: "Ajuste os filtros ou o termo de busca."
@@ -83910,39 +84089,39 @@ function Items() {
 												]
 											})
 										}) : filteredItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-											"data-uid": "src/pages/Items.tsx:478:23",
+											"data-uid": "src/pages/Items.tsx:491:23",
 											"data-prohibitions": "[editContent]",
 											className: "hover:bg-muted/30 transition-colors",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableCell, {
-													"data-uid": "src/pages/Items.tsx:479:25",
+													"data-uid": "src/pages/Items.tsx:492:25",
 													"data-prohibitions": "[editContent]",
 													className: "py-4",
 													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-														"data-uid": "src/pages/Items.tsx:480:27",
+														"data-uid": "src/pages/Items.tsx:493:27",
 														"data-prohibitions": "[editContent]",
 														className: "font-bold text-foreground text-[15px]",
 														children: item.name
 													}), item.description && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-														"data-uid": "src/pages/Items.tsx:482:29",
+														"data-uid": "src/pages/Items.tsx:495:29",
 														"data-prohibitions": "[editContent]",
 														className: "text-xs text-muted-foreground font-medium mt-0.5 truncate max-w-[300px]",
 														children: item.description
 													})]
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/Items.tsx:487:25",
+													"data-uid": "src/pages/Items.tsx:500:25",
 													"data-prohibitions": "[editContent]",
 													className: "py-4",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-														"data-uid": "src/pages/Items.tsx:488:27",
+														"data-uid": "src/pages/Items.tsx:501:27",
 														"data-prohibitions": "[editContent]",
 														className: "font-black text-lg text-slate-700 dark:text-slate-300",
 														children: [
 															item.currentQty,
 															" ",
 															/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-																"data-uid": "src/pages/Items.tsx:490:29",
+																"data-uid": "src/pages/Items.tsx:503:29",
 																"data-prohibitions": "[editContent]",
 																className: "text-xs font-bold text-muted-foreground uppercase",
 																children: item.unit_type || "UN"
@@ -83951,29 +84130,29 @@ function Items() {
 													})
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/Items.tsx:495:25",
+													"data-uid": "src/pages/Items.tsx:508:25",
 													"data-prohibitions": "[editContent]",
 													className: "py-4",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-														"data-uid": "src/pages/Items.tsx:496:27",
+														"data-uid": "src/pages/Items.tsx:509:27",
 														"data-prohibitions": "[editContent]",
 														className: "font-bold text-muted-foreground",
 														children: item.minQty
 													})
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/Items.tsx:498:25",
+													"data-uid": "src/pages/Items.tsx:511:25",
 													"data-prohibitions": "[editContent]",
 													className: "py-4",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-														"data-uid": "src/pages/Items.tsx:499:27",
+														"data-uid": "src/pages/Items.tsx:512:27",
 														"data-prohibitions": "[editContent]",
 														className: "font-bold text-slate-600 dark:text-slate-400",
 														children: [
 															item.monthlyConsumption,
 															" ",
 															/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-																"data-uid": "src/pages/Items.tsx:501:29",
+																"data-uid": "src/pages/Items.tsx:514:29",
 																"data-prohibitions": "[]",
 																className: "text-[10px] uppercase font-bold text-muted-foreground",
 																children: "/mês"
@@ -83982,76 +84161,76 @@ function Items() {
 													})
 												}),
 												currentFilter === "ruptura" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/Items.tsx:507:27",
+													"data-uid": "src/pages/Items.tsx:520:27",
 													"data-prohibitions": "[editContent]",
 													className: "py-4",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-														"data-uid": "src/pages/Items.tsx:508:29",
+														"data-uid": "src/pages/Items.tsx:521:29",
 														"data-prohibitions": "[editContent]",
 														className: "font-bold text-purple-600 dark:text-purple-400",
 														children: item.daysUntilStockout !== Infinity ? `${Math.ceil(item.daysUntilStockout)} dias` : "-"
 													})
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/Items.tsx:515:25",
+													"data-uid": "src/pages/Items.tsx:528:25",
 													"data-prohibitions": "[editContent]",
 													className: "py-4",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-														"data-uid": "src/pages/Items.tsx:516:27",
+														"data-uid": "src/pages/Items.tsx:529:27",
 														"data-prohibitions": "[editContent]",
 														className: "flex flex-wrap gap-1.5",
 														children: [
 															item.isExpired && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-																"data-uid": "src/pages/Items.tsx:518:31",
+																"data-uid": "src/pages/Items.tsx:531:31",
 																"data-prohibitions": "[]",
 																variant: "destructive",
 																className: "font-extrabold uppercase text-[10px]",
 																children: "Vencido"
 															}),
 															item.isZerado && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-																"data-uid": "src/pages/Items.tsx:526:31",
+																"data-uid": "src/pages/Items.tsx:539:31",
 																"data-prohibitions": "[]",
 																variant: "outline",
 																className: "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:border-red-500/30 font-bold uppercase text-[10px]",
 																children: "Zerado"
 															}),
 															item.isCritico && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-																"data-uid": "src/pages/Items.tsx:534:31",
+																"data-uid": "src/pages/Items.tsx:547:31",
 																"data-prohibitions": "[]",
 																variant: "outline",
 																className: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30 font-bold uppercase text-[10px]",
 																children: "Crítico"
 															}),
 															item.isStockoutRisk && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-																"data-uid": "src/pages/Items.tsx:542:31",
+																"data-uid": "src/pages/Items.tsx:555:31",
 																"data-prohibitions": "[]",
 																variant: "outline",
 																className: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:border-purple-500/30 font-bold uppercase text-[10px]",
 																children: "Ruptura"
 															}),
 															!item.isExpired && item.diffDays <= 60 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-																"data-uid": "src/pages/Items.tsx:550:31",
+																"data-uid": "src/pages/Items.tsx:563:31",
 																"data-prohibitions": "[]",
 																variant: "outline",
 																className: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-600/10 dark:border-amber-600/30 font-bold uppercase text-[10px]",
 																children: "≤ 60d"
 															}),
 															!item.isExpired && item.diffDays > 60 && item.diffDays <= 120 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-																"data-uid": "src/pages/Items.tsx:558:31",
+																"data-uid": "src/pages/Items.tsx:571:31",
 																"data-prohibitions": "[]",
 																variant: "outline",
 																className: "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:border-yellow-500/30 font-bold uppercase text-[10px]",
 																children: "≤ 120d"
 															}),
 															!item.isExpired && item.diffDays > 120 && item.diffDays <= 180 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-																"data-uid": "src/pages/Items.tsx:566:31",
+																"data-uid": "src/pages/Items.tsx:579:31",
 																"data-prohibitions": "[]",
 																variant: "outline",
 																className: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/30 font-bold uppercase text-[10px]",
 																children: "≤ 180d"
 															}),
 															!item.isExpired && !item.isZerado && !item.isCritico && !item.isStockoutRisk && item.diffDays > 180 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-																"data-uid": "src/pages/Items.tsx:579:33",
+																"data-uid": "src/pages/Items.tsx:592:33",
 																"data-prohibitions": "[]",
 																variant: "outline",
 																className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30 font-bold uppercase text-[10px]",
@@ -84061,19 +84240,19 @@ function Items() {
 													})
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-													"data-uid": "src/pages/Items.tsx:588:25",
+													"data-uid": "src/pages/Items.tsx:601:25",
 													"data-prohibitions": "[]",
 													className: "py-4 text-right",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-														"data-uid": "src/pages/Items.tsx:589:27",
+														"data-uid": "src/pages/Items.tsx:602:27",
 														"data-prohibitions": "[]",
 														className: "flex items-center justify-end gap-2",
 														children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ItemFormModal, {
-															"data-uid": "src/pages/Items.tsx:590:29",
+															"data-uid": "src/pages/Items.tsx:603:29",
 															"data-prohibitions": "[editContent]",
 															item,
 															trigger: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-																"data-uid": "src/pages/Items.tsx:593:33",
+																"data-uid": "src/pages/Items.tsx:606:33",
 																"data-prohibitions": "[]",
 																variant: "outline",
 																size: "sm",
@@ -84081,7 +84260,7 @@ function Items() {
 																children: "Editar"
 															})
 														}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-															"data-uid": "src/pages/Items.tsx:602:29",
+															"data-uid": "src/pages/Items.tsx:615:29",
 															"data-prohibitions": "[]",
 															variant: "ghost",
 															size: "sm",
@@ -84089,7 +84268,7 @@ function Items() {
 															className: "font-bold text-destructive hover:bg-destructive/10 hover:text-destructive",
 															title: "Excluir item",
 															children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash, {
-																"data-uid": "src/pages/Items.tsx:609:31",
+																"data-uid": "src/pages/Items.tsx:622:31",
 																"data-prohibitions": "[editContent]",
 																className: "h-4 w-4"
 															})
@@ -84103,35 +84282,35 @@ function Items() {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialog, {
-							"data-uid": "src/pages/Items.tsx:621:11",
+							"data-uid": "src/pages/Items.tsx:634:11",
 							"data-prohibitions": "[editContent]",
 							open: !!itemToDelete,
 							onOpenChange: (open) => !open && setItemToDelete(null),
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogContent, {
-								"data-uid": "src/pages/Items.tsx:625:13",
+								"data-uid": "src/pages/Items.tsx:638:13",
 								"data-prohibitions": "[editContent]",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogHeader, {
-									"data-uid": "src/pages/Items.tsx:626:15",
+									"data-uid": "src/pages/Items.tsx:639:15",
 									"data-prohibitions": "[]",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogTitle, {
-										"data-uid": "src/pages/Items.tsx:627:17",
+										"data-uid": "src/pages/Items.tsx:640:17",
 										"data-prohibitions": "[]",
 										children: "Você tem certeza que deseja excluir este item?"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogDescription, {
-										"data-uid": "src/pages/Items.tsx:628:17",
+										"data-uid": "src/pages/Items.tsx:641:17",
 										"data-prohibitions": "[]",
 										children: "Esta ação não pode ser desfeita. A exclusão deste item removerá também todo o histórico de movimentações associado a ele no banco de dados."
 									})]
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogFooter, {
-									"data-uid": "src/pages/Items.tsx:633:15",
+									"data-uid": "src/pages/Items.tsx:646:15",
 									"data-prohibitions": "[editContent]",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogCancel, {
-										"data-uid": "src/pages/Items.tsx:634:17",
+										"data-uid": "src/pages/Items.tsx:647:17",
 										"data-prohibitions": "[]",
 										disabled: isDeleting,
 										children: "Cancelar"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogAction, {
-										"data-uid": "src/pages/Items.tsx:635:17",
+										"data-uid": "src/pages/Items.tsx:648:17",
 										"data-prohibitions": "[editContent]",
 										onClick: (e) => {
 											e.preventDefault();
@@ -84140,7 +84319,7 @@ function Items() {
 										className: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
 										disabled: isDeleting,
 										children: isDeleting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-											"data-uid": "src/pages/Items.tsx:643:33",
+											"data-uid": "src/pages/Items.tsx:656:33",
 											"data-prohibitions": "[editContent]",
 											className: "h-4 w-4 animate-spin"
 										}) : "Excluir"
@@ -84151,12 +84330,12 @@ function Items() {
 					]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-					"data-uid": "src/pages/Items.tsx:649:9",
+					"data-uid": "src/pages/Items.tsx:662:9",
 					"data-prohibitions": "[]",
 					value: "financeiro",
 					className: "animate-fade-in",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FinancialTab, {
-						"data-uid": "src/pages/Items.tsx:650:11",
+						"data-uid": "src/pages/Items.tsx:663:11",
 						"data-prohibitions": "[editContent]"
 					})
 				})
@@ -86326,167 +86505,6 @@ function History() {
 	});
 }
 //#endregion
-//#region ../../cache/modules/controle-estoque-saude-cb168/node_modules/.pnpm/@radix-ui+react-tabs@1.1.13_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@_2ad0945e3cb98dc5bbfaaf29c105e977/node_modules/@radix-ui/react-tabs/dist/index.mjs
-var TABS_NAME = "Tabs";
-var [createTabsContext, createTabsScope] = createContextScope$1(TABS_NAME, [createRovingFocusGroupScope]);
-var useRovingFocusGroupScope = createRovingFocusGroupScope();
-var [TabsProvider, useTabsContext] = createTabsContext(TABS_NAME);
-var Tabs$2 = import_react.forwardRef((props, forwardedRef) => {
-	const { __scopeTabs, value: valueProp, onValueChange, defaultValue, orientation = "horizontal", dir, activationMode = "automatic", ...tabsProps } = props;
-	const direction = useDirection(dir);
-	const [value, setValue] = useControllableState({
-		prop: valueProp,
-		onChange: onValueChange,
-		defaultProp: defaultValue ?? "",
-		caller: TABS_NAME
-	});
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsProvider, {
-		scope: __scopeTabs,
-		baseId: useId(),
-		value,
-		onValueChange: setValue,
-		orientation,
-		dir: direction,
-		activationMode,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
-			dir: direction,
-			"data-orientation": orientation,
-			...tabsProps,
-			ref: forwardedRef
-		})
-	});
-});
-Tabs$2.displayName = TABS_NAME;
-var TAB_LIST_NAME = "TabsList";
-var TabsList$2 = import_react.forwardRef((props, forwardedRef) => {
-	const { __scopeTabs, loop = true, ...listProps } = props;
-	const context = useTabsContext(TAB_LIST_NAME, __scopeTabs);
-	const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$3, {
-		asChild: true,
-		...rovingFocusGroupScope,
-		orientation: context.orientation,
-		dir: context.dir,
-		loop,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
-			role: "tablist",
-			"aria-orientation": context.orientation,
-			...listProps,
-			ref: forwardedRef
-		})
-	});
-});
-TabsList$2.displayName = TAB_LIST_NAME;
-var TRIGGER_NAME = "TabsTrigger";
-var TabsTrigger$2 = import_react.forwardRef((props, forwardedRef) => {
-	const { __scopeTabs, value, disabled = false, ...triggerProps } = props;
-	const context = useTabsContext(TRIGGER_NAME, __scopeTabs);
-	const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
-	const triggerId = makeTriggerId(context.baseId, value);
-	const contentId = makeContentId(context.baseId, value);
-	const isSelected = value === context.value;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Item$1, {
-		asChild: true,
-		...rovingFocusGroupScope,
-		focusable: !disabled,
-		active: isSelected,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.button, {
-			type: "button",
-			role: "tab",
-			"aria-selected": isSelected,
-			"aria-controls": contentId,
-			"data-state": isSelected ? "active" : "inactive",
-			"data-disabled": disabled ? "" : void 0,
-			disabled,
-			id: triggerId,
-			...triggerProps,
-			ref: forwardedRef,
-			onMouseDown: composeEventHandlers(props.onMouseDown, (event) => {
-				if (!disabled && event.button === 0 && event.ctrlKey === false) context.onValueChange(value);
-				else event.preventDefault();
-			}),
-			onKeyDown: composeEventHandlers(props.onKeyDown, (event) => {
-				if ([" ", "Enter"].includes(event.key)) context.onValueChange(value);
-			}),
-			onFocus: composeEventHandlers(props.onFocus, () => {
-				const isAutomaticActivation = context.activationMode !== "manual";
-				if (!isSelected && !disabled && isAutomaticActivation) context.onValueChange(value);
-			})
-		})
-	});
-});
-TabsTrigger$2.displayName = TRIGGER_NAME;
-var CONTENT_NAME = "TabsContent";
-var TabsContent$2 = import_react.forwardRef((props, forwardedRef) => {
-	const { __scopeTabs, value, forceMount, children, ...contentProps } = props;
-	const context = useTabsContext(CONTENT_NAME, __scopeTabs);
-	const triggerId = makeTriggerId(context.baseId, value);
-	const contentId = makeContentId(context.baseId, value);
-	const isSelected = value === context.value;
-	const isMountAnimationPreventedRef = import_react.useRef(isSelected);
-	import_react.useEffect(() => {
-		const rAF = requestAnimationFrame(() => isMountAnimationPreventedRef.current = false);
-		return () => cancelAnimationFrame(rAF);
-	}, []);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Presence, {
-		present: forceMount || isSelected,
-		children: ({ present }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
-			"data-state": isSelected ? "active" : "inactive",
-			"data-orientation": context.orientation,
-			role: "tabpanel",
-			"aria-labelledby": triggerId,
-			hidden: !present,
-			id: contentId,
-			tabIndex: 0,
-			...contentProps,
-			ref: forwardedRef,
-			style: {
-				...props.style,
-				animationDuration: isMountAnimationPreventedRef.current ? "0s" : void 0
-			},
-			children: present && children
-		})
-	});
-});
-TabsContent$2.displayName = CONTENT_NAME;
-function makeTriggerId(baseId, value) {
-	return `${baseId}-trigger-${value}`;
-}
-function makeContentId(baseId, value) {
-	return `${baseId}-content-${value}`;
-}
-var Root2 = Tabs$2;
-var List = TabsList$2;
-var Trigger = TabsTrigger$2;
-var Content = TabsContent$2;
-//#endregion
-//#region src/components/ui/tabs.tsx
-var Tabs$1 = Root2;
-var TabsList$1 = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(List, {
-	"data-uid": "src/components/ui/tabs.tsx:13:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground", className),
-	...props
-}));
-TabsList$1.displayName = List.displayName;
-var TabsTrigger$1 = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trigger, {
-	"data-uid": "src/components/ui/tabs.tsx:28:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm", className),
-	...props
-}));
-TabsTrigger$1.displayName = Trigger.displayName;
-var TabsContent$1 = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Content, {
-	"data-uid": "src/components/ui/tabs.tsx:43:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", className),
-	...props
-}));
-TabsContent$1.displayName = Content.displayName;
-//#endregion
 //#region src/utils/exportPdf.ts
 var downloadExcel = (filename, headers, rows) => {
 	const escapeCell = (cell) => {
@@ -88604,7 +88622,7 @@ function Reports() {
 					]
 				})
 			]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs$1, {
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
 			"data-uid": "src/pages/Reports.tsx:49:7",
 			"data-prohibitions": "[]",
 			defaultValue: "stock",
@@ -88613,12 +88631,12 @@ function Reports() {
 				"data-uid": "src/pages/Reports.tsx:50:9",
 				"data-prohibitions": "[]",
 				className: "bg-card/80 backdrop-blur-xl rounded-[1.5rem] p-2 border border-border/50 shadow-lg inline-flex w-full overflow-x-auto overflow-y-hidden hide-scrollbar",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList$1, {
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
 					"data-uid": "src/pages/Reports.tsx:51:11",
 					"data-prohibitions": "[]",
 					className: "flex w-full min-w-max h-auto bg-transparent gap-2",
 					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 							"data-uid": "src/pages/Reports.tsx:52:13",
 							"data-prohibitions": "[]",
 							value: "stock",
@@ -88643,7 +88661,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 							"data-uid": "src/pages/Reports.tsx:60:13",
 							"data-prohibitions": "[]",
 							value: "consumption",
@@ -88668,7 +88686,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 							"data-uid": "src/pages/Reports.tsx:68:13",
 							"data-prohibitions": "[]",
 							value: "purchase",
@@ -88693,7 +88711,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 							"data-uid": "src/pages/Reports.tsx:76:13",
 							"data-prohibitions": "[]",
 							value: "trends",
@@ -88718,7 +88736,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 							"data-uid": "src/pages/Reports.tsx:84:13",
 							"data-prohibitions": "[]",
 							value: "stale",
@@ -88743,7 +88761,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 							"data-uid": "src/pages/Reports.tsx:92:13",
 							"data-prohibitions": "[]",
 							value: "details",
@@ -88775,7 +88793,7 @@ function Reports() {
 				"data-prohibitions": "[]",
 				className: "bg-card/90 backdrop-blur-2xl border border-border/50 shadow-2xl rounded-[2rem] p-6 lg:p-10 min-h-[500px]",
 				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/Reports.tsx:104:11",
 						"data-prohibitions": "[]",
 						value: "stock",
@@ -88785,7 +88803,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/Reports.tsx:110:11",
 						"data-prohibitions": "[]",
 						value: "consumption",
@@ -88795,7 +88813,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/Reports.tsx:116:11",
 						"data-prohibitions": "[]",
 						value: "purchase",
@@ -88805,7 +88823,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/Reports.tsx:122:11",
 						"data-prohibitions": "[]",
 						value: "trends",
@@ -88815,7 +88833,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/Reports.tsx:128:11",
 						"data-prohibitions": "[]",
 						value: "stale",
@@ -88825,7 +88843,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/Reports.tsx:134:11",
 						"data-prohibitions": "[]",
 						value: "details",
@@ -89284,18 +89302,18 @@ function DataHealth() {
 					})
 				]
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs$1, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
 				"data-uid": "src/pages/DataHealth.tsx:147:7",
 				"data-prohibitions": "[editContent]",
 				defaultValue: "duplicates",
 				className: "space-y-4",
 				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
 						"data-uid": "src/pages/DataHealth.tsx:148:9",
 						"data-prohibitions": "[editContent]",
 						className: "grid w-full sm:max-w-2xl grid-cols-1 sm:grid-cols-3 h-auto gap-1",
 						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 								"data-uid": "src/pages/DataHealth.tsx:149:11",
 								"data-prohibitions": "[editContent]",
 								value: "duplicates",
@@ -89316,7 +89334,7 @@ function DataHealth() {
 									})
 								]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 								"data-uid": "src/pages/DataHealth.tsx:155:11",
 								"data-prohibitions": "[editContent]",
 								value: "suppliers",
@@ -89337,7 +89355,7 @@ function DataHealth() {
 									})
 								]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 								"data-uid": "src/pages/DataHealth.tsx:161:11",
 								"data-prohibitions": "[editContent]",
 								value: "expiry",
@@ -89360,7 +89378,7 @@ function DataHealth() {
 							})
 						]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/DataHealth.tsx:169:9",
 						"data-prohibitions": "[editContent]",
 						value: "duplicates",
@@ -89492,7 +89510,7 @@ function DataHealth() {
 							}, idx))
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/DataHealth.tsx:222:9",
 						"data-prohibitions": "[editContent]",
 						value: "suppliers",
@@ -89597,7 +89615,7 @@ function DataHealth() {
 							})
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/DataHealth.tsx:268:9",
 						"data-prohibitions": "[editContent]",
 						value: "expiry",
@@ -91564,19 +91582,19 @@ function Team() {
 					})
 				]
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs$1, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
 				"data-uid": "src/pages/Team.tsx:180:7",
 				"data-prohibitions": "[]",
 				value: activeTab,
 				onValueChange: setActiveTab,
 				className: "w-full space-y-6",
 				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
 						"data-uid": "src/pages/Team.tsx:181:9",
 						"data-prohibitions": "[]",
 						className: "grid w-full grid-cols-1 md:grid-cols-4 h-auto p-1 bg-muted/50 rounded-xl gap-1",
 						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 								"data-uid": "src/pages/Team.tsx:182:11",
 								"data-prohibitions": "[]",
 								value: "calendario",
@@ -91591,7 +91609,7 @@ function Team() {
 									children: "Calendário de Escala"
 								})]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 								"data-uid": "src/pages/Team.tsx:189:11",
 								"data-prohibitions": "[]",
 								value: "ausencias",
@@ -91606,7 +91624,7 @@ function Team() {
 									children: "Lançamentos de Ausências"
 								})]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 								"data-uid": "src/pages/Team.tsx:196:11",
 								"data-prohibitions": "[]",
 								value: "profissionais",
@@ -91621,7 +91639,7 @@ function Team() {
 									children: "Gestão de Profissionais"
 								})]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
 								"data-uid": "src/pages/Team.tsx:203:11",
 								"data-prohibitions": "[]",
 								value: "pontos-facultativos",
@@ -91639,7 +91657,7 @@ function Team() {
 							})
 						]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
 						"data-uid": "src/pages/Team.tsx:212:9",
 						"data-prohibitions": "[]",
 						value: "calendario",
@@ -91649,7 +91667,7 @@ function Team() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
 						"data-uid": "src/pages/Team.tsx:216:9",
 						"data-prohibitions": "[]",
 						value: "ausencias",
@@ -91678,7 +91696,7 @@ function Team() {
 							onEdit: handleEditTimeOff
 						})]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
 						"data-uid": "src/pages/Team.tsx:232:9",
 						"data-prohibitions": "[]",
 						value: "profissionais",
@@ -91708,7 +91726,7 @@ function Team() {
 							onViewTimeOffs: handleViewTimeOffs
 						})]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent$1, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
 						"data-uid": "src/pages/Team.tsx:248:9",
 						"data-prohibitions": "[]",
 						value: "pontos-facultativos",
@@ -91989,4 +92007,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CiJcH6r3.js.map
+//# sourceMappingURL=index-gPYeelL-.js.map
