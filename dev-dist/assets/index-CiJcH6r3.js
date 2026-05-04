@@ -19441,6 +19441,16 @@ var Copy = createLucideIcon("copy", [["rect", {
 	d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
 	key: "zix9uf"
 }]]);
+var DollarSign = createLucideIcon("dollar-sign", [["line", {
+	x1: "12",
+	x2: "12",
+	y1: "2",
+	y2: "22",
+	key: "7eqyqh"
+}], ["path", {
+	d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+	key: "1b0p4s"
+}]]);
 var Download = createLucideIcon("download", [
 	["path", {
 		d: "M12 15V3",
@@ -49013,39 +49023,40 @@ function DashboardMetrics() {
 		const { isStockoutRisk } = calculateConsumption(item, movements);
 		return isStockoutRisk;
 	}).length;
+	const totalValue = items.reduce((sum, item) => sum + Number(item.current_quantity || 0) * Number(item.unit_price || 0), 0);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/DashboardMetrics.tsx:84:5",
+		"data-uid": "src/components/DashboardMetrics.tsx:90:5",
 		"data-prohibitions": "[editContent]",
 		className: "grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-6",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/DashboardMetrics.tsx:85:7",
+				"data-uid": "src/components/DashboardMetrics.tsx:91:7",
 				"data-prohibitions": "[editContent]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/DashboardMetrics.tsx:86:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:92:9",
 					"data-prohibitions": "[]",
 					className: "flex flex-row items-center justify-between space-y-0 pb-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/DashboardMetrics.tsx:87:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:93:11",
 						"data-prohibitions": "[]",
 						className: "text-sm font-medium",
 						children: "Total de Itens"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Package, {
-						"data-uid": "src/components/DashboardMetrics.tsx:88:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:94:11",
 						"data-prohibitions": "[editContent]",
 						className: "h-4 w-4 text-muted-foreground",
 						strokeWidth: 1.5
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/DashboardMetrics.tsx:90:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:96:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/DashboardMetrics.tsx:91:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:97:11",
 						"data-prohibitions": "[editContent]",
 						className: "text-2xl font-bold",
 						children: totalItems
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/components/DashboardMetrics.tsx:92:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:98:11",
 						"data-prohibitions": "[]",
 						className: "text-xs text-muted-foreground mt-1",
 						children: "Registrados no banco"
@@ -49053,34 +49064,72 @@ function DashboardMetrics() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/DashboardMetrics.tsx:96:7",
+				"data-uid": "src/components/DashboardMetrics.tsx:102:7",
+				"data-prohibitions": "[editContent]",
+				className: "bg-primary/5 border-primary/20",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
+					"data-uid": "src/components/DashboardMetrics.tsx:103:9",
+					"data-prohibitions": "[]",
+					className: "flex flex-row items-center justify-between space-y-0 pb-2",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
+						"data-uid": "src/components/DashboardMetrics.tsx:104:11",
+						"data-prohibitions": "[]",
+						className: "text-sm font-medium text-primary",
+						children: "Valor do Estoque"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DollarSign, {
+						"data-uid": "src/components/DashboardMetrics.tsx:105:11",
+						"data-prohibitions": "[editContent]",
+						className: "h-4 w-4 text-primary",
+						strokeWidth: 1.5
+					})]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+					"data-uid": "src/components/DashboardMetrics.tsx:107:9",
+					"data-prohibitions": "[editContent]",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						"data-uid": "src/components/DashboardMetrics.tsx:108:11",
+						"data-prohibitions": "[editContent]",
+						className: "text-2xl font-black text-primary",
+						children: new Intl.NumberFormat("pt-BR", {
+							style: "currency",
+							currency: "BRL"
+						}).format(totalValue)
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						"data-uid": "src/components/DashboardMetrics.tsx:113:11",
+						"data-prohibitions": "[]",
+						className: "text-xs text-primary/70 font-medium mt-1",
+						children: "Capital imobilizado"
+					})]
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+				"data-uid": "src/components/DashboardMetrics.tsx:117:7",
 				"data-prohibitions": "[editContent]",
 				className: criticalStock > 0 ? "border-destructive/30 bg-destructive/5" : "",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/DashboardMetrics.tsx:97:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:118:9",
 					"data-prohibitions": "[editContent]",
 					className: "flex flex-row items-center justify-between space-y-0 pb-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/DashboardMetrics.tsx:98:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:119:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-sm font-medium ${criticalStock > 0 ? "text-destructive font-bold" : ""}`,
 						children: "Estoque Crítico"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, {
-						"data-uid": "src/components/DashboardMetrics.tsx:103:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:124:11",
 						"data-prohibitions": "[editContent]",
 						className: `h-4 w-4 ${criticalStock > 0 ? "text-destructive" : "text-muted-foreground"}`,
 						strokeWidth: 1.5
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/DashboardMetrics.tsx:108:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:129:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/DashboardMetrics.tsx:109:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:130:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-2xl font-bold ${criticalStock > 0 ? "text-destructive" : ""}`,
 						children: criticalStock
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/components/DashboardMetrics.tsx:112:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:133:11",
 						"data-prohibitions": "[]",
 						className: "text-xs text-muted-foreground mt-1",
 						children: "Abaixo do nível mínimo"
@@ -49088,34 +49137,34 @@ function DashboardMetrics() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/DashboardMetrics.tsx:116:7",
+				"data-uid": "src/components/DashboardMetrics.tsx:137:7",
 				"data-prohibitions": "[editContent]",
 				className: itemsAtRiskCount > 0 ? "border-purple-500/30 bg-purple-500/5" : "",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/DashboardMetrics.tsx:117:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:138:9",
 					"data-prohibitions": "[editContent]",
 					className: "flex flex-row items-center justify-between space-y-0 pb-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/DashboardMetrics.tsx:118:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:139:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-sm font-medium ${itemsAtRiskCount > 0 ? "text-purple-600 font-bold" : ""}`,
 						children: "Risco de Ruptura"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TrendingDown, {
-						"data-uid": "src/components/DashboardMetrics.tsx:123:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:144:11",
 						"data-prohibitions": "[editContent]",
 						className: `h-4 w-4 ${itemsAtRiskCount > 0 ? "text-purple-600" : "text-muted-foreground"}`,
 						strokeWidth: 1.5
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/DashboardMetrics.tsx:128:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:149:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/DashboardMetrics.tsx:129:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:150:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-2xl font-bold ${itemsAtRiskCount > 0 ? "text-purple-600" : ""}`,
 						children: itemsAtRiskCount
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/components/DashboardMetrics.tsx:132:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:153:11",
 						"data-prohibitions": "[]",
 						className: "text-xs text-muted-foreground mt-1",
 						children: "Acabam em ≤ 40 dias"
@@ -49123,35 +49172,35 @@ function DashboardMetrics() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/DashboardMetrics.tsx:136:7",
+				"data-uid": "src/components/DashboardMetrics.tsx:157:7",
 				"data-prohibitions": "[editContent]",
 				className: `cursor-pointer transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-800 ${itemsExpiredCount > 0 ? "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50" : ""}`,
 				onClick: () => navigate("/itens?filter=vencidos"),
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/DashboardMetrics.tsx:140:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:161:9",
 					"data-prohibitions": "[editContent]",
 					className: "flex flex-row items-center justify-between space-y-0 pb-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/DashboardMetrics.tsx:141:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:162:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-sm font-medium ${itemsExpiredCount > 0 ? "text-slate-900 dark:text-slate-100 font-bold" : ""}`,
 						children: "Itens Vencidos"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, {
-						"data-uid": "src/components/DashboardMetrics.tsx:146:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:167:11",
 						"data-prohibitions": "[editContent]",
 						className: `h-4 w-4 ${itemsExpiredCount > 0 ? "text-slate-900 dark:text-slate-100" : "text-muted-foreground"}`,
 						strokeWidth: 1.5
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/DashboardMetrics.tsx:151:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:172:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/DashboardMetrics.tsx:152:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:173:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-2xl font-bold ${itemsExpiredCount > 0 ? "text-slate-900 dark:text-slate-100" : ""}`,
 						children: itemsExpiredCount
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/components/DashboardMetrics.tsx:157:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:178:11",
 						"data-prohibitions": "[]",
 						className: "text-xs text-muted-foreground mt-1",
 						children: "Lotes com validade expirada"
@@ -49159,35 +49208,35 @@ function DashboardMetrics() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/DashboardMetrics.tsx:161:7",
+				"data-uid": "src/components/DashboardMetrics.tsx:182:7",
 				"data-prohibitions": "[editContent]",
 				className: `cursor-pointer transition-colors hover:bg-amber-500/10 ${itemsExpiringCount > 0 ? "border-amber-500/30 bg-amber-500/5" : ""}`,
 				onClick: () => navigate("/itens?filter=vencimento_proximo"),
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/DashboardMetrics.tsx:165:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:186:9",
 					"data-prohibitions": "[editContent]",
 					className: "flex flex-row items-center justify-between space-y-0 pb-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/DashboardMetrics.tsx:166:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:187:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-sm font-medium ${itemsExpiringCount > 0 ? "text-amber-600 font-bold" : ""}`,
 						children: "Vencimento Próximo"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-						"data-uid": "src/components/DashboardMetrics.tsx:171:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:192:11",
 						"data-prohibitions": "[editContent]",
 						className: `h-4 w-4 ${itemsExpiringCount > 0 ? "text-amber-600" : "text-muted-foreground"}`,
 						strokeWidth: 1.5
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/DashboardMetrics.tsx:176:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:197:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/DashboardMetrics.tsx:177:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:198:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-2xl font-bold ${itemsExpiringCount > 0 ? "text-amber-600" : ""}`,
 						children: itemsExpiringCount
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/components/DashboardMetrics.tsx:180:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:201:11",
 						"data-prohibitions": "[]",
 						className: "text-xs text-muted-foreground mt-1",
 						children: "Lotes ativos a vencer ≤ 180 dias"
@@ -49195,34 +49244,34 @@ function DashboardMetrics() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/DashboardMetrics.tsx:184:7",
+				"data-uid": "src/components/DashboardMetrics.tsx:205:7",
 				"data-prohibitions": "[editContent]",
 				className: staleItems > 0 ? "border-amber-500/30 bg-amber-500/5" : "",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/DashboardMetrics.tsx:185:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:206:9",
 					"data-prohibitions": "[editContent]",
 					className: "flex flex-row items-center justify-between space-y-0 pb-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/DashboardMetrics.tsx:186:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:207:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-sm font-medium ${staleItems > 0 ? "text-amber-600 font-bold" : ""}`,
 						children: "Itens Ociosos"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-						"data-uid": "src/components/DashboardMetrics.tsx:191:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:212:11",
 						"data-prohibitions": "[editContent]",
 						className: `h-4 w-4 ${staleItems > 0 ? "text-amber-600" : "text-muted-foreground"}`,
 						strokeWidth: 1.5
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/DashboardMetrics.tsx:196:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:217:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/DashboardMetrics.tsx:197:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:218:11",
 						"data-prohibitions": "[editContent]",
 						className: `text-2xl font-bold ${staleItems > 0 ? "text-amber-600" : ""}`,
 						children: staleItems
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/components/DashboardMetrics.tsx:200:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:221:11",
 						"data-prohibitions": "[]",
 						className: "text-xs text-muted-foreground mt-1",
 						children: "Sem saída há > 30 dias"
@@ -49230,33 +49279,33 @@ function DashboardMetrics() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/DashboardMetrics.tsx:204:7",
+				"data-uid": "src/components/DashboardMetrics.tsx:225:7",
 				"data-prohibitions": "[editContent]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/DashboardMetrics.tsx:205:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:226:9",
 					"data-prohibitions": "[]",
 					className: "flex flex-row items-center justify-between space-y-0 pb-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/DashboardMetrics.tsx:206:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:227:11",
 						"data-prohibitions": "[]",
 						className: "text-sm font-medium",
 						children: "Entradas (Mês)"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowDownToLine, {
-						"data-uid": "src/components/DashboardMetrics.tsx:207:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:228:11",
 						"data-prohibitions": "[editContent]",
 						className: "h-4 w-4 text-secondary",
 						strokeWidth: 1.5
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/DashboardMetrics.tsx:209:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:230:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/DashboardMetrics.tsx:210:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:231:11",
 						"data-prohibitions": "[editContent]",
 						className: "text-2xl font-bold text-secondary",
 						children: monthlyIn
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/components/DashboardMetrics.tsx:211:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:232:11",
 						"data-prohibitions": "[]",
 						className: "text-xs text-muted-foreground mt-1",
 						children: "Unidades recebidas"
@@ -49264,33 +49313,33 @@ function DashboardMetrics() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/DashboardMetrics.tsx:215:7",
+				"data-uid": "src/components/DashboardMetrics.tsx:236:7",
 				"data-prohibitions": "[editContent]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/DashboardMetrics.tsx:216:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:237:9",
 					"data-prohibitions": "[]",
 					className: "flex flex-row items-center justify-between space-y-0 pb-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/DashboardMetrics.tsx:217:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:238:11",
 						"data-prohibitions": "[]",
 						className: "text-sm font-medium",
 						children: "Saídas (Mês)"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowUpFromLine, {
-						"data-uid": "src/components/DashboardMetrics.tsx:218:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:239:11",
 						"data-prohibitions": "[editContent]",
 						className: "h-4 w-4 text-primary",
 						strokeWidth: 1.5
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/DashboardMetrics.tsx:220:9",
+					"data-uid": "src/components/DashboardMetrics.tsx:241:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/DashboardMetrics.tsx:221:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:242:11",
 						"data-prohibitions": "[editContent]",
 						className: "text-2xl font-bold text-primary",
 						children: monthlyOut
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/components/DashboardMetrics.tsx:222:11",
+						"data-uid": "src/components/DashboardMetrics.tsx:243:11",
 						"data-prohibitions": "[]",
 						className: "text-xs text-muted-foreground mt-1",
 						children: "Unidades distribuídas"
@@ -83366,712 +83415,753 @@ function Items() {
 		"data-uid": "src/pages/Items.tsx:165:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 p-4 md:p-8 animate-fade-in-up max-w-7xl mx-auto",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Items.tsx:166:7",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			"data-uid": "src/pages/Items.tsx:166:7",
+			"data-prohibitions": "[]",
+			className: "flex flex-col md:flex-row md:items-center justify-between gap-4",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				"data-uid": "src/pages/Items.tsx:167:9",
 				"data-prohibitions": "[]",
-				className: "flex flex-col md:flex-row md:items-center justify-between gap-4",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Items.tsx:167:9",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
+					"data-uid": "src/pages/Items.tsx:168:11",
 					"data-prohibitions": "[]",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-						"data-uid": "src/pages/Items.tsx:168:11",
-						"data-prohibitions": "[]",
-						className: "text-3xl font-black tracking-tight text-foreground",
-						children: "Catálogo de Itens"
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/pages/Items.tsx:169:11",
-						"data-prohibitions": "[]",
-						className: "text-muted-foreground font-medium mt-1",
-						children: "Gerencie todos os materiais e medicamentos da unidade."
-					})]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Items.tsx:173:9",
+					className: "text-3xl font-black tracking-tight text-foreground",
+					children: "Catálogo de Itens"
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					"data-uid": "src/pages/Items.tsx:169:11",
 					"data-prohibitions": "[]",
-					className: "flex items-center gap-3",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/pages/Items.tsx:174:11",
+					className: "text-muted-foreground font-medium mt-1",
+					children: "Gerencie todos os materiais e medicamentos da unidade."
+				})]
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				"data-uid": "src/pages/Items.tsx:173:9",
+				"data-prohibitions": "[]",
+				className: "flex items-center gap-3",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+					"data-uid": "src/pages/Items.tsx:174:11",
+					"data-prohibitions": "[]",
+					variant: "outline",
+					className: "gap-2 font-bold shadow-sm",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
+						"data-uid": "src/pages/Items.tsx:175:13",
+						"data-prohibitions": "[editContent]",
+						className: "h-4 w-4"
+					}), "Gerar Relatório"]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ItemFormModal, {
+					"data-uid": "src/pages/Items.tsx:178:11",
+					"data-prohibitions": "[editContent]",
+					trigger: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						"data-uid": "src/pages/Items.tsx:180:15",
 						"data-prohibitions": "[]",
-						variant: "outline",
-						className: "gap-2 font-bold shadow-sm",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-							"data-uid": "src/pages/Items.tsx:175:13",
+						className: "gap-2 font-bold shadow-sm bg-slate-800 hover:bg-slate-700 text-white",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
+							"data-uid": "src/pages/Items.tsx:181:17",
 							"data-prohibitions": "[editContent]",
 							className: "h-4 w-4"
-						}), "Gerar Relatório"]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ItemFormModal, {
-						"data-uid": "src/pages/Items.tsx:178:11",
-						"data-prohibitions": "[editContent]",
-						trigger: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-							"data-uid": "src/pages/Items.tsx:180:15",
-							"data-prohibitions": "[]",
-							className: "gap-2 font-bold shadow-sm bg-slate-800 hover:bg-slate-700 text-white",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-								"data-uid": "src/pages/Items.tsx:181:17",
-								"data-prohibitions": "[editContent]",
-								className: "h-4 w-4"
-							}), "Novo Item"]
-						})
-					})]
+						}), "Novo Item"]
+					})
 				})]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Items.tsx:189:7",
-				"data-prohibitions": "[editContent]",
-				className: "flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Items.tsx:190:9",
-						"data-prohibitions": "[editContent]",
-						className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "zerado" ? "ring-2 ring-red-500 bg-red-50 dark:bg-red-500/10 border-red-200" : "bg-red-50/50 dark:bg-red-500/5 border-red-100"),
-						onClick: () => setFilter(currentFilter === "zerado" ? "todos" : "zerado"),
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+			})]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
+			"data-uid": "src/pages/Items.tsx:189:7",
+			"data-prohibitions": "[editContent]",
+			defaultValue: "catalogo",
+			className: "w-full",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
+					"data-uid": "src/pages/Items.tsx:190:9",
+					"data-prohibitions": "[]",
+					className: "grid w-full grid-cols-2 max-w-[400px] mb-6",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
+						"data-uid": "src/pages/Items.tsx:191:11",
+						"data-prohibitions": "[]",
+						value: "catalogo",
+						className: "font-bold",
+						children: "Catálogo e Estoque"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
+						"data-uid": "src/pages/Items.tsx:194:11",
+						"data-prohibitions": "[]",
+						value: "financeiro",
+						className: "font-bold",
+						children: "Controle Financeiro"
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
+					"data-uid": "src/pages/Items.tsx:198:9",
+					"data-prohibitions": "[editContent]",
+					value: "catalogo",
+					className: "space-y-6 animate-fade-in",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 							"data-uid": "src/pages/Items.tsx:199:11",
 							"data-prohibitions": "[editContent]",
-							className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Items.tsx:200:13",
-								"data-prohibitions": "[]",
-								className: "flex items-start justify-between text-red-600 mb-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Items.tsx:201:15",
-									"data-prohibitions": "[]",
-									className: "font-bold text-xs tracking-wider uppercase",
-									children: "Zerado"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PackageX, {
-									"data-uid": "src/pages/Items.tsx:202:15",
+							className: "flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+									"data-uid": "src/pages/Items.tsx:200:13",
 									"data-prohibitions": "[editContent]",
-									className: "h-4 w-4 opacity-70"
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Items.tsx:204:13",
-								"data-prohibitions": "[editContent]",
-								className: "text-3xl font-black text-red-500",
-								children: stats.zerado
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Items.tsx:208:9",
-						"data-prohibitions": "[editContent]",
-						className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "critico" ? "ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-500/10 border-orange-200" : "bg-orange-50/50 dark:bg-orange-500/5 border-orange-100"),
-						onClick: () => setFilter(currentFilter === "critico" ? "todos" : "critico"),
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Items.tsx:217:11",
-							"data-prohibitions": "[editContent]",
-							className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Items.tsx:218:13",
-								"data-prohibitions": "[]",
-								className: "flex items-start justify-between text-orange-700 mb-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Items.tsx:219:15",
-									"data-prohibitions": "[]",
-									className: "font-bold text-xs tracking-wider uppercase",
-									children: "Crítico"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, {
-									"data-uid": "src/pages/Items.tsx:220:15",
-									"data-prohibitions": "[editContent]",
-									className: "h-4 w-4 opacity-70"
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Items.tsx:222:13",
-								"data-prohibitions": "[editContent]",
-								className: "text-3xl font-black text-orange-600",
-								children: stats.critico
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Items.tsx:226:9",
-						"data-prohibitions": "[editContent]",
-						className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "ruptura" ? "ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-500/10 border-purple-200" : "bg-purple-50/50 dark:bg-purple-500/5 border-purple-100"),
-						onClick: () => setFilter(currentFilter === "ruptura" ? "todos" : "ruptura"),
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Items.tsx:235:11",
-							"data-prohibitions": "[editContent]",
-							className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Items.tsx:236:13",
-								"data-prohibitions": "[]",
-								className: "flex items-start justify-between text-purple-700 mb-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Items.tsx:237:15",
-									"data-prohibitions": "[]",
-									className: "font-bold text-xs tracking-wider uppercase",
-									children: "Ruptura"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TrendingDown, {
-									"data-uid": "src/pages/Items.tsx:238:15",
-									"data-prohibitions": "[editContent]",
-									className: "h-4 w-4 opacity-70"
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Items.tsx:240:13",
-								"data-prohibitions": "[editContent]",
-								className: "text-3xl font-black text-purple-600",
-								children: stats.ruptura
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Items.tsx:244:9",
-						"data-prohibitions": "[editContent]",
-						className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "180dias" ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-500/10 border-blue-200" : "bg-blue-50/50 dark:bg-blue-500/5 border-blue-100"),
-						onClick: () => setFilter(currentFilter === "180dias" ? "todos" : "180dias"),
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Items.tsx:253:11",
-							"data-prohibitions": "[editContent]",
-							className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Items.tsx:254:13",
-								"data-prohibitions": "[]",
-								className: "flex items-start justify-between text-blue-700 mb-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Items.tsx:255:15",
-									"data-prohibitions": "[]",
-									className: "font-bold text-xs tracking-wider uppercase",
-									children: "≤ 180 Dias"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-									"data-uid": "src/pages/Items.tsx:256:15",
-									"data-prohibitions": "[editContent]",
-									className: "h-4 w-4 opacity-70"
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Items.tsx:258:13",
-								"data-prohibitions": "[editContent]",
-								className: "text-3xl font-black text-blue-600",
-								children: stats.dias180
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Items.tsx:262:9",
-						"data-prohibitions": "[editContent]",
-						className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "120dias" || currentFilter === "vencimento_proximo" ? "ring-2 ring-yellow-600 bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200" : "bg-yellow-50/50 dark:bg-yellow-500/5 border-yellow-100"),
-						onClick: () => setFilter(currentFilter === "120dias" ? "todos" : "120dias"),
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Items.tsx:271:11",
-							"data-prohibitions": "[editContent]",
-							className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Items.tsx:272:13",
-								"data-prohibitions": "[]",
-								className: "flex items-start justify-between text-yellow-700 mb-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Items.tsx:273:15",
-									"data-prohibitions": "[]",
-									className: "font-bold text-xs tracking-wider uppercase",
-									children: "≤ 120 Dias"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-									"data-uid": "src/pages/Items.tsx:274:15",
-									"data-prohibitions": "[editContent]",
-									className: "h-4 w-4 opacity-70"
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Items.tsx:276:13",
-								"data-prohibitions": "[editContent]",
-								className: "text-3xl font-black text-yellow-600",
-								children: stats.dias120
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Items.tsx:280:9",
-						"data-prohibitions": "[editContent]",
-						className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "60dias" ? "ring-2 ring-amber-600 bg-amber-50 dark:bg-amber-600/10 border-amber-200" : "bg-amber-50/50 dark:bg-amber-600/5 border-amber-100"),
-						onClick: () => setFilter(currentFilter === "60dias" ? "todos" : "60dias"),
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Items.tsx:289:11",
-							"data-prohibitions": "[editContent]",
-							className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Items.tsx:290:13",
-								"data-prohibitions": "[]",
-								className: "flex items-start justify-between text-amber-700 mb-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Items.tsx:291:15",
-									"data-prohibitions": "[]",
-									className: "font-bold text-xs tracking-wider uppercase",
-									children: "≤ 60 Dias"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-									"data-uid": "src/pages/Items.tsx:292:15",
-									"data-prohibitions": "[editContent]",
-									className: "h-4 w-4 opacity-70"
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Items.tsx:294:13",
-								"data-prohibitions": "[editContent]",
-								className: "text-3xl font-black text-amber-600",
-								children: stats.dias60
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Items.tsx:298:9",
-						"data-prohibitions": "[editContent]",
-						className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start border-destructive/30", currentFilter === "vencidos" ? "ring-2 ring-destructive bg-destructive/10" : "bg-destructive/5"),
-						onClick: () => setFilter(currentFilter === "vencidos" ? "todos" : "vencidos"),
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Items.tsx:307:11",
-							"data-prohibitions": "[editContent]",
-							className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Items.tsx:308:13",
-								"data-prohibitions": "[]",
-								className: "flex items-start justify-between text-destructive mb-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Items.tsx:309:15",
-									"data-prohibitions": "[]",
-									className: "font-bold text-xs tracking-wider uppercase",
-									children: "Vencidos"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OctagonAlert, {
-									"data-uid": "src/pages/Items.tsx:310:15",
-									"data-prohibitions": "[editContent]",
-									className: "h-4 w-4 opacity-70"
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Items.tsx:312:13",
-								"data-prohibitions": "[editContent]",
-								className: "text-3xl font-black text-destructive",
-								children: stats.vencidos
-							})]
-						})
-					})
-				]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/pages/Items.tsx:317:7",
-				"data-prohibitions": "[editContent]",
-				className: "rounded-2xl border-border/50 shadow-sm overflow-hidden",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Items.tsx:318:9",
-					"data-prohibitions": "[editContent]",
-					className: "p-4 border-b border-border/50 flex flex-col xl:flex-row gap-4 items-center justify-between bg-card",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/pages/Items.tsx:319:11",
-						"data-prohibitions": "[]",
-						className: "relative w-full xl:w-96",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
-							"data-uid": "src/pages/Items.tsx:320:13",
-							"data-prohibitions": "[editContent]",
-							className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-							"data-uid": "src/pages/Items.tsx:321:13",
-							"data-prohibitions": "[editContent]",
-							placeholder: "Pesquisar por nome ou código...",
-							className: "pl-9 bg-background rounded-xl",
-							value: searchQuery,
-							onChange: (e) => setSearchQuery(e.target.value)
-						})]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/pages/Items.tsx:329:11",
-						"data-prohibitions": "[editContent]",
-						className: "flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-border/50 overflow-x-auto w-full xl:w-auto",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/pages/Items.tsx:330:13",
-								"data-prohibitions": "[editContent]",
-								variant: currentFilter === "todos" ? "default" : "ghost",
-								size: "sm",
-								className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "todos" ? "shadow-sm" : "text-muted-foreground"),
-								onClick: () => setFilter("todos"),
-								children: "Todos"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/pages/Items.tsx:341:13",
-								"data-prohibitions": "[editContent]",
-								variant: currentFilter === "critico" ? "default" : "ghost",
-								size: "sm",
-								className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "critico" ? "bg-orange-500 hover:bg-orange-600 text-white shadow-sm" : "text-orange-600 dark:text-orange-400"),
-								onClick: () => setFilter("critico"),
-								children: "Crítico"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/pages/Items.tsx:354:13",
-								"data-prohibitions": "[editContent]",
-								variant: currentFilter === "zerado" ? "default" : "ghost",
-								size: "sm",
-								className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "zerado" ? "bg-red-500 hover:bg-red-600 text-white shadow-sm" : "text-red-600 dark:text-red-400"),
-								onClick: () => setFilter("zerado"),
-								children: "Zerado"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/pages/Items.tsx:367:13",
-								"data-prohibitions": "[editContent]",
-								variant: currentFilter === "180dias" ? "default" : "ghost",
-								size: "sm",
-								className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "180dias" ? "bg-blue-500 hover:bg-blue-600 text-white shadow-sm" : "text-blue-600 dark:text-blue-400"),
-								onClick: () => setFilter("180dias"),
-								children: "≤ 180 Dias"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/pages/Items.tsx:380:13",
-								"data-prohibitions": "[editContent]",
-								variant: currentFilter === "120dias" || currentFilter === "vencimento_proximo" ? "default" : "ghost",
-								size: "sm",
-								className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "120dias" || currentFilter === "vencimento_proximo" ? "bg-yellow-500 hover:bg-yellow-600 text-white shadow-sm" : "text-yellow-600 dark:text-yellow-400"),
-								onClick: () => setFilter("120dias"),
-								children: "≤ 120 Dias"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/pages/Items.tsx:397:13",
-								"data-prohibitions": "[editContent]",
-								variant: currentFilter === "60dias" ? "default" : "ghost",
-								size: "sm",
-								className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "60dias" ? "bg-amber-500 hover:bg-amber-600 text-white shadow-sm" : "text-amber-600 dark:text-amber-500"),
-								onClick: () => setFilter("60dias"),
-								children: "≤ 60 Dias"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/pages/Items.tsx:410:13",
-								"data-prohibitions": "[editContent]",
-								variant: currentFilter === "ruptura" ? "default" : "ghost",
-								size: "sm",
-								className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "ruptura" ? "bg-purple-500 hover:bg-purple-600 text-white shadow-sm" : "text-purple-600 dark:text-purple-400"),
-								onClick: () => setFilter("ruptura"),
-								children: "Ruptura"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/pages/Items.tsx:423:13",
-								"data-prohibitions": "[editContent]",
-								variant: currentFilter === "vencidos" ? "default" : "ghost",
-								size: "sm",
-								className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "vencidos" ? "bg-destructive hover:bg-destructive/90 text-white shadow-sm" : "text-destructive"),
-								onClick: () => setFilter("vencidos"),
-								children: "Vencidos"
-							})
-						]
-					})]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/pages/Items.tsx:439:9",
-					"data-prohibitions": "[editContent]",
-					className: "overflow-x-auto",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-						"data-uid": "src/pages/Items.tsx:440:11",
-						"data-prohibitions": "[editContent]",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-							"data-uid": "src/pages/Items.tsx:441:13",
-							"data-prohibitions": "[editContent]",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-								"data-uid": "src/pages/Items.tsx:442:15",
-								"data-prohibitions": "[editContent]",
-								className: "bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-900/50",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Items.tsx:443:17",
-										"data-prohibitions": "[]",
-										className: "font-bold h-12",
-										children: "Item"
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Items.tsx:444:17",
-										"data-prohibitions": "[]",
-										className: "font-bold h-12",
-										children: "Estoque Atual"
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Items.tsx:445:17",
-										"data-prohibitions": "[]",
-										className: "font-bold h-12",
-										children: "Estoque Mín."
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Items.tsx:446:17",
-										"data-prohibitions": "[]",
-										className: "font-bold h-12",
-										children: "Média Mensal"
-									}),
-									currentFilter === "ruptura" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Items.tsx:448:19",
-										"data-prohibitions": "[]",
-										className: "font-bold h-12",
-										children: "Duração Est."
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Items.tsx:450:17",
-										"data-prohibitions": "[]",
-										className: "font-bold h-12",
-										children: "Status"
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Items.tsx:451:17",
-										"data-prohibitions": "[]",
-										className: "font-bold h-12 text-right",
-										children: "Ações"
-									})
-								]
-							})
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-							"data-uid": "src/pages/Items.tsx:454:13",
-							"data-prohibitions": "[editContent]",
-							children: filteredItems.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-								"data-uid": "src/pages/Items.tsx:456:17",
-								"data-prohibitions": "[]",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableCell, {
-									"data-uid": "src/pages/Items.tsx:457:19",
-									"data-prohibitions": "[]",
-									colSpan: currentFilter === "ruptura" ? 7 : 6,
-									className: "text-center py-16 text-muted-foreground",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PackageX, {
-											"data-uid": "src/pages/Items.tsx:461:21",
+									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "zerado" ? "ring-2 ring-red-500 bg-red-50 dark:bg-red-500/10 border-red-200" : "bg-red-50/50 dark:bg-red-500/5 border-red-100"),
+									onClick: () => setFilter(currentFilter === "zerado" ? "todos" : "zerado"),
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+										"data-uid": "src/pages/Items.tsx:209:15",
+										"data-prohibitions": "[editContent]",
+										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/pages/Items.tsx:210:17",
+											"data-prohibitions": "[]",
+											className: "flex items-start justify-between text-red-600 mb-2",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/pages/Items.tsx:211:19",
+												"data-prohibitions": "[]",
+												className: "font-bold text-xs tracking-wider uppercase",
+												children: "Zerado"
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PackageX, {
+												"data-uid": "src/pages/Items.tsx:212:19",
+												"data-prohibitions": "[editContent]",
+												className: "h-4 w-4 opacity-70"
+											})]
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"data-uid": "src/pages/Items.tsx:214:17",
 											"data-prohibitions": "[editContent]",
-											className: "h-10 w-10 mx-auto text-slate-300 dark:text-slate-700 mb-3"
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-uid": "src/pages/Items.tsx:462:21",
+											className: "text-3xl font-black text-red-500",
+											children: stats.zerado
+										})]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+									"data-uid": "src/pages/Items.tsx:218:13",
+									"data-prohibitions": "[editContent]",
+									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "critico" ? "ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-500/10 border-orange-200" : "bg-orange-50/50 dark:bg-orange-500/5 border-orange-100"),
+									onClick: () => setFilter(currentFilter === "critico" ? "todos" : "critico"),
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+										"data-uid": "src/pages/Items.tsx:227:15",
+										"data-prohibitions": "[editContent]",
+										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/pages/Items.tsx:228:17",
 											"data-prohibitions": "[]",
-											className: "font-bold text-lg",
-											children: "Nenhum item encontrado"
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-uid": "src/pages/Items.tsx:463:21",
+											className: "flex items-start justify-between text-orange-700 mb-2",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/pages/Items.tsx:229:19",
+												"data-prohibitions": "[]",
+												className: "font-bold text-xs tracking-wider uppercase",
+												children: "Crítico"
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, {
+												"data-uid": "src/pages/Items.tsx:230:19",
+												"data-prohibitions": "[editContent]",
+												className: "h-4 w-4 opacity-70"
+											})]
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"data-uid": "src/pages/Items.tsx:232:17",
+											"data-prohibitions": "[editContent]",
+											className: "text-3xl font-black text-orange-600",
+											children: stats.critico
+										})]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+									"data-uid": "src/pages/Items.tsx:236:13",
+									"data-prohibitions": "[editContent]",
+									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "ruptura" ? "ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-500/10 border-purple-200" : "bg-purple-50/50 dark:bg-purple-500/5 border-purple-100"),
+									onClick: () => setFilter(currentFilter === "ruptura" ? "todos" : "ruptura"),
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+										"data-uid": "src/pages/Items.tsx:245:15",
+										"data-prohibitions": "[editContent]",
+										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/pages/Items.tsx:246:17",
 											"data-prohibitions": "[]",
-											className: "text-sm",
-											children: "Ajuste os filtros ou o termo de busca."
+											className: "flex items-start justify-between text-purple-700 mb-2",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/pages/Items.tsx:247:19",
+												"data-prohibitions": "[]",
+												className: "font-bold text-xs tracking-wider uppercase",
+												children: "Ruptura"
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TrendingDown, {
+												"data-uid": "src/pages/Items.tsx:248:19",
+												"data-prohibitions": "[editContent]",
+												className: "h-4 w-4 opacity-70"
+											})]
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"data-uid": "src/pages/Items.tsx:250:17",
+											"data-prohibitions": "[editContent]",
+											className: "text-3xl font-black text-purple-600",
+											children: stats.ruptura
+										})]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+									"data-uid": "src/pages/Items.tsx:254:13",
+									"data-prohibitions": "[editContent]",
+									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "180dias" ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-500/10 border-blue-200" : "bg-blue-50/50 dark:bg-blue-500/5 border-blue-100"),
+									onClick: () => setFilter(currentFilter === "180dias" ? "todos" : "180dias"),
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+										"data-uid": "src/pages/Items.tsx:263:15",
+										"data-prohibitions": "[editContent]",
+										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/pages/Items.tsx:264:17",
+											"data-prohibitions": "[]",
+											className: "flex items-start justify-between text-blue-700 mb-2",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/pages/Items.tsx:265:19",
+												"data-prohibitions": "[]",
+												className: "font-bold text-xs tracking-wider uppercase",
+												children: "≤ 180 Dias"
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
+												"data-uid": "src/pages/Items.tsx:266:19",
+												"data-prohibitions": "[editContent]",
+												className: "h-4 w-4 opacity-70"
+											})]
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"data-uid": "src/pages/Items.tsx:268:17",
+											"data-prohibitions": "[editContent]",
+											className: "text-3xl font-black text-blue-600",
+											children: stats.dias180
+										})]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+									"data-uid": "src/pages/Items.tsx:272:13",
+									"data-prohibitions": "[editContent]",
+									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "120dias" || currentFilter === "vencimento_proximo" ? "ring-2 ring-yellow-600 bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200" : "bg-yellow-50/50 dark:bg-yellow-500/5 border-yellow-100"),
+									onClick: () => setFilter(currentFilter === "120dias" ? "todos" : "120dias"),
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+										"data-uid": "src/pages/Items.tsx:281:15",
+										"data-prohibitions": "[editContent]",
+										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/pages/Items.tsx:282:17",
+											"data-prohibitions": "[]",
+											className: "flex items-start justify-between text-yellow-700 mb-2",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/pages/Items.tsx:283:19",
+												"data-prohibitions": "[]",
+												className: "font-bold text-xs tracking-wider uppercase",
+												children: "≤ 120 Dias"
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
+												"data-uid": "src/pages/Items.tsx:284:19",
+												"data-prohibitions": "[editContent]",
+												className: "h-4 w-4 opacity-70"
+											})]
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"data-uid": "src/pages/Items.tsx:286:17",
+											"data-prohibitions": "[editContent]",
+											className: "text-3xl font-black text-yellow-600",
+											children: stats.dias120
+										})]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+									"data-uid": "src/pages/Items.tsx:290:13",
+									"data-prohibitions": "[editContent]",
+									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start", currentFilter === "60dias" ? "ring-2 ring-amber-600 bg-amber-50 dark:bg-amber-600/10 border-amber-200" : "bg-amber-50/50 dark:bg-amber-600/5 border-amber-100"),
+									onClick: () => setFilter(currentFilter === "60dias" ? "todos" : "60dias"),
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+										"data-uid": "src/pages/Items.tsx:299:15",
+										"data-prohibitions": "[editContent]",
+										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/pages/Items.tsx:300:17",
+											"data-prohibitions": "[]",
+											className: "flex items-start justify-between text-amber-700 mb-2",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/pages/Items.tsx:301:19",
+												"data-prohibitions": "[]",
+												className: "font-bold text-xs tracking-wider uppercase",
+												children: "≤ 60 Dias"
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
+												"data-uid": "src/pages/Items.tsx:302:19",
+												"data-prohibitions": "[editContent]",
+												className: "h-4 w-4 opacity-70"
+											})]
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"data-uid": "src/pages/Items.tsx:304:17",
+											"data-prohibitions": "[editContent]",
+											className: "text-3xl font-black text-amber-600",
+											children: stats.dias60
+										})]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+									"data-uid": "src/pages/Items.tsx:308:13",
+									"data-prohibitions": "[editContent]",
+									className: cn$1("min-w-[150px] flex-1 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl snap-start border-destructive/30", currentFilter === "vencidos" ? "ring-2 ring-destructive bg-destructive/10" : "bg-destructive/5"),
+									onClick: () => setFilter(currentFilter === "vencidos" ? "todos" : "vencidos"),
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+										"data-uid": "src/pages/Items.tsx:317:15",
+										"data-prohibitions": "[editContent]",
+										className: "p-4 flex flex-col justify-between h-full min-h-[100px]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/pages/Items.tsx:318:17",
+											"data-prohibitions": "[]",
+											className: "flex items-start justify-between text-destructive mb-2",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/pages/Items.tsx:319:19",
+												"data-prohibitions": "[]",
+												className: "font-bold text-xs tracking-wider uppercase",
+												children: "Vencidos"
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(OctagonAlert, {
+												"data-uid": "src/pages/Items.tsx:320:19",
+												"data-prohibitions": "[editContent]",
+												className: "h-4 w-4 opacity-70"
+											})]
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"data-uid": "src/pages/Items.tsx:322:17",
+											"data-prohibitions": "[editContent]",
+											className: "text-3xl font-black text-destructive",
+											children: stats.vencidos
+										})]
+									})
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+							"data-uid": "src/pages/Items.tsx:327:11",
+							"data-prohibitions": "[editContent]",
+							className: "rounded-2xl border-border/50 shadow-sm overflow-hidden",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-uid": "src/pages/Items.tsx:328:13",
+								"data-prohibitions": "[editContent]",
+								className: "p-4 border-b border-border/50 flex flex-col xl:flex-row gap-4 items-center justify-between bg-card",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/pages/Items.tsx:329:15",
+									"data-prohibitions": "[]",
+									className: "relative w-full xl:w-96",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
+										"data-uid": "src/pages/Items.tsx:330:17",
+										"data-prohibitions": "[editContent]",
+										className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+										"data-uid": "src/pages/Items.tsx:331:17",
+										"data-prohibitions": "[editContent]",
+										placeholder: "Pesquisar por nome ou código...",
+										className: "pl-9 bg-background rounded-xl",
+										value: searchQuery,
+										onChange: (e) => setSearchQuery(e.target.value)
+									})]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/pages/Items.tsx:339:15",
+									"data-prohibitions": "[editContent]",
+									className: "flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-border/50 overflow-x-auto w-full xl:w-auto",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Items.tsx:340:17",
+											"data-prohibitions": "[editContent]",
+											variant: currentFilter === "todos" ? "default" : "ghost",
+											size: "sm",
+											className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "todos" ? "shadow-sm" : "text-muted-foreground"),
+											onClick: () => setFilter("todos"),
+											children: "Todos"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Items.tsx:351:17",
+											"data-prohibitions": "[editContent]",
+											variant: currentFilter === "critico" ? "default" : "ghost",
+											size: "sm",
+											className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "critico" ? "bg-orange-500 hover:bg-orange-600 text-white shadow-sm" : "text-orange-600 dark:text-orange-400"),
+											onClick: () => setFilter("critico"),
+											children: "Crítico"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Items.tsx:364:17",
+											"data-prohibitions": "[editContent]",
+											variant: currentFilter === "zerado" ? "default" : "ghost",
+											size: "sm",
+											className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "zerado" ? "bg-red-500 hover:bg-red-600 text-white shadow-sm" : "text-red-600 dark:text-red-400"),
+											onClick: () => setFilter("zerado"),
+											children: "Zerado"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Items.tsx:377:17",
+											"data-prohibitions": "[editContent]",
+											variant: currentFilter === "180dias" ? "default" : "ghost",
+											size: "sm",
+											className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "180dias" ? "bg-blue-500 hover:bg-blue-600 text-white shadow-sm" : "text-blue-600 dark:text-blue-400"),
+											onClick: () => setFilter("180dias"),
+											children: "≤ 180 Dias"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Items.tsx:390:17",
+											"data-prohibitions": "[editContent]",
+											variant: currentFilter === "120dias" || currentFilter === "vencimento_proximo" ? "default" : "ghost",
+											size: "sm",
+											className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "120dias" || currentFilter === "vencimento_proximo" ? "bg-yellow-500 hover:bg-yellow-600 text-white shadow-sm" : "text-yellow-600 dark:text-yellow-400"),
+											onClick: () => setFilter("120dias"),
+											children: "≤ 120 Dias"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Items.tsx:407:17",
+											"data-prohibitions": "[editContent]",
+											variant: currentFilter === "60dias" ? "default" : "ghost",
+											size: "sm",
+											className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "60dias" ? "bg-amber-500 hover:bg-amber-600 text-white shadow-sm" : "text-amber-600 dark:text-amber-500"),
+											onClick: () => setFilter("60dias"),
+											children: "≤ 60 Dias"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Items.tsx:420:17",
+											"data-prohibitions": "[editContent]",
+											variant: currentFilter === "ruptura" ? "default" : "ghost",
+											size: "sm",
+											className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "ruptura" ? "bg-purple-500 hover:bg-purple-600 text-white shadow-sm" : "text-purple-600 dark:text-purple-400"),
+											onClick: () => setFilter("ruptura"),
+											children: "Ruptura"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Items.tsx:433:17",
+											"data-prohibitions": "[editContent]",
+											variant: currentFilter === "vencidos" ? "default" : "ghost",
+											size: "sm",
+											className: cn$1("rounded-lg text-sm font-bold whitespace-nowrap", currentFilter === "vencidos" ? "bg-destructive hover:bg-destructive/90 text-white shadow-sm" : "text-destructive"),
+											onClick: () => setFilter("vencidos"),
+											children: "Vencidos"
 										})
 									]
-								})
-							}) : filteredItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-								"data-uid": "src/pages/Items.tsx:468:19",
+								})]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/pages/Items.tsx:449:13",
 								"data-prohibitions": "[editContent]",
-								className: "hover:bg-muted/30 transition-colors",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableCell, {
-										"data-uid": "src/pages/Items.tsx:469:21",
+								className: "overflow-x-auto",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
+									"data-uid": "src/pages/Items.tsx:450:15",
+									"data-prohibitions": "[editContent]",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
+										"data-uid": "src/pages/Items.tsx:451:17",
 										"data-prohibitions": "[editContent]",
-										className: "py-4",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:470:23",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
+											"data-uid": "src/pages/Items.tsx:452:19",
 											"data-prohibitions": "[editContent]",
-											className: "font-bold text-foreground text-[15px]",
-											children: item.name
-										}), item.description && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:472:25",
-											"data-prohibitions": "[editContent]",
-											className: "text-xs text-muted-foreground font-medium mt-0.5 truncate max-w-[300px]",
-											children: item.description
-										})]
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Items.tsx:477:21",
+											className: "bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-900/50",
+											children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/Items.tsx:453:21",
+													"data-prohibitions": "[]",
+													className: "font-bold h-12",
+													children: "Item"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/Items.tsx:454:21",
+													"data-prohibitions": "[]",
+													className: "font-bold h-12",
+													children: "Estoque Atual"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/Items.tsx:455:21",
+													"data-prohibitions": "[]",
+													className: "font-bold h-12",
+													children: "Estoque Mín."
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/Items.tsx:456:21",
+													"data-prohibitions": "[]",
+													className: "font-bold h-12",
+													children: "Média Mensal"
+												}),
+												currentFilter === "ruptura" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/Items.tsx:458:23",
+													"data-prohibitions": "[]",
+													className: "font-bold h-12",
+													children: "Duração Est."
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/Items.tsx:460:21",
+													"data-prohibitions": "[]",
+													className: "font-bold h-12",
+													children: "Status"
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+													"data-uid": "src/pages/Items.tsx:461:21",
+													"data-prohibitions": "[]",
+													className: "font-bold h-12 text-right",
+													children: "Ações"
+												})
+											]
+										})
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
+										"data-uid": "src/pages/Items.tsx:464:17",
 										"data-prohibitions": "[editContent]",
-										className: "py-4",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										children: filteredItems.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
+											"data-uid": "src/pages/Items.tsx:466:21",
+											"data-prohibitions": "[]",
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableCell, {
+												"data-uid": "src/pages/Items.tsx:467:23",
+												"data-prohibitions": "[]",
+												colSpan: currentFilter === "ruptura" ? 7 : 6,
+												className: "text-center py-16 text-muted-foreground",
+												children: [
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PackageX, {
+														"data-uid": "src/pages/Items.tsx:471:25",
+														"data-prohibitions": "[editContent]",
+														className: "h-10 w-10 mx-auto text-slate-300 dark:text-slate-700 mb-3"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+														"data-uid": "src/pages/Items.tsx:472:25",
+														"data-prohibitions": "[]",
+														className: "font-bold text-lg",
+														children: "Nenhum item encontrado"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+														"data-uid": "src/pages/Items.tsx:473:25",
+														"data-prohibitions": "[]",
+														className: "text-sm",
+														children: "Ajuste os filtros ou o termo de busca."
+													})
+												]
+											})
+										}) : filteredItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
 											"data-uid": "src/pages/Items.tsx:478:23",
 											"data-prohibitions": "[editContent]",
-											className: "font-black text-lg text-slate-700 dark:text-slate-300",
+											className: "hover:bg-muted/30 transition-colors",
 											children: [
-												item.currentQty,
-												" ",
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-													"data-uid": "src/pages/Items.tsx:480:25",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableCell, {
+													"data-uid": "src/pages/Items.tsx:479:25",
 													"data-prohibitions": "[editContent]",
-													className: "text-xs font-bold text-muted-foreground uppercase",
-													children: item.unit_type || "UN"
-												})
-											]
-										})
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Items.tsx:485:21",
-										"data-prohibitions": "[editContent]",
-										className: "py-4",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:486:23",
-											"data-prohibitions": "[editContent]",
-											className: "font-bold text-muted-foreground",
-											children: item.minQty
-										})
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Items.tsx:488:21",
-										"data-prohibitions": "[editContent]",
-										className: "py-4",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:489:23",
-											"data-prohibitions": "[editContent]",
-											className: "font-bold text-slate-600 dark:text-slate-400",
-											children: [
-												item.monthlyConsumption,
-												" ",
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-													"data-uid": "src/pages/Items.tsx:491:25",
-													"data-prohibitions": "[]",
-													className: "text-[10px] uppercase font-bold text-muted-foreground",
-													children: "/mês"
-												})
-											]
-										})
-									}),
-									currentFilter === "ruptura" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Items.tsx:497:23",
-										"data-prohibitions": "[editContent]",
-										className: "py-4",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/pages/Items.tsx:498:25",
-											"data-prohibitions": "[editContent]",
-											className: "font-bold text-purple-600 dark:text-purple-400",
-											children: item.daysUntilStockout !== Infinity ? `${Math.ceil(item.daysUntilStockout)} dias` : "-"
-										})
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Items.tsx:505:21",
-										"data-prohibitions": "[editContent]",
-										className: "py-4",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:506:23",
-											"data-prohibitions": "[editContent]",
-											className: "flex flex-wrap gap-1.5",
-											children: [
-												item.isExpired && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-													"data-uid": "src/pages/Items.tsx:508:27",
-													"data-prohibitions": "[]",
-													variant: "destructive",
-													className: "font-extrabold uppercase text-[10px]",
-													children: "Vencido"
+													className: "py-4",
+													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+														"data-uid": "src/pages/Items.tsx:480:27",
+														"data-prohibitions": "[editContent]",
+														className: "font-bold text-foreground text-[15px]",
+														children: item.name
+													}), item.description && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+														"data-uid": "src/pages/Items.tsx:482:29",
+														"data-prohibitions": "[editContent]",
+														className: "text-xs text-muted-foreground font-medium mt-0.5 truncate max-w-[300px]",
+														children: item.description
+													})]
 												}),
-												item.isZerado && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-													"data-uid": "src/pages/Items.tsx:516:27",
-													"data-prohibitions": "[]",
-													variant: "outline",
-													className: "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:border-red-500/30 font-bold uppercase text-[10px]",
-													children: "Zerado"
-												}),
-												item.isCritico && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-													"data-uid": "src/pages/Items.tsx:524:27",
-													"data-prohibitions": "[]",
-													variant: "outline",
-													className: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30 font-bold uppercase text-[10px]",
-													children: "Crítico"
-												}),
-												item.isStockoutRisk && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-													"data-uid": "src/pages/Items.tsx:532:27",
-													"data-prohibitions": "[]",
-													variant: "outline",
-													className: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:border-purple-500/30 font-bold uppercase text-[10px]",
-													children: "Ruptura"
-												}),
-												!item.isExpired && item.diffDays <= 60 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-													"data-uid": "src/pages/Items.tsx:540:27",
-													"data-prohibitions": "[]",
-													variant: "outline",
-													className: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-600/10 dark:border-amber-600/30 font-bold uppercase text-[10px]",
-													children: "≤ 60d"
-												}),
-												!item.isExpired && item.diffDays > 60 && item.diffDays <= 120 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-													"data-uid": "src/pages/Items.tsx:548:27",
-													"data-prohibitions": "[]",
-													variant: "outline",
-													className: "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:border-yellow-500/30 font-bold uppercase text-[10px]",
-													children: "≤ 120d"
-												}),
-												!item.isExpired && item.diffDays > 120 && item.diffDays <= 180 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-													"data-uid": "src/pages/Items.tsx:556:27",
-													"data-prohibitions": "[]",
-													variant: "outline",
-													className: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/30 font-bold uppercase text-[10px]",
-													children: "≤ 180d"
-												}),
-												!item.isExpired && !item.isZerado && !item.isCritico && !item.isStockoutRisk && item.diffDays > 180 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-													"data-uid": "src/pages/Items.tsx:569:29",
-													"data-prohibitions": "[]",
-													variant: "outline",
-													className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30 font-bold uppercase text-[10px]",
-													children: "Regular"
-												})
-											]
-										})
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Items.tsx:578:21",
-										"data-prohibitions": "[]",
-										className: "py-4 text-right",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/pages/Items.tsx:579:23",
-											"data-prohibitions": "[]",
-											className: "flex items-center justify-end gap-2",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ItemFormModal, {
-												"data-uid": "src/pages/Items.tsx:580:25",
-												"data-prohibitions": "[editContent]",
-												item,
-												trigger: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-													"data-uid": "src/pages/Items.tsx:583:29",
-													"data-prohibitions": "[]",
-													variant: "outline",
-													size: "sm",
-													className: "font-bold text-primary hover:bg-primary/10 border-primary/20",
-													children: "Editar"
-												})
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-												"data-uid": "src/pages/Items.tsx:592:25",
-												"data-prohibitions": "[]",
-												variant: "ghost",
-												size: "sm",
-												onClick: () => setItemToDelete(item),
-												className: "font-bold text-destructive hover:bg-destructive/10 hover:text-destructive",
-												title: "Excluir item",
-												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash, {
-													"data-uid": "src/pages/Items.tsx:599:27",
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+													"data-uid": "src/pages/Items.tsx:487:25",
 													"data-prohibitions": "[editContent]",
-													className: "h-4 w-4"
+													className: "py-4",
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+														"data-uid": "src/pages/Items.tsx:488:27",
+														"data-prohibitions": "[editContent]",
+														className: "font-black text-lg text-slate-700 dark:text-slate-300",
+														children: [
+															item.currentQty,
+															" ",
+															/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+																"data-uid": "src/pages/Items.tsx:490:29",
+																"data-prohibitions": "[editContent]",
+																className: "text-xs font-bold text-muted-foreground uppercase",
+																children: item.unit_type || "UN"
+															})
+														]
+													})
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+													"data-uid": "src/pages/Items.tsx:495:25",
+													"data-prohibitions": "[editContent]",
+													className: "py-4",
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+														"data-uid": "src/pages/Items.tsx:496:27",
+														"data-prohibitions": "[editContent]",
+														className: "font-bold text-muted-foreground",
+														children: item.minQty
+													})
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+													"data-uid": "src/pages/Items.tsx:498:25",
+													"data-prohibitions": "[editContent]",
+													className: "py-4",
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+														"data-uid": "src/pages/Items.tsx:499:27",
+														"data-prohibitions": "[editContent]",
+														className: "font-bold text-slate-600 dark:text-slate-400",
+														children: [
+															item.monthlyConsumption,
+															" ",
+															/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+																"data-uid": "src/pages/Items.tsx:501:29",
+																"data-prohibitions": "[]",
+																className: "text-[10px] uppercase font-bold text-muted-foreground",
+																children: "/mês"
+															})
+														]
+													})
+												}),
+												currentFilter === "ruptura" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+													"data-uid": "src/pages/Items.tsx:507:27",
+													"data-prohibitions": "[editContent]",
+													className: "py-4",
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+														"data-uid": "src/pages/Items.tsx:508:29",
+														"data-prohibitions": "[editContent]",
+														className: "font-bold text-purple-600 dark:text-purple-400",
+														children: item.daysUntilStockout !== Infinity ? `${Math.ceil(item.daysUntilStockout)} dias` : "-"
+													})
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+													"data-uid": "src/pages/Items.tsx:515:25",
+													"data-prohibitions": "[editContent]",
+													className: "py-4",
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+														"data-uid": "src/pages/Items.tsx:516:27",
+														"data-prohibitions": "[editContent]",
+														className: "flex flex-wrap gap-1.5",
+														children: [
+															item.isExpired && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+																"data-uid": "src/pages/Items.tsx:518:31",
+																"data-prohibitions": "[]",
+																variant: "destructive",
+																className: "font-extrabold uppercase text-[10px]",
+																children: "Vencido"
+															}),
+															item.isZerado && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+																"data-uid": "src/pages/Items.tsx:526:31",
+																"data-prohibitions": "[]",
+																variant: "outline",
+																className: "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:border-red-500/30 font-bold uppercase text-[10px]",
+																children: "Zerado"
+															}),
+															item.isCritico && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+																"data-uid": "src/pages/Items.tsx:534:31",
+																"data-prohibitions": "[]",
+																variant: "outline",
+																className: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30 font-bold uppercase text-[10px]",
+																children: "Crítico"
+															}),
+															item.isStockoutRisk && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+																"data-uid": "src/pages/Items.tsx:542:31",
+																"data-prohibitions": "[]",
+																variant: "outline",
+																className: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:border-purple-500/30 font-bold uppercase text-[10px]",
+																children: "Ruptura"
+															}),
+															!item.isExpired && item.diffDays <= 60 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+																"data-uid": "src/pages/Items.tsx:550:31",
+																"data-prohibitions": "[]",
+																variant: "outline",
+																className: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-600/10 dark:border-amber-600/30 font-bold uppercase text-[10px]",
+																children: "≤ 60d"
+															}),
+															!item.isExpired && item.diffDays > 60 && item.diffDays <= 120 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+																"data-uid": "src/pages/Items.tsx:558:31",
+																"data-prohibitions": "[]",
+																variant: "outline",
+																className: "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:border-yellow-500/30 font-bold uppercase text-[10px]",
+																children: "≤ 120d"
+															}),
+															!item.isExpired && item.diffDays > 120 && item.diffDays <= 180 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+																"data-uid": "src/pages/Items.tsx:566:31",
+																"data-prohibitions": "[]",
+																variant: "outline",
+																className: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/30 font-bold uppercase text-[10px]",
+																children: "≤ 180d"
+															}),
+															!item.isExpired && !item.isZerado && !item.isCritico && !item.isStockoutRisk && item.diffDays > 180 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+																"data-uid": "src/pages/Items.tsx:579:33",
+																"data-prohibitions": "[]",
+																variant: "outline",
+																className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30 font-bold uppercase text-[10px]",
+																children: "Regular"
+															})
+														]
+													})
+												}),
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+													"data-uid": "src/pages/Items.tsx:588:25",
+													"data-prohibitions": "[]",
+													className: "py-4 text-right",
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+														"data-uid": "src/pages/Items.tsx:589:27",
+														"data-prohibitions": "[]",
+														className: "flex items-center justify-end gap-2",
+														children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ItemFormModal, {
+															"data-uid": "src/pages/Items.tsx:590:29",
+															"data-prohibitions": "[editContent]",
+															item,
+															trigger: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+																"data-uid": "src/pages/Items.tsx:593:33",
+																"data-prohibitions": "[]",
+																variant: "outline",
+																size: "sm",
+																className: "font-bold text-primary hover:bg-primary/10 border-primary/20",
+																children: "Editar"
+															})
+														}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+															"data-uid": "src/pages/Items.tsx:602:29",
+															"data-prohibitions": "[]",
+															variant: "ghost",
+															size: "sm",
+															onClick: () => setItemToDelete(item),
+															className: "font-bold text-destructive hover:bg-destructive/10 hover:text-destructive",
+															title: "Excluir item",
+															children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash, {
+																"data-uid": "src/pages/Items.tsx:609:31",
+																"data-prohibitions": "[editContent]",
+																className: "h-4 w-4"
+															})
+														})]
+													})
 												})
-											})]
-										})
-									})
-								]
-							}, item.id))
-						})]
-					})
-				})]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialog, {
-				"data-uid": "src/pages/Items.tsx:611:7",
-				"data-prohibitions": "[editContent]",
-				open: !!itemToDelete,
-				onOpenChange: (open) => !open && setItemToDelete(null),
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogContent, {
-					"data-uid": "src/pages/Items.tsx:612:9",
-					"data-prohibitions": "[editContent]",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogHeader, {
-						"data-uid": "src/pages/Items.tsx:613:11",
-						"data-prohibitions": "[]",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogTitle, {
-							"data-uid": "src/pages/Items.tsx:614:13",
-							"data-prohibitions": "[]",
-							children: "Você tem certeza que deseja excluir este item?"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogDescription, {
-							"data-uid": "src/pages/Items.tsx:615:13",
-							"data-prohibitions": "[]",
-							children: "Esta ação não pode ser desfeita. A exclusão deste item removerá também todo o histórico de movimentações associado a ele no banco de dados."
-						})]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogFooter, {
-						"data-uid": "src/pages/Items.tsx:620:11",
-						"data-prohibitions": "[editContent]",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogCancel, {
-							"data-uid": "src/pages/Items.tsx:621:13",
-							"data-prohibitions": "[]",
-							disabled: isDeleting,
-							children: "Cancelar"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogAction, {
-							"data-uid": "src/pages/Items.tsx:622:13",
+											]
+										}, item.id))
+									})]
+								})
+							})]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialog, {
+							"data-uid": "src/pages/Items.tsx:621:11",
 							"data-prohibitions": "[editContent]",
-							onClick: (e) => {
-								e.preventDefault();
-								handleDelete();
-							},
-							className: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-							disabled: isDeleting,
-							children: isDeleting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-								"data-uid": "src/pages/Items.tsx:630:29",
+							open: !!itemToDelete,
+							onOpenChange: (open) => !open && setItemToDelete(null),
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogContent, {
+								"data-uid": "src/pages/Items.tsx:625:13",
 								"data-prohibitions": "[editContent]",
-								className: "h-4 w-4 animate-spin"
-							}) : "Excluir"
-						})]
-					})]
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogHeader, {
+									"data-uid": "src/pages/Items.tsx:626:15",
+									"data-prohibitions": "[]",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogTitle, {
+										"data-uid": "src/pages/Items.tsx:627:17",
+										"data-prohibitions": "[]",
+										children: "Você tem certeza que deseja excluir este item?"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogDescription, {
+										"data-uid": "src/pages/Items.tsx:628:17",
+										"data-prohibitions": "[]",
+										children: "Esta ação não pode ser desfeita. A exclusão deste item removerá também todo o histórico de movimentações associado a ele no banco de dados."
+									})]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogFooter, {
+									"data-uid": "src/pages/Items.tsx:633:15",
+									"data-prohibitions": "[editContent]",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogCancel, {
+										"data-uid": "src/pages/Items.tsx:634:17",
+										"data-prohibitions": "[]",
+										disabled: isDeleting,
+										children: "Cancelar"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogAction, {
+										"data-uid": "src/pages/Items.tsx:635:17",
+										"data-prohibitions": "[editContent]",
+										onClick: (e) => {
+											e.preventDefault();
+											handleDelete();
+										},
+										className: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+										disabled: isDeleting,
+										children: isDeleting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
+											"data-uid": "src/pages/Items.tsx:643:33",
+											"data-prohibitions": "[editContent]",
+											className: "h-4 w-4 animate-spin"
+										}) : "Excluir"
+									})]
+								})]
+							})
+						})
+					]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					"data-uid": "src/pages/Items.tsx:649:9",
+					"data-prohibitions": "[]",
+					value: "financeiro",
+					className: "animate-fade-in",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FinancialTab, {
+						"data-uid": "src/pages/Items.tsx:650:11",
+						"data-prohibitions": "[editContent]"
+					})
 				})
-			})
-		]
+			]
+		})]
 	});
 }
 //#endregion
@@ -86241,7 +86331,7 @@ var TABS_NAME = "Tabs";
 var [createTabsContext, createTabsScope] = createContextScope$1(TABS_NAME, [createRovingFocusGroupScope]);
 var useRovingFocusGroupScope = createRovingFocusGroupScope();
 var [TabsProvider, useTabsContext] = createTabsContext(TABS_NAME);
-var Tabs$1 = import_react.forwardRef((props, forwardedRef) => {
+var Tabs$2 = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeTabs, value: valueProp, onValueChange, defaultValue, orientation = "horizontal", dir, activationMode = "automatic", ...tabsProps } = props;
 	const direction = useDirection(dir);
 	const [value, setValue] = useControllableState({
@@ -86266,9 +86356,9 @@ var Tabs$1 = import_react.forwardRef((props, forwardedRef) => {
 		})
 	});
 });
-Tabs$1.displayName = TABS_NAME;
+Tabs$2.displayName = TABS_NAME;
 var TAB_LIST_NAME = "TabsList";
-var TabsList$1 = import_react.forwardRef((props, forwardedRef) => {
+var TabsList$2 = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeTabs, loop = true, ...listProps } = props;
 	const context = useTabsContext(TAB_LIST_NAME, __scopeTabs);
 	const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
@@ -86286,9 +86376,9 @@ var TabsList$1 = import_react.forwardRef((props, forwardedRef) => {
 		})
 	});
 });
-TabsList$1.displayName = TAB_LIST_NAME;
+TabsList$2.displayName = TAB_LIST_NAME;
 var TRIGGER_NAME = "TabsTrigger";
-var TabsTrigger$1 = import_react.forwardRef((props, forwardedRef) => {
+var TabsTrigger$2 = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeTabs, value, disabled = false, ...triggerProps } = props;
 	const context = useTabsContext(TRIGGER_NAME, __scopeTabs);
 	const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
@@ -86325,9 +86415,9 @@ var TabsTrigger$1 = import_react.forwardRef((props, forwardedRef) => {
 		})
 	});
 });
-TabsTrigger$1.displayName = TRIGGER_NAME;
+TabsTrigger$2.displayName = TRIGGER_NAME;
 var CONTENT_NAME = "TabsContent";
-var TabsContent$1 = import_react.forwardRef((props, forwardedRef) => {
+var TabsContent$2 = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeTabs, value, forceMount, children, ...contentProps } = props;
 	const context = useTabsContext(CONTENT_NAME, __scopeTabs);
 	const triggerId = makeTriggerId(context.baseId, value);
@@ -86358,44 +86448,44 @@ var TabsContent$1 = import_react.forwardRef((props, forwardedRef) => {
 		})
 	});
 });
-TabsContent$1.displayName = CONTENT_NAME;
+TabsContent$2.displayName = CONTENT_NAME;
 function makeTriggerId(baseId, value) {
 	return `${baseId}-trigger-${value}`;
 }
 function makeContentId(baseId, value) {
 	return `${baseId}-content-${value}`;
 }
-var Root2 = Tabs$1;
-var List = TabsList$1;
-var Trigger = TabsTrigger$1;
-var Content = TabsContent$1;
+var Root2 = Tabs$2;
+var List = TabsList$2;
+var Trigger = TabsTrigger$2;
+var Content = TabsContent$2;
 //#endregion
 //#region src/components/ui/tabs.tsx
-var Tabs = Root2;
-var TabsList = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(List, {
+var Tabs$1 = Root2;
+var TabsList$1 = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(List, {
 	"data-uid": "src/components/ui/tabs.tsx:13:3",
 	"data-prohibitions": "[editContent]",
 	ref,
 	className: cn$1("inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground", className),
 	...props
 }));
-TabsList.displayName = List.displayName;
-var TabsTrigger = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trigger, {
+TabsList$1.displayName = List.displayName;
+var TabsTrigger$1 = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trigger, {
 	"data-uid": "src/components/ui/tabs.tsx:28:3",
 	"data-prohibitions": "[editContent]",
 	ref,
 	className: cn$1("inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm", className),
 	...props
 }));
-TabsTrigger.displayName = Trigger.displayName;
-var TabsContent = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Content, {
+TabsTrigger$1.displayName = Trigger.displayName;
+var TabsContent$1 = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Content, {
 	"data-uid": "src/components/ui/tabs.tsx:43:3",
 	"data-prohibitions": "[editContent]",
 	ref,
 	className: cn$1("mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", className),
 	...props
 }));
-TabsContent.displayName = Content.displayName;
+TabsContent$1.displayName = Content.displayName;
 //#endregion
 //#region src/utils/exportPdf.ts
 var downloadExcel = (filename, headers, rows) => {
@@ -88514,7 +88604,7 @@ function Reports() {
 					]
 				})
 			]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs$1, {
 			"data-uid": "src/pages/Reports.tsx:49:7",
 			"data-prohibitions": "[]",
 			defaultValue: "stock",
@@ -88523,12 +88613,12 @@ function Reports() {
 				"data-uid": "src/pages/Reports.tsx:50:9",
 				"data-prohibitions": "[]",
 				className: "bg-card/80 backdrop-blur-xl rounded-[1.5rem] p-2 border border-border/50 shadow-lg inline-flex w-full overflow-x-auto overflow-y-hidden hide-scrollbar",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList$1, {
 					"data-uid": "src/pages/Reports.tsx:51:11",
 					"data-prohibitions": "[]",
 					className: "flex w-full min-w-max h-auto bg-transparent gap-2",
 					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 							"data-uid": "src/pages/Reports.tsx:52:13",
 							"data-prohibitions": "[]",
 							value: "stock",
@@ -88553,7 +88643,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 							"data-uid": "src/pages/Reports.tsx:60:13",
 							"data-prohibitions": "[]",
 							value: "consumption",
@@ -88578,7 +88668,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 							"data-uid": "src/pages/Reports.tsx:68:13",
 							"data-prohibitions": "[]",
 							value: "purchase",
@@ -88603,7 +88693,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 							"data-uid": "src/pages/Reports.tsx:76:13",
 							"data-prohibitions": "[]",
 							value: "trends",
@@ -88628,7 +88718,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 							"data-uid": "src/pages/Reports.tsx:84:13",
 							"data-prohibitions": "[]",
 							value: "stale",
@@ -88653,7 +88743,7 @@ function Reports() {
 								})
 							]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 							"data-uid": "src/pages/Reports.tsx:92:13",
 							"data-prohibitions": "[]",
 							value: "details",
@@ -88685,7 +88775,7 @@ function Reports() {
 				"data-prohibitions": "[]",
 				className: "bg-card/90 backdrop-blur-2xl border border-border/50 shadow-2xl rounded-[2rem] p-6 lg:p-10 min-h-[500px]",
 				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/Reports.tsx:104:11",
 						"data-prohibitions": "[]",
 						value: "stock",
@@ -88695,7 +88785,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/Reports.tsx:110:11",
 						"data-prohibitions": "[]",
 						value: "consumption",
@@ -88705,7 +88795,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/Reports.tsx:116:11",
 						"data-prohibitions": "[]",
 						value: "purchase",
@@ -88715,7 +88805,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/Reports.tsx:122:11",
 						"data-prohibitions": "[]",
 						value: "trends",
@@ -88725,7 +88815,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/Reports.tsx:128:11",
 						"data-prohibitions": "[]",
 						value: "stale",
@@ -88735,7 +88825,7 @@ function Reports() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/Reports.tsx:134:11",
 						"data-prohibitions": "[]",
 						value: "details",
@@ -89194,18 +89284,18 @@ function DataHealth() {
 					})
 				]
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs$1, {
 				"data-uid": "src/pages/DataHealth.tsx:147:7",
 				"data-prohibitions": "[editContent]",
 				defaultValue: "duplicates",
 				className: "space-y-4",
 				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList$1, {
 						"data-uid": "src/pages/DataHealth.tsx:148:9",
 						"data-prohibitions": "[editContent]",
 						className: "grid w-full sm:max-w-2xl grid-cols-1 sm:grid-cols-3 h-auto gap-1",
 						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 								"data-uid": "src/pages/DataHealth.tsx:149:11",
 								"data-prohibitions": "[editContent]",
 								value: "duplicates",
@@ -89226,7 +89316,7 @@ function DataHealth() {
 									})
 								]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 								"data-uid": "src/pages/DataHealth.tsx:155:11",
 								"data-prohibitions": "[editContent]",
 								value: "suppliers",
@@ -89247,7 +89337,7 @@ function DataHealth() {
 									})
 								]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 								"data-uid": "src/pages/DataHealth.tsx:161:11",
 								"data-prohibitions": "[editContent]",
 								value: "expiry",
@@ -89270,7 +89360,7 @@ function DataHealth() {
 							})
 						]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/DataHealth.tsx:169:9",
 						"data-prohibitions": "[editContent]",
 						value: "duplicates",
@@ -89402,7 +89492,7 @@ function DataHealth() {
 							}, idx))
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/DataHealth.tsx:222:9",
 						"data-prohibitions": "[editContent]",
 						value: "suppliers",
@@ -89507,7 +89597,7 @@ function DataHealth() {
 							})
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/DataHealth.tsx:268:9",
 						"data-prohibitions": "[editContent]",
 						value: "expiry",
@@ -91474,19 +91564,19 @@ function Team() {
 					})
 				]
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs$1, {
 				"data-uid": "src/pages/Team.tsx:180:7",
 				"data-prohibitions": "[]",
 				value: activeTab,
 				onValueChange: setActiveTab,
 				className: "w-full space-y-6",
 				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList$1, {
 						"data-uid": "src/pages/Team.tsx:181:9",
 						"data-prohibitions": "[]",
 						className: "grid w-full grid-cols-1 md:grid-cols-4 h-auto p-1 bg-muted/50 rounded-xl gap-1",
 						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 								"data-uid": "src/pages/Team.tsx:182:11",
 								"data-prohibitions": "[]",
 								value: "calendario",
@@ -91501,7 +91591,7 @@ function Team() {
 									children: "Calendário de Escala"
 								})]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 								"data-uid": "src/pages/Team.tsx:189:11",
 								"data-prohibitions": "[]",
 								value: "ausencias",
@@ -91516,7 +91606,7 @@ function Team() {
 									children: "Lançamentos de Ausências"
 								})]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 								"data-uid": "src/pages/Team.tsx:196:11",
 								"data-prohibitions": "[]",
 								value: "profissionais",
@@ -91531,7 +91621,7 @@ function Team() {
 									children: "Gestão de Profissionais"
 								})]
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger$1, {
 								"data-uid": "src/pages/Team.tsx:203:11",
 								"data-prohibitions": "[]",
 								value: "pontos-facultativos",
@@ -91549,7 +91639,7 @@ function Team() {
 							})
 						]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent$1, {
 						"data-uid": "src/pages/Team.tsx:212:9",
 						"data-prohibitions": "[]",
 						value: "calendario",
@@ -91559,7 +91649,7 @@ function Team() {
 							"data-prohibitions": "[editContent]"
 						})
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent$1, {
 						"data-uid": "src/pages/Team.tsx:216:9",
 						"data-prohibitions": "[]",
 						value: "ausencias",
@@ -91588,7 +91678,7 @@ function Team() {
 							onEdit: handleEditTimeOff
 						})]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent$1, {
 						"data-uid": "src/pages/Team.tsx:232:9",
 						"data-prohibitions": "[]",
 						value: "profissionais",
@@ -91618,7 +91708,7 @@ function Team() {
 							onViewTimeOffs: handleViewTimeOffs
 						})]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent$1, {
 						"data-uid": "src/pages/Team.tsx:248:9",
 						"data-prohibitions": "[]",
 						value: "pontos-facultativos",
@@ -91899,4 +91989,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-g5Gevx8q.js.map
+//# sourceMappingURL=index-CiJcH6r3.js.map

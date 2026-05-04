@@ -10,6 +10,7 @@ export interface Item {
   unit_type: ItemUnit
   min_quantity: number
   current_quantity: number
+  unit_price?: number | null
   created_at: string
   supplier?: string | null
 }

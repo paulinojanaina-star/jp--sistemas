@@ -11,6 +11,7 @@ import {
   Clock,
   CalendarClock,
   TrendingDown,
+  DollarSign,
 } from 'lucide-react'
 
 export function DashboardMetrics() {
@@ -80,6 +81,11 @@ export function DashboardMetrics() {
     return isStockoutRisk
   }).length
 
+  const totalValue = items.reduce(
+    (sum, item) => sum + Number(item.current_quantity || 0) * Number(item.unit_price || 0),
+    0,
+  )
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-6">
       <Card>
@@ -90,6 +96,21 @@ export function DashboardMetrics() {
         <CardContent>
           <div className="text-2xl font-bold">{totalItems}</div>
           <p className="text-xs text-muted-foreground mt-1">Registrados no banco</p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-primary">Valor do Estoque</CardTitle>
+          <DollarSign className="h-4 w-4 text-primary" strokeWidth={1.5} />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-black text-primary">
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+              totalValue,
+            )}
+          </div>
+          <p className="text-xs text-primary/70 font-medium mt-1">Capital imobilizado</p>
         </CardContent>
       </Card>
 
