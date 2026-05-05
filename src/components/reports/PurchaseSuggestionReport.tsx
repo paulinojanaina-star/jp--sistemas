@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -36,9 +36,14 @@ export function PurchaseSuggestionReport() {
   const [search, setSearch] = useState('')
   const [isExporting, setIsExporting] = useState(false)
   const [period, setPeriod] = useState<number | 'YTD'>('YTD')
+  const [purchaseHorizon, setPurchaseHorizon] = useState<number>(1)
   const [customQuantities, setCustomQuantities] = useState<Record<string, string>>({})
   const [customMinStocks, setCustomMinStocks] = useState<Record<string, string>>({})
   const { toast } = useToast()
+
+  useEffect(() => {
+    setCustomQuantities({})
+  }, [purchaseHorizon, period])
 
   const baseSuggestions = useMemo(() => {
     return items
@@ -51,8 +56,9 @@ export function PurchaseSuggestionReport() {
 
         const suggestedMinStock = Math.ceil(dailyConsumption * 40)
 
-        // Meta de estoque ideal = Estoque mínimo + Média de consumo de 1 mês
-        const targetStock = Number(item.min_quantity) + Math.ceil(monthlyConsumption)
+        // Meta de estoque ideal = Estoque mínimo + Média de consumo para X meses
+        const targetStock =
+          Number(item.min_quantity) + Math.ceil(monthlyConsumption * purchaseHorizon)
         const current = Number(item.current_quantity)
 
         const suggestion = Math.max(0, targetStock - current)
@@ -69,7 +75,7 @@ export function PurchaseSuggestionReport() {
       })
       .filter((item) => item.suggestion > 0)
       .sort((a, b) => b.suggestion - a.suggestion)
-  }, [items, movements, period])
+  }, [items, movements, period, purchaseHorizon])
 
   const filteredSuggestions = baseSuggestions
     .map((item) => ({
@@ -160,17 +166,33 @@ export function PurchaseSuggestionReport() {
 
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
           <Select
+            value={purchaseHorizon.toString()}
+            onValueChange={(v) => setPurchaseHorizon(Number(v))}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Comprar para" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 mês de consumo</SelectItem>
+              <SelectItem value="2">2 meses de consumo</SelectItem>
+              <SelectItem value="3">3 meses de consumo</SelectItem>
+              <SelectItem value="6">6 meses de consumo</SelectItem>
+              <SelectItem value="12">12 meses de consumo</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
             value={period.toString()}
             onValueChange={(v) => setPeriod(v === 'YTD' ? 'YTD' : Number(v))}
           >
             <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Período de cálculo" />
+              <SelectValue placeholder="Base de cálculo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="YTD">Ano Atual</SelectItem>
-              <SelectItem value="3">Últimos 3 meses</SelectItem>
-              <SelectItem value="6">Últimos 6 meses</SelectItem>
-              <SelectItem value="8">Últimos 8 meses</SelectItem>
+              <SelectItem value="YTD">Histórico: Ano Atual</SelectItem>
+              <SelectItem value="3">Histórico: Últimos 3 meses</SelectItem>
+              <SelectItem value="6">Histórico: Últimos 6 meses</SelectItem>
+              <SelectItem value="8">Histórico: Últimos 8 meses</SelectItem>
             </SelectContent>
           </Select>
 

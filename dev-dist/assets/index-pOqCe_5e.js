@@ -89522,14 +89522,18 @@ function PurchaseSuggestionReport() {
 	const [search, setSearch] = (0, import_react.useState)("");
 	const [isExporting, setIsExporting] = (0, import_react.useState)(false);
 	const [period, setPeriod] = (0, import_react.useState)("YTD");
+	const [purchaseHorizon, setPurchaseHorizon] = (0, import_react.useState)(1);
 	const [customQuantities, setCustomQuantities] = (0, import_react.useState)({});
 	const [customMinStocks, setCustomMinStocks] = (0, import_react.useState)({});
 	const { toast } = useToast();
+	(0, import_react.useEffect)(() => {
+		setCustomQuantities({});
+	}, [purchaseHorizon, period]);
 	const filteredSuggestions = (0, import_react.useMemo)(() => {
 		return items.map((item) => {
 			const { monthlyConsumption, dailyConsumption } = calculateConsumption(item, movements, period === "YTD" ? void 0 : period);
 			const suggestedMinStock = Math.ceil(dailyConsumption * 40);
-			const targetStock = Number(item.min_quantity) + Math.ceil(monthlyConsumption);
+			const targetStock = Number(item.min_quantity) + Math.ceil(monthlyConsumption * purchaseHorizon);
 			const current = Number(item.current_quantity);
 			const suggestion = Math.max(0, targetStock - current);
 			return {
@@ -89545,7 +89549,8 @@ function PurchaseSuggestionReport() {
 	}, [
 		items,
 		movements,
-		period
+		period,
+		purchaseHorizon
 	]).map((item) => ({
 		...item,
 		finalSuggestion: customQuantities[item.id] !== void 0 ? Number(customQuantities[item.id]) : item.suggestion,
@@ -89606,136 +89611,190 @@ function PurchaseSuggestionReport() {
 		else toast({ title: "Exportação concluída!" });
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:148:5",
+		"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:154:5",
 		"data-prohibitions": "[editContent]",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:149:7",
+			"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:155:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:150:9",
+				"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:156:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:151:11",
+					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:157:11",
 					"data-prohibitions": "[]",
 					className: "text-lg flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShoppingCart, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:152:13",
+						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:158:13",
 						"data-prohibitions": "[editContent]",
 						className: "h-5 w-5 text-primary"
 					}), "Sugestão de Compra"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:155:11",
+					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:161:11",
 					"data-prohibitions": "[]",
 					children: "Quantidades ideais sugeridas. Você pode editar os valores caso queira comprar quantidades diferentes antes de exportar."
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:161:9",
+				"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:167:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:162:11",
-					"data-prohibitions": "[]",
-					value: period.toString(),
-					onValueChange: (v) => setPeriod(v === "YTD" ? "YTD" : Number(v)),
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:166:13",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:168:11",
 						"data-prohibitions": "[]",
-						className: "w-full sm:w-[180px]",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:167:15",
-							"data-prohibitions": "[editContent]",
-							placeholder: "Período de cálculo"
-						})
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:169:13",
-						"data-prohibitions": "[]",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:170:15",
-								"data-prohibitions": "[]",
-								value: "YTD",
-								children: "Ano Atual"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:171:15",
-								"data-prohibitions": "[]",
-								value: "3",
-								children: "Últimos 3 meses"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:172:15",
-								"data-prohibitions": "[]",
-								value: "6",
-								children: "Últimos 6 meses"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+						value: purchaseHorizon.toString(),
+						onValueChange: (v) => setPurchaseHorizon(Number(v)),
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:172:13",
+							"data-prohibitions": "[]",
+							className: "w-full sm:w-[180px]",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
 								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:173:15",
-								"data-prohibitions": "[]",
-								value: "8",
-								children: "Últimos 8 meses"
+								"data-prohibitions": "[editContent]",
+								placeholder: "Comprar para"
 							})
-						]
-					})]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenu, {
-					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:177:11",
-					"data-prohibitions": "[editContent]",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuTrigger, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:178:13",
-						"data-prohibitions": "[editContent]",
-						asChild: true,
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:179:15",
-							"data-prohibitions": "[editContent]",
-							disabled: isExporting || filteredSuggestions.length === 0,
-							variant: "outline",
-							className: "w-full sm:w-auto shrink-0",
-							children: [isExporting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:185:19",
-								"data-prohibitions": "[editContent]",
-								className: "mr-2 h-4 w-4 animate-spin"
-							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:187:19",
-								"data-prohibitions": "[editContent]",
-								className: "mr-2 h-4 w-4"
-							}), "Exportar Lista"]
-						})
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenuContent, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:192:13",
-						"data-prohibitions": "[]",
-						align: "end",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:193:15",
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:175:13",
 							"data-prohibitions": "[]",
-							onClick: () => handleExport("pdf"),
-							children: "Exportar como PDF"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:196:15",
-							"data-prohibitions": "[]",
-							onClick: () => handleExport("excel"),
-							children: "Exportar como Excel"
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:176:15",
+									"data-prohibitions": "[]",
+									value: "1",
+									children: "1 mês de consumo"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:177:15",
+									"data-prohibitions": "[]",
+									value: "2",
+									children: "2 meses de consumo"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:178:15",
+									"data-prohibitions": "[]",
+									value: "3",
+									children: "3 meses de consumo"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:179:15",
+									"data-prohibitions": "[]",
+									value: "6",
+									children: "6 meses de consumo"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:180:15",
+									"data-prohibitions": "[]",
+									value: "12",
+									children: "12 meses de consumo"
+								})
+							]
 						})]
-					})]
-				})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:184:11",
+						"data-prohibitions": "[]",
+						value: period.toString(),
+						onValueChange: (v) => setPeriod(v === "YTD" ? "YTD" : Number(v)),
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:188:13",
+							"data-prohibitions": "[]",
+							className: "w-full sm:w-[180px]",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:189:15",
+								"data-prohibitions": "[editContent]",
+								placeholder: "Base de cálculo"
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:191:13",
+							"data-prohibitions": "[]",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:192:15",
+									"data-prohibitions": "[]",
+									value: "YTD",
+									children: "Histórico: Ano Atual"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:193:15",
+									"data-prohibitions": "[]",
+									value: "3",
+									children: "Histórico: Últimos 3 meses"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:194:15",
+									"data-prohibitions": "[]",
+									value: "6",
+									children: "Histórico: Últimos 6 meses"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:195:15",
+									"data-prohibitions": "[]",
+									value: "8",
+									children: "Histórico: Últimos 8 meses"
+								})
+							]
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenu, {
+						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:199:11",
+						"data-prohibitions": "[editContent]",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuTrigger, {
+							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:200:13",
+							"data-prohibitions": "[editContent]",
+							asChild: true,
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:201:15",
+								"data-prohibitions": "[editContent]",
+								disabled: isExporting || filteredSuggestions.length === 0,
+								variant: "outline",
+								className: "w-full sm:w-auto shrink-0",
+								children: [isExporting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:207:19",
+									"data-prohibitions": "[editContent]",
+									className: "mr-2 h-4 w-4 animate-spin"
+								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:209:19",
+									"data-prohibitions": "[editContent]",
+									className: "mr-2 h-4 w-4"
+								}), "Exportar Lista"]
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenuContent, {
+							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:214:13",
+							"data-prohibitions": "[]",
+							align: "end",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
+								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:215:15",
+								"data-prohibitions": "[]",
+								onClick: () => handleExport("pdf"),
+								children: "Exportar como PDF"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
+								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:218:15",
+								"data-prohibitions": "[]",
+								onClick: () => handleExport("excel"),
+								children: "Exportar como Excel"
+							})]
+						})]
+					})
+				]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:203:7",
+			"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:225:7",
 			"data-prohibitions": "[editContent]",
 			className: "p-0",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:204:9",
+				"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:226:9",
 				"data-prohibitions": "[]",
 				className: "p-4 border-b",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:205:11",
+					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:227:11",
 					"data-prohibitions": "[]",
 					className: "relative max-w-sm",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:206:13",
+						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:228:13",
 						"data-prohibitions": "[editContent]",
 						className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:207:13",
+						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:229:13",
 						"data-prohibitions": "[editContent]",
 						placeholder: "Buscar item...",
 						className: "pl-9",
@@ -89744,64 +89803,64 @@ function PurchaseSuggestionReport() {
 					})]
 				})
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:215:9",
+				"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:237:9",
 				"data-prohibitions": "[editContent]",
 				className: "relative w-full overflow-auto",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:216:11",
+					"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:238:11",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:217:13",
+						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:239:13",
 						"data-prohibitions": "[]",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:218:15",
+							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:240:15",
 							"data-prohibitions": "[]",
 							className: "bg-muted/30",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:219:17",
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:241:17",
 									"data-prohibitions": "[]",
 									children: "Item"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:220:17",
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:242:17",
 									"data-prohibitions": "[]",
 									className: "text-right w-[140px]",
 									children: "Estoque Mínimo"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:221:17",
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:243:17",
 									"data-prohibitions": "[]",
 									className: "text-right",
 									children: "Média Mensal"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:222:17",
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:244:17",
 									"data-prohibitions": "[]",
 									className: "text-right",
 									children: "Estoque Atual"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:223:17",
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:245:17",
 									"data-prohibitions": "[]",
 									className: "text-right min-w-[140px]",
 									children: "Qtd a Comprar"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:224:17",
+									"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:246:17",
 									"data-prohibitions": "[]",
 									className: "w-[80px]"
 								})
 							]
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:227:13",
+						"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:249:13",
 						"data-prohibitions": "[editContent]",
 						children: filteredSuggestions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:229:17",
+							"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:251:17",
 							"data-prohibitions": "[editContent]",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:230:19",
+								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:252:19",
 								"data-prohibitions": "[editContent]",
 								colSpan: 6,
 								className: "h-24 text-center text-muted-foreground",
@@ -89810,30 +89869,30 @@ function PurchaseSuggestionReport() {
 						}) : filteredSuggestions.map((item) => {
 							const isEdited = customQuantities[item.id] !== void 0;
 							return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:241:21",
+								"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:263:21",
 								"data-prohibitions": "[editContent]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableCell, {
-										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:242:23",
+										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:264:23",
 										"data-prohibitions": "[editContent]",
 										className: "font-medium",
 										children: [item.formattedName, /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:244:25",
+											"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:266:25",
 											"data-prohibitions": "[editContent]",
 											className: "text-xs text-muted-foreground mt-0.5",
 											children: item.unit_type
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:246:23",
+										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:268:23",
 										"data-prohibitions": "[editContent]",
 										className: "text-right",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:247:25",
+											"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:269:25",
 											"data-prohibitions": "[editContent]",
 											className: "flex flex-col items-end justify-center gap-1.5 pt-1",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:248:27",
+												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:270:27",
 												"data-prohibitions": "[editContent]",
 												type: "number",
 												min: "0",
@@ -89845,7 +89904,7 @@ function PurchaseSuggestionReport() {
 													if (e.key === "Enter") e.currentTarget.blur();
 												}
 											}), item.suggestedMinStock > 0 && item.suggestedMinStock !== Number(customMinStocks[item.id] ?? item.min_quantity) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:268:31",
+												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:290:31",
 												"data-prohibitions": "[editContent]",
 												className: "text-[10px] text-primary hover:text-primary/80 font-medium bg-primary/10 px-1.5 py-0.5 rounded transition-colors whitespace-nowrap",
 												onMouseDown: (e) => e.preventDefault(),
@@ -89856,36 +89915,36 @@ function PurchaseSuggestionReport() {
 										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:281:23",
+										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:303:23",
 										"data-prohibitions": "[editContent]",
 										className: "text-right text-muted-foreground",
 										children: item.monthlyConsumption
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:284:23",
+										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:306:23",
 										"data-prohibitions": "[editContent]",
 										className: "text-right font-medium",
 										children: item.current_quantity
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:287:23",
+										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:309:23",
 										"data-prohibitions": "[editContent]",
 										className: "text-right",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:288:25",
+											"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:310:25",
 											"data-prohibitions": "[editContent]",
 											className: "flex items-center justify-end gap-1",
 											children: [isEdited && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:290:29",
+												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:312:29",
 												"data-prohibitions": "[editContent]",
 												className: "flex flex-col items-end mr-2",
 												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-													"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:291:31",
+													"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:313:31",
 													"data-prohibitions": "[editContent]",
 													className: "text-[10px] text-muted-foreground leading-tight",
 													children: ["Sugestão: ", item.suggestion]
 												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-													"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:294:31",
+													"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:316:31",
 													"data-prohibitions": "[]",
 													variant: "ghost",
 													size: "icon",
@@ -89893,13 +89952,13 @@ function PurchaseSuggestionReport() {
 													onClick: () => handleResetQuantity(item.id),
 													title: "Restaurar sugestão original",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCcw, {
-														"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:301:33",
+														"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:323:33",
 														"data-prohibitions": "[editContent]",
 														className: "h-3 w-3"
 													})
 												})]
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:305:27",
+												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:327:27",
 												"data-prohibitions": "[editContent]",
 												type: "number",
 												min: "0",
@@ -89910,22 +89969,22 @@ function PurchaseSuggestionReport() {
 										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:314:23",
+										"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:336:23",
 										"data-prohibitions": "[]",
 										className: "text-center",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:315:25",
+											"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:337:25",
 											"data-prohibitions": "[]",
 											variant: "ghost",
 											size: "icon",
 											asChild: true,
 											title: "Registrar Entrada",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
-												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:316:27",
+												"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:338:27",
 												"data-prohibitions": "[]",
 												to: `/movimentacoes?item=${item.id}&qty=${item.finalSuggestion}`,
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowDownToLine, {
-													"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:317:29",
+													"data-uid": "src/components/reports/PurchaseSuggestionReport.tsx:339:29",
 													"data-prohibitions": "[editContent]",
 													className: "h-4 w-4 text-secondary",
 													strokeWidth: 1.5
@@ -94324,4 +94383,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BKVQNwxU.js.map
+//# sourceMappingURL=index-pOqCe_5e.js.map
