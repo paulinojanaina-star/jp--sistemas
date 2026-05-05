@@ -1073,6 +1073,10 @@ body {
   height: 1.5rem;
 }
 
+.h-64{
+  height: 16rem;
+}
+
 .h-7{
   height: 1.75rem;
 }
@@ -2173,6 +2177,10 @@ body {
   border-color: rgb(249 115 22 / 0.2);
 }
 
+.border-orange-500\/30{
+  border-color: rgb(249 115 22 / 0.3);
+}
+
 .border-primary{
   border-color: hsl(var(--primary));
 }
@@ -3090,6 +3098,10 @@ body {
   padding-bottom: 2rem;
 }
 
+.pb-0{
+  padding-bottom: 0px;
+}
+
 .pb-0\.5{
   padding-bottom: 0.125rem;
 }
@@ -3526,6 +3538,10 @@ body {
 .text-orange-500{
   --tw-text-opacity: 1;
   color: rgb(249 115 22 / var(--tw-text-opacity, 1));
+}
+
+.text-orange-500\/80{
+  color: rgb(249 115 22 / 0.8);
 }
 
 .text-orange-600{
@@ -6288,6 +6304,10 @@ body {
 
   .lg\:col-span-2{
     grid-column: span 2 / span 2;
+  }
+
+  .lg\:grid-cols-2{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .lg\:grid-cols-3{
