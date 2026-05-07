@@ -89032,7 +89032,7 @@ function ItemTrendReport() {
 		});
 		const itemTotals = movements.filter((m) => {
 			const md = new Date(m.created_at);
-			return md.getMonth() === month && md.getFullYear() === year && (m.type === "OUT" || m.type === "SPECIAL_OUT");
+			return md.getMonth() === month && md.getFullYear() === year && m.type === "OUT";
 		}).reduce((acc, curr) => {
 			const item = items.find((i) => i.id === curr.item_id);
 			const price = item?.unit_price || 0;
@@ -89065,58 +89065,58 @@ function ItemTrendReport() {
 		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/reports/ItemTrendReport.tsx:87:5",
+		"data-uid": "src/components/reports/ItemTrendReport.tsx:83:5",
 		"data-prohibitions": "[editContent]",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:88:7",
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:84:7",
 				"data-prohibitions": "[editContent]",
 				className: "flex flex-row items-center justify-between space-y-0 pb-4",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:89:9",
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:85:9",
 					"data-prohibitions": "[]",
 					className: "text-lg",
 					children: "Tendência Financeira de Saídas (Últimos 6 meses)"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenu, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:90:9",
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:86:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuTrigger, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:91:11",
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:87:11",
 						"data-prohibitions": "[editContent]",
 						asChild: true,
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:92:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:88:13",
 							"data-prohibitions": "[editContent]",
 							variant: "outline",
 							size: "sm",
 							disabled: isExporting || data.length === 0,
 							className: "h-8",
 							children: [isExporting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:99:17",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:95:17",
 								"data-prohibitions": "[editContent]",
 								className: "mr-2 h-4 w-4 animate-spin"
 							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:101:17",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:97:17",
 								"data-prohibitions": "[editContent]",
 								className: "mr-2 h-4 w-4"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:103:15",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:99:15",
 								"data-prohibitions": "[]",
 								className: "hidden sm:inline",
 								children: "Exportar"
 							})]
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenuContent, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:106:11",
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:102:11",
 						"data-prohibitions": "[]",
 						align: "end",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:107:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:103:13",
 							"data-prohibitions": "[]",
 							onClick: () => handleExport("pdf"),
 							children: "Exportar como PDF"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:110:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:106:13",
 							"data-prohibitions": "[]",
 							onClick: () => handleExport("excel"),
 							children: "Exportar como Excel"
@@ -89125,10 +89125,10 @@ function ItemTrendReport() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:116:7",
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:112:7",
 				"data-prohibitions": "[]",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartContainer, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:117:9",
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:113:9",
 					"data-prohibitions": "[]",
 					config: { saidas: {
 						label: "Saídas (R$)",
@@ -89136,7 +89136,7 @@ function ItemTrendReport() {
 					} },
 					className: "h-[400px] w-full cursor-pointer",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(LineChart, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:123:11",
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:119:11",
 						"data-prohibitions": "[]",
 						data,
 						margin: {
@@ -89150,18 +89150,18 @@ function ItemTrendReport() {
 						},
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CartesianGrid, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:132:13",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:128:13",
 								"data-prohibitions": "[editContent]",
 								strokeDasharray: "3 3",
 								vertical: false
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(XAxis, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:133:13",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:129:13",
 								"data-prohibitions": "[editContent]",
 								dataKey: "name"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(YAxis, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:134:13",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:130:13",
 								"data-prohibitions": "[editContent]",
 								tickFormatter: (value) => new Intl.NumberFormat("pt-BR", {
 									style: "currency",
@@ -89170,10 +89170,10 @@ function ItemTrendReport() {
 								}).format(value)
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartTooltip, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:143:13",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:139:13",
 								"data-prohibitions": "[editContent]",
 								content: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartTooltipContent, {
-									"data-uid": "src/components/reports/ItemTrendReport.tsx:145:17",
+									"data-uid": "src/components/reports/ItemTrendReport.tsx:141:17",
 									"data-prohibitions": "[editContent]",
 									formatter: (value) => new Intl.NumberFormat("pt-BR", {
 										style: "currency",
@@ -89182,7 +89182,7 @@ function ItemTrendReport() {
 								})
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Line, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:154:13",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:150:13",
 								"data-prohibitions": "[editContent]",
 								type: "monotone",
 								dataKey: "saidas",
@@ -89198,18 +89198,18 @@ function ItemTrendReport() {
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Dialog, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:165:7",
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:161:7",
 				"data-prohibitions": "[editContent]",
 				open: !!selectedPoint,
 				onOpenChange: (open) => !open && setSelectedPoint(null),
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:166:9",
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:162:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogHeader, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:167:11",
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:163:11",
 						"data-prohibitions": "[editContent]",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogTitle, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:168:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:164:13",
 							"data-prohibitions": "[editContent]",
 							children: [
 								"Top 3 Itens de Saída (",
@@ -89217,35 +89217,35 @@ function ItemTrendReport() {
 								")"
 							]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogDescription, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:169:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:165:13",
 							"data-prohibitions": "[]",
 							children: "Itens com maior impacto financeiro neste período."
 						})]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:171:11",
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:167:11",
 						"data-prohibitions": "[editContent]",
 						className: "space-y-4 pt-4",
 						children: [selectedPoint?.topItems?.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:173:15",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:169:15",
 							"data-prohibitions": "[editContent]",
 							className: "flex justify-between items-center p-3 bg-secondary/20 rounded-lg border border-border/50",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:177:17",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:173:17",
 								"data-prohibitions": "[editContent]",
 								className: "flex items-center gap-3",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-									"data-uid": "src/components/reports/ItemTrendReport.tsx:178:19",
+									"data-uid": "src/components/reports/ItemTrendReport.tsx:174:19",
 									"data-prohibitions": "[editContent]",
 									className: "font-bold text-primary",
 									children: [index + 1, "º"]
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/components/reports/ItemTrendReport.tsx:179:19",
+									"data-uid": "src/components/reports/ItemTrendReport.tsx:175:19",
 									"data-prohibitions": "[editContent]",
 									className: "font-medium text-sm",
 									children: item.name
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:181:17",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:177:17",
 								"data-prohibitions": "[editContent]",
 								className: "font-bold text-sm",
 								children: new Intl.NumberFormat("pt-BR", {
@@ -89254,7 +89254,7 @@ function ItemTrendReport() {
 								}).format(item.total)
 							})]
 						}, index)), (!selectedPoint?.topItems || selectedPoint.topItems.length === 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:189:15",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:185:15",
 							"data-prohibitions": "[]",
 							className: "text-center text-muted-foreground py-4 text-sm",
 							children: "Nenhuma saída registrada neste período."
@@ -94461,4 +94461,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CR7LdTa7.js.map
+//# sourceMappingURL=index-Cqym5vPB.js.map

@@ -40,11 +40,7 @@ export function ItemTrendReport() {
 
       const monthMovements = movements.filter((m) => {
         const md = new Date(m.created_at)
-        return (
-          md.getMonth() === month &&
-          md.getFullYear() === year &&
-          (m.type === 'OUT' || m.type === 'SPECIAL_OUT')
-        )
+        return md.getMonth() === month && md.getFullYear() === year && m.type === 'OUT'
       })
 
       const itemTotals = monthMovements.reduce(
