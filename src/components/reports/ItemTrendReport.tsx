@@ -15,7 +15,7 @@ import { exportTrendsPdf, exportTrendsExcel } from '@/utils/exportPdf'
 import { useToast } from '@/hooks/use-toast'
 
 export function ItemTrendReport() {
-  const { movements } = useInventoryStore()
+  const { movements, items } = useInventoryStore()
   const [isExporting, setIsExporting] = useState(false)
   const { toast } = useToast()
 
@@ -35,14 +35,22 @@ export function ItemTrendReport() {
           const md = new Date(m.created_at)
           return md.getMonth() === month && md.getFullYear() === year && m.type === 'OUT'
         })
-        .reduce((acc, curr) => acc + Number(curr.quantity), 0)
+        .reduce((acc, curr) => {
+          const item = items.find((i) => i.id === curr.item_id)
+          const price = item?.unit_price || 0
+          return acc + Number(curr.quantity) * price
+        }, 0)
 
       const ins = movements
         .filter((m) => {
           const md = new Date(m.created_at)
           return md.getMonth() === month && md.getFullYear() === year && m.type === 'IN'
         })
-        .reduce((acc, curr) => acc + Number(curr.quantity), 0)
+        .reduce((acc, curr) => {
+          const item = items.find((i) => i.id === curr.item_id)
+          const price = item?.unit_price || 0
+          return acc + Number(curr.quantity) * price
+        }, 0)
 
       return { name: label, entradas: ins, saidas: outs }
     })
@@ -63,7 +71,9 @@ export function ItemTrendReport() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg">Tendência de Movimentações (Últimos 6 meses)</CardTitle>
+        <CardTitle className="text-lg">
+          Tendência Financeira de Movimentações (Últimos 6 meses)
+        </CardTitle>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -101,8 +111,26 @@ export function ItemTrendReport() {
           <LineChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="name" />
-            <YAxis />
-            <ChartTooltip content={<ChartTooltipContent />} />
+            <YAxis
+              tickFormatter={(value) =>
+                new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                  notation: 'compact',
+                }).format(value)
+              }
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value: any) =>
+                    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                      Number(value),
+                    )
+                  }
+                />
+              }
+            />
             <Line
               type="monotone"
               dataKey="entradas"
