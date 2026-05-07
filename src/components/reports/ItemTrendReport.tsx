@@ -33,7 +33,11 @@ export function ItemTrendReport() {
       const outs = movements
         .filter((m) => {
           const md = new Date(m.created_at)
-          return md.getMonth() === month && md.getFullYear() === year && m.type === 'OUT'
+          return (
+            md.getMonth() === month &&
+            md.getFullYear() === year &&
+            (m.type === 'OUT' || m.type === 'SPECIAL_OUT')
+          )
         })
         .reduce((acc, curr) => {
           const item = items.find((i) => i.id === curr.item_id)
@@ -41,18 +45,7 @@ export function ItemTrendReport() {
           return acc + Number(curr.quantity) * price
         }, 0)
 
-      const ins = movements
-        .filter((m) => {
-          const md = new Date(m.created_at)
-          return md.getMonth() === month && md.getFullYear() === year && m.type === 'IN'
-        })
-        .reduce((acc, curr) => {
-          const item = items.find((i) => i.id === curr.item_id)
-          const price = item?.unit_price || 0
-          return acc + Number(curr.quantity) * price
-        }, 0)
-
-      return { name: label, entradas: ins, saidas: outs }
+      return { name: label, saidas: outs }
     })
 
   const handleExport = async (format: 'pdf' | 'excel') => {
@@ -71,9 +64,7 @@ export function ItemTrendReport() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg">
-          Tendência Financeira de Movimentações (Últimos 6 meses)
-        </CardTitle>
+        <CardTitle className="text-lg">Tendência Financeira de Saídas (Últimos 6 meses)</CardTitle>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -103,8 +94,7 @@ export function ItemTrendReport() {
       <CardContent>
         <ChartContainer
           config={{
-            entradas: { label: 'Entradas', color: 'hsl(var(--secondary))' },
-            saidas: { label: 'Saídas', color: 'hsl(var(--primary))' },
+            saidas: { label: 'Saídas (R$)', color: 'hsl(var(--primary))' },
           }}
           className="h-[400px] w-full"
         >
@@ -130,12 +120,6 @@ export function ItemTrendReport() {
                   }
                 />
               }
-            />
-            <Line
-              type="monotone"
-              dataKey="entradas"
-              stroke="var(--color-entradas)"
-              strokeWidth={2}
             />
             <Line type="monotone" dataKey="saidas" stroke="var(--color-saidas)" strokeWidth={2} />
           </LineChart>

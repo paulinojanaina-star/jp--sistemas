@@ -89025,27 +89025,18 @@ function ItemTrendReport() {
 	}).reverse().map((date) => {
 		const month = date.getMonth();
 		const year = date.getFullYear();
-		const label = date.toLocaleDateString("pt-BR", {
-			month: "short",
-			year: "2-digit"
-		});
-		const outs = movements.filter((m) => {
-			const md = new Date(m.created_at);
-			return md.getMonth() === month && md.getFullYear() === year && m.type === "OUT";
-		}).reduce((acc, curr) => {
-			const price = items.find((i) => i.id === curr.item_id)?.unit_price || 0;
-			return acc + Number(curr.quantity) * price;
-		}, 0);
 		return {
-			name: label,
-			entradas: movements.filter((m) => {
+			name: date.toLocaleDateString("pt-BR", {
+				month: "short",
+				year: "2-digit"
+			}),
+			saidas: movements.filter((m) => {
 				const md = new Date(m.created_at);
-				return md.getMonth() === month && md.getFullYear() === year && m.type === "IN";
+				return md.getMonth() === month && md.getFullYear() === year && (m.type === "OUT" || m.type === "SPECIAL_OUT");
 			}).reduce((acc, curr) => {
 				const price = items.find((i) => i.id === curr.item_id)?.unit_price || 0;
 				return acc + Number(curr.quantity) * price;
-			}, 0),
-			saidas: outs
+			}, 0)
 		};
 	});
 	const handleExport = async (format) => {
@@ -89063,57 +89054,57 @@ function ItemTrendReport() {
 		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/reports/ItemTrendReport.tsx:72:5",
+		"data-uid": "src/components/reports/ItemTrendReport.tsx:65:5",
 		"data-prohibitions": "[editContent]",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/reports/ItemTrendReport.tsx:73:7",
+			"data-uid": "src/components/reports/ItemTrendReport.tsx:66:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-row items-center justify-between space-y-0 pb-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:74:9",
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:67:9",
 				"data-prohibitions": "[]",
 				className: "text-lg",
-				children: "Tendência Financeira de Movimentações (Últimos 6 meses)"
+				children: "Tendência Financeira de Saídas (Últimos 6 meses)"
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenu, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:77:9",
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:68:9",
 				"data-prohibitions": "[editContent]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuTrigger, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:78:11",
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:69:11",
 					"data-prohibitions": "[editContent]",
 					asChild: true,
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:79:13",
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:70:13",
 						"data-prohibitions": "[editContent]",
 						variant: "outline",
 						size: "sm",
 						disabled: isExporting || data.length === 0,
 						className: "h-8",
 						children: [isExporting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:86:17",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:77:17",
 							"data-prohibitions": "[editContent]",
 							className: "mr-2 h-4 w-4 animate-spin"
 						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:88:17",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:79:17",
 							"data-prohibitions": "[editContent]",
 							className: "mr-2 h-4 w-4"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:90:15",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:81:15",
 							"data-prohibitions": "[]",
 							className: "hidden sm:inline",
 							children: "Exportar"
 						})]
 					})
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenuContent, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:93:11",
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:84:11",
 					"data-prohibitions": "[]",
 					align: "end",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:94:13",
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:85:13",
 						"data-prohibitions": "[]",
 						onClick: () => handleExport("pdf"),
 						children: "Exportar como PDF"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:97:13",
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:88:13",
 						"data-prohibitions": "[]",
 						onClick: () => handleExport("excel"),
 						children: "Exportar como Excel"
@@ -89121,24 +89112,18 @@ function ItemTrendReport() {
 				})]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-			"data-uid": "src/components/reports/ItemTrendReport.tsx:103:7",
+			"data-uid": "src/components/reports/ItemTrendReport.tsx:94:7",
 			"data-prohibitions": "[]",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartContainer, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:104:9",
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:95:9",
 				"data-prohibitions": "[]",
-				config: {
-					entradas: {
-						label: "Entradas",
-						color: "hsl(var(--secondary))"
-					},
-					saidas: {
-						label: "Saídas",
-						color: "hsl(var(--primary))"
-					}
-				},
+				config: { saidas: {
+					label: "Saídas (R$)",
+					color: "hsl(var(--primary))"
+				} },
 				className: "h-[400px] w-full",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(LineChart, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:111:11",
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:101:11",
 					"data-prohibitions": "[]",
 					data,
 					margin: {
@@ -89149,18 +89134,18 @@ function ItemTrendReport() {
 					},
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CartesianGrid, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:112:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:102:13",
 							"data-prohibitions": "[editContent]",
 							strokeDasharray: "3 3",
 							vertical: false
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(XAxis, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:113:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:103:13",
 							"data-prohibitions": "[editContent]",
 							dataKey: "name"
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(YAxis, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:114:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:104:13",
 							"data-prohibitions": "[editContent]",
 							tickFormatter: (value) => new Intl.NumberFormat("pt-BR", {
 								style: "currency",
@@ -89169,10 +89154,10 @@ function ItemTrendReport() {
 							}).format(value)
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartTooltip, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:123:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:113:13",
 							"data-prohibitions": "[editContent]",
 							content: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartTooltipContent, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:125:17",
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:115:17",
 								"data-prohibitions": "[editContent]",
 								formatter: (value) => new Intl.NumberFormat("pt-BR", {
 									style: "currency",
@@ -89181,15 +89166,7 @@ function ItemTrendReport() {
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Line, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:134:13",
-							"data-prohibitions": "[editContent]",
-							type: "monotone",
-							dataKey: "entradas",
-							stroke: "var(--color-entradas)",
-							strokeWidth: 2
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Line, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:140:13",
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:124:13",
 							"data-prohibitions": "[editContent]",
 							type: "monotone",
 							dataKey: "saidas",
@@ -94398,4 +94375,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BW6PJ9WY.js.map
+//# sourceMappingURL=index-kRf4r9oL.js.map
