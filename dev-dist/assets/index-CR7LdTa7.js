@@ -89017,6 +89017,7 @@ function ConsumptionReport() {
 function ItemTrendReport() {
 	const { movements, items } = useInventoryStore();
 	const [isExporting, setIsExporting] = (0, import_react.useState)(false);
+	const [selectedPoint, setSelectedPoint] = (0, import_react.useState)(null);
 	const { toast } = useToast();
 	const data = Array.from({ length: 6 }, (_, i) => {
 		const d = /* @__PURE__ */ new Date();
@@ -89025,18 +89026,28 @@ function ItemTrendReport() {
 	}).reverse().map((date) => {
 		const month = date.getMonth();
 		const year = date.getFullYear();
+		const label = date.toLocaleDateString("pt-BR", {
+			month: "short",
+			year: "2-digit"
+		});
+		const itemTotals = movements.filter((m) => {
+			const md = new Date(m.created_at);
+			return md.getMonth() === month && md.getFullYear() === year && (m.type === "OUT" || m.type === "SPECIAL_OUT");
+		}).reduce((acc, curr) => {
+			const item = items.find((i) => i.id === curr.item_id);
+			const price = item?.unit_price || 0;
+			const total = Number(curr.quantity) * price;
+			if (!acc[curr.item_id]) acc[curr.item_id] = {
+				name: item?.name || "Desconhecido",
+				total: 0
+			};
+			acc[curr.item_id].total += total;
+			return acc;
+		}, {});
 		return {
-			name: date.toLocaleDateString("pt-BR", {
-				month: "short",
-				year: "2-digit"
-			}),
-			saidas: movements.filter((m) => {
-				const md = new Date(m.created_at);
-				return md.getMonth() === month && md.getFullYear() === year && (m.type === "OUT" || m.type === "SPECIAL_OUT");
-			}).reduce((acc, curr) => {
-				const price = items.find((i) => i.id === curr.item_id)?.unit_price || 0;
-				return acc + Number(curr.quantity) * price;
-			}, 0)
+			name: label,
+			saidas: Object.values(itemTotals).reduce((sum, item) => sum + item.total, 0),
+			topItems: Object.values(itemTotals).sort((a, b) => b.total - a.total).slice(0, 3)
 		};
 	});
 	const handleExport = async (format) => {
@@ -89054,129 +89065,204 @@ function ItemTrendReport() {
 		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/reports/ItemTrendReport.tsx:65:5",
+		"data-uid": "src/components/reports/ItemTrendReport.tsx:87:5",
 		"data-prohibitions": "[editContent]",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/reports/ItemTrendReport.tsx:66:7",
-			"data-prohibitions": "[editContent]",
-			className: "flex flex-row items-center justify-between space-y-0 pb-4",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:67:9",
-				"data-prohibitions": "[]",
-				className: "text-lg",
-				children: "Tendência Financeira de Saídas (Últimos 6 meses)"
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenu, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:68:9",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:88:7",
 				"data-prohibitions": "[editContent]",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuTrigger, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:69:11",
-					"data-prohibitions": "[editContent]",
-					asChild: true,
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:70:13",
-						"data-prohibitions": "[editContent]",
-						variant: "outline",
-						size: "sm",
-						disabled: isExporting || data.length === 0,
-						className: "h-8",
-						children: [isExporting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:77:17",
-							"data-prohibitions": "[editContent]",
-							className: "mr-2 h-4 w-4 animate-spin"
-						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:79:17",
-							"data-prohibitions": "[editContent]",
-							className: "mr-2 h-4 w-4"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:81:15",
-							"data-prohibitions": "[]",
-							className: "hidden sm:inline",
-							children: "Exportar"
-						})]
-					})
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenuContent, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:84:11",
+				className: "flex flex-row items-center justify-between space-y-0 pb-4",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:89:9",
 					"data-prohibitions": "[]",
-					align: "end",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:85:13",
+					className: "text-lg",
+					children: "Tendência Financeira de Saídas (Últimos 6 meses)"
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenu, {
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:90:9",
+					"data-prohibitions": "[editContent]",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuTrigger, {
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:91:11",
+						"data-prohibitions": "[editContent]",
+						asChild: true,
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:92:13",
+							"data-prohibitions": "[editContent]",
+							variant: "outline",
+							size: "sm",
+							disabled: isExporting || data.length === 0,
+							className: "h-8",
+							children: [isExporting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:99:17",
+								"data-prohibitions": "[editContent]",
+								className: "mr-2 h-4 w-4 animate-spin"
+							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:101:17",
+								"data-prohibitions": "[editContent]",
+								className: "mr-2 h-4 w-4"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:103:15",
+								"data-prohibitions": "[]",
+								className: "hidden sm:inline",
+								children: "Exportar"
+							})]
+						})
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenuContent, {
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:106:11",
 						"data-prohibitions": "[]",
-						onClick: () => handleExport("pdf"),
-						children: "Exportar como PDF"
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-						"data-uid": "src/components/reports/ItemTrendReport.tsx:88:13",
-						"data-prohibitions": "[]",
-						onClick: () => handleExport("excel"),
-						children: "Exportar como Excel"
+						align: "end",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:107:13",
+							"data-prohibitions": "[]",
+							onClick: () => handleExport("pdf"),
+							children: "Exportar como PDF"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:110:13",
+							"data-prohibitions": "[]",
+							onClick: () => handleExport("excel"),
+							children: "Exportar como Excel"
+						})]
 					})]
 				})]
-			})]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-			"data-uid": "src/components/reports/ItemTrendReport.tsx:94:7",
-			"data-prohibitions": "[]",
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartContainer, {
-				"data-uid": "src/components/reports/ItemTrendReport.tsx:95:9",
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:116:7",
 				"data-prohibitions": "[]",
-				config: { saidas: {
-					label: "Saídas (R$)",
-					color: "hsl(var(--primary))"
-				} },
-				className: "h-[400px] w-full",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(LineChart, {
-					"data-uid": "src/components/reports/ItemTrendReport.tsx:101:11",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartContainer, {
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:117:9",
 					"data-prohibitions": "[]",
-					data,
-					margin: {
-						top: 20,
-						right: 20,
-						bottom: 20,
-						left: 0
-					},
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CartesianGrid, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:102:13",
-							"data-prohibitions": "[editContent]",
-							strokeDasharray: "3 3",
-							vertical: false
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(XAxis, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:103:13",
-							"data-prohibitions": "[editContent]",
-							dataKey: "name"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(YAxis, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:104:13",
-							"data-prohibitions": "[editContent]",
-							tickFormatter: (value) => new Intl.NumberFormat("pt-BR", {
-								style: "currency",
-								currency: "BRL",
-								notation: "compact"
-							}).format(value)
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartTooltip, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:113:13",
-							"data-prohibitions": "[editContent]",
-							content: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartTooltipContent, {
-								"data-uid": "src/components/reports/ItemTrendReport.tsx:115:17",
+					config: { saidas: {
+						label: "Saídas (R$)",
+						color: "hsl(var(--primary))"
+					} },
+					className: "h-[400px] w-full cursor-pointer",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(LineChart, {
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:123:11",
+						"data-prohibitions": "[]",
+						data,
+						margin: {
+							top: 20,
+							right: 20,
+							bottom: 20,
+							left: 0
+						},
+						onClick: (state) => {
+							if (state && state.activePayload && state.activePayload.length > 0) setSelectedPoint(state.activePayload[0].payload);
+						},
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CartesianGrid, {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:132:13",
 								"data-prohibitions": "[editContent]",
-								formatter: (value) => new Intl.NumberFormat("pt-BR", {
+								strokeDasharray: "3 3",
+								vertical: false
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(XAxis, {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:133:13",
+								"data-prohibitions": "[editContent]",
+								dataKey: "name"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(YAxis, {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:134:13",
+								"data-prohibitions": "[editContent]",
+								tickFormatter: (value) => new Intl.NumberFormat("pt-BR", {
+									style: "currency",
+									currency: "BRL",
+									notation: "compact"
+								}).format(value)
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartTooltip, {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:143:13",
+								"data-prohibitions": "[editContent]",
+								content: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChartTooltipContent, {
+									"data-uid": "src/components/reports/ItemTrendReport.tsx:145:17",
+									"data-prohibitions": "[editContent]",
+									formatter: (value) => new Intl.NumberFormat("pt-BR", {
+										style: "currency",
+										currency: "BRL"
+									}).format(Number(value))
+								})
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Line, {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:154:13",
+								"data-prohibitions": "[editContent]",
+								type: "monotone",
+								dataKey: "saidas",
+								stroke: "var(--color-saidas)",
+								strokeWidth: 2,
+								activeDot: {
+									r: 8,
+									className: "cursor-pointer"
+								}
+							})
+						]
+					})
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Dialog, {
+				"data-uid": "src/components/reports/ItemTrendReport.tsx:165:7",
+				"data-prohibitions": "[editContent]",
+				open: !!selectedPoint,
+				onOpenChange: (open) => !open && setSelectedPoint(null),
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
+					"data-uid": "src/components/reports/ItemTrendReport.tsx:166:9",
+					"data-prohibitions": "[editContent]",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogHeader, {
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:167:11",
+						"data-prohibitions": "[editContent]",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogTitle, {
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:168:13",
+							"data-prohibitions": "[editContent]",
+							children: [
+								"Top 3 Itens de Saída (",
+								selectedPoint?.name,
+								")"
+							]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogDescription, {
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:169:13",
+							"data-prohibitions": "[]",
+							children: "Itens com maior impacto financeiro neste período."
+						})]
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/components/reports/ItemTrendReport.tsx:171:11",
+						"data-prohibitions": "[editContent]",
+						className: "space-y-4 pt-4",
+						children: [selectedPoint?.topItems?.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:173:15",
+							"data-prohibitions": "[editContent]",
+							className: "flex justify-between items-center p-3 bg-secondary/20 rounded-lg border border-border/50",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:177:17",
+								"data-prohibitions": "[editContent]",
+								className: "flex items-center gap-3",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+									"data-uid": "src/components/reports/ItemTrendReport.tsx:178:19",
+									"data-prohibitions": "[editContent]",
+									className: "font-bold text-primary",
+									children: [index + 1, "º"]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									"data-uid": "src/components/reports/ItemTrendReport.tsx:179:19",
+									"data-prohibitions": "[editContent]",
+									className: "font-medium text-sm",
+									children: item.name
+								})]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"data-uid": "src/components/reports/ItemTrendReport.tsx:181:17",
+								"data-prohibitions": "[editContent]",
+								className: "font-bold text-sm",
+								children: new Intl.NumberFormat("pt-BR", {
 									style: "currency",
 									currency: "BRL"
-								}).format(Number(value))
-							})
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Line, {
-							"data-uid": "src/components/reports/ItemTrendReport.tsx:124:13",
-							"data-prohibitions": "[editContent]",
-							type: "monotone",
-							dataKey: "saidas",
-							stroke: "var(--color-saidas)",
-							strokeWidth: 2
-						})
-					]
+								}).format(item.total)
+							})]
+						}, index)), (!selectedPoint?.topItems || selectedPoint.topItems.length === 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							"data-uid": "src/components/reports/ItemTrendReport.tsx:189:15",
+							"data-prohibitions": "[]",
+							className: "text-center text-muted-foreground py-4 text-sm",
+							children: "Nenhuma saída registrada neste período."
+						})]
+					})]
 				})
 			})
-		})]
+		]
 	});
 }
 //#endregion
@@ -94375,4 +94461,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-kRf4r9oL.js.map
+//# sourceMappingURL=index-CR7LdTa7.js.map

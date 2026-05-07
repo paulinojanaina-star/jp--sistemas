@@ -2689,6 +2689,10 @@ body {
   background-color: hsl(var(--secondary) / 0.15);
 }
 
+.bg-secondary\/20{
+  background-color: hsl(var(--secondary) / 0.2);
+}
+
 .bg-sidebar{
   background-color: hsl(var(--sidebar-background));
 }
