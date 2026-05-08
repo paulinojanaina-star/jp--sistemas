@@ -12,10 +12,12 @@ import {
   Plus,
   Calendar as CalendarIcon,
   Briefcase,
+  Gift,
 } from 'lucide-react'
 import { startOfDay, addDays, endOfDay } from 'date-fns'
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 import { TimeOffFormModal } from '@/components/team/TimeOffFormModal'
 import { TeamCalendar } from '@/components/team/TeamCalendar'
 import { TimeOffList } from '@/components/team/TimeOffList'
@@ -39,6 +41,37 @@ export default function Team() {
   const today = startOfDay(new Date())
   const nextWeekStart = addDays(today, 1)
   const nextWeekEnd = addDays(today, 7)
+
+  const currentMonthIndex = new Date().getMonth()
+  const monthNames = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
+  ]
+  const currentMonthName = monthNames[currentMonthIndex]
+
+  const birthdaysThisMonth = useMemo(() => {
+    return employees
+      .filter((emp) => {
+        if (!emp.birth_date) return false
+        const [, month] = emp.birth_date.split('-')
+        return parseInt(month, 10) === currentMonthIndex + 1
+      })
+      .sort((a, b) => {
+        const [, , dayA] = a.birth_date!.split('-')
+        const [, , dayB] = b.birth_date!.split('-')
+        return parseInt(dayA, 10) - parseInt(dayB, 10)
+      })
+  }, [employees, currentMonthIndex])
 
   const upcomingAbsences = useMemo(() => {
     return timeOffRequests.filter((req) => {
@@ -176,6 +209,55 @@ export default function Team() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="bg-white dark:bg-slate-900 border border-pink-100 dark:border-pink-900/50 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl pointer-events-none" />
+        <CardContent className="p-4 md:p-6 relative z-10">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/40 dark:to-pink-800/40 text-pink-600 dark:text-pink-400 shrink-0 shadow-inner">
+              <Gift className="h-6 w-6" />
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <h4 className="text-lg font-bold text-foreground">
+                Aniversariantes de {currentMonthName}
+              </h4>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {birthdaysThisMonth.length > 0
+                  ? 'Não se esqueça de parabenizar nossa equipe! 🎉'
+                  : 'Nenhum aniversariante registrado para este mês.'}
+              </p>
+            </div>
+
+            {birthdaysThisMonth.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto mt-2 md:mt-0">
+                {birthdaysThisMonth.map((emp) => {
+                  const [, , day] = emp.birth_date!.split('-')
+                  return (
+                    <div
+                      key={emp.id}
+                      className="flex items-center gap-2 bg-background px-3 py-1.5 rounded-lg border border-pink-200 dark:border-pink-800/50 shadow-sm"
+                    >
+                      <Badge
+                        variant="outline"
+                        className="bg-pink-50 text-pink-600 border-pink-200 hover:bg-pink-100 dark:bg-pink-950/30 dark:text-pink-400 dark:border-pink-800"
+                      >
+                        Dia {day}
+                      </Badge>
+                      <span
+                        className="text-sm font-medium text-foreground truncate max-w-[120px]"
+                        title={emp.name}
+                      >
+                        {emp.name.split(' ')[0]}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
         <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 h-auto p-1 bg-muted/50 rounded-xl gap-1">

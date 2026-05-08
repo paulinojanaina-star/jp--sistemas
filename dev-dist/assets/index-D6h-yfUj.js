@@ -93779,6 +93779,32 @@ function Team() {
 	const today = startOfDay(/* @__PURE__ */ new Date());
 	const nextWeekStart = addDays(today, 1);
 	const nextWeekEnd = addDays(today, 7);
+	const currentMonthIndex = (/* @__PURE__ */ new Date()).getMonth();
+	const currentMonthName = [
+		"Janeiro",
+		"Fevereiro",
+		"Março",
+		"Abril",
+		"Maio",
+		"Junho",
+		"Julho",
+		"Agosto",
+		"Setembro",
+		"Outubro",
+		"Novembro",
+		"Dezembro"
+	][currentMonthIndex];
+	const birthdaysThisMonth = (0, import_react.useMemo)(() => {
+		return employees.filter((emp) => {
+			if (!emp.birth_date) return false;
+			const [, month] = emp.birth_date.split("-");
+			return parseInt(month, 10) === currentMonthIndex + 1;
+		}).sort((a, b) => {
+			const [, , dayA] = a.birth_date.split("-");
+			const [, , dayB] = b.birth_date.split("-");
+			return parseInt(dayA, 10) - parseInt(dayB, 10);
+		});
+	}, [employees, currentMonthIndex]);
 	const upcomingAbsences = (0, import_react.useMemo)(() => {
 		return timeOffRequests.filter((req) => {
 			const reqStart = startOfDay(new Date(req.start_date));
@@ -93826,42 +93852,42 @@ function Team() {
 	const availableToday = totalEmployees - absencesToday;
 	const occupancyRate = totalEmployees > 0 ? Math.round(availableToday / totalEmployees * 100) : 0;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Team.tsx:93:5",
+		"data-uid": "src/pages/Team.tsx:126:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-8 animate-fade-in-up pb-8 p-4 md:p-8 max-w-[1600px] mx-auto",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Team.tsx:94:7",
+				"data-uid": "src/pages/Team.tsx:127:7",
 				"data-prohibitions": "[]",
 				className: "flex items-center gap-4 pb-6 border-b border-border/40",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/pages/Team.tsx:95:9",
+					"data-uid": "src/pages/Team.tsx:128:9",
 					"data-prohibitions": "[]",
 					variant: "outline",
 					size: "icon",
 					asChild: true,
 					className: "rounded-full h-11 w-11 bg-background shadow-sm hover:shadow-md transition-all",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
-						"data-uid": "src/pages/Team.tsx:101:11",
+						"data-uid": "src/pages/Team.tsx:134:11",
 						"data-prohibitions": "[]",
 						to: "/",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowLeft, {
-							"data-uid": "src/pages/Team.tsx:102:13",
+							"data-uid": "src/pages/Team.tsx:135:13",
 							"data-prohibitions": "[editContent]",
 							className: "h-5 w-5",
 							strokeWidth: 2.5
 						})
 					})
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Team.tsx:105:9",
+					"data-uid": "src/pages/Team.tsx:138:9",
 					"data-prohibitions": "[]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-						"data-uid": "src/pages/Team.tsx:106:11",
+						"data-uid": "src/pages/Team.tsx:139:11",
 						"data-prohibitions": "[]",
 						className: "text-2xl md:text-3xl font-black tracking-tight text-foreground flex items-center gap-2",
 						children: "Capital Humano"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						"data-uid": "src/pages/Team.tsx:109:11",
+						"data-uid": "src/pages/Team.tsx:142:11",
 						"data-prohibitions": "[]",
 						className: "text-sm font-bold text-muted-foreground mt-1 tracking-wide",
 						children: "Gestão inteligente de escalas e ausências corporativas"
@@ -93869,42 +93895,42 @@ function Team() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Team.tsx:115:7",
+				"data-uid": "src/pages/Team.tsx:148:7",
 				"data-prohibitions": "[editContent]",
 				className: "grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Team.tsx:116:9",
+						"data-uid": "src/pages/Team.tsx:149:9",
 						"data-prohibitions": "[editContent]",
 						className: "bg-white dark:bg-slate-900 border-l-4 border-l-blue-500 shadow-sm",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Team.tsx:117:11",
+							"data-uid": "src/pages/Team.tsx:150:11",
 							"data-prohibitions": "[editContent]",
 							className: "p-6",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Team.tsx:118:13",
+									"data-uid": "src/pages/Team.tsx:151:13",
 									"data-prohibitions": "[]",
 									className: "flex items-center justify-between space-y-0 pb-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/pages/Team.tsx:119:15",
+										"data-uid": "src/pages/Team.tsx:152:15",
 										"data-prohibitions": "[]",
 										className: "text-sm font-medium text-muted-foreground",
 										children: "Total de Colaboradores"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, {
-										"data-uid": "src/pages/Team.tsx:120:15",
+										"data-uid": "src/pages/Team.tsx:153:15",
 										"data-prohibitions": "[editContent]",
 										className: "h-4 w-4 text-blue-500"
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Team.tsx:122:13",
+									"data-uid": "src/pages/Team.tsx:155:13",
 									"data-prohibitions": "[editContent]",
 									className: "text-2xl font-black",
 									children: totalEmployees
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Team.tsx:123:13",
+									"data-uid": "src/pages/Team.tsx:156:13",
 									"data-prohibitions": "[]",
 									className: "text-xs text-muted-foreground mt-1 font-medium",
 									children: "Registrados no sistema"
@@ -93913,37 +93939,37 @@ function Team() {
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Team.tsx:127:9",
+						"data-uid": "src/pages/Team.tsx:160:9",
 						"data-prohibitions": "[editContent]",
 						className: "bg-white dark:bg-slate-900 border-l-4 border-l-emerald-500 shadow-sm",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Team.tsx:128:11",
+							"data-uid": "src/pages/Team.tsx:161:11",
 							"data-prohibitions": "[editContent]",
 							className: "p-6",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Team.tsx:129:13",
+									"data-uid": "src/pages/Team.tsx:162:13",
 									"data-prohibitions": "[]",
 									className: "flex items-center justify-between space-y-0 pb-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/pages/Team.tsx:130:15",
+										"data-uid": "src/pages/Team.tsx:163:15",
 										"data-prohibitions": "[]",
 										className: "text-sm font-medium text-muted-foreground",
 										children: "Disponíveis Hoje"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarCheck, {
-										"data-uid": "src/pages/Team.tsx:131:15",
+										"data-uid": "src/pages/Team.tsx:164:15",
 										"data-prohibitions": "[editContent]",
 										className: "h-4 w-4 text-emerald-500"
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Team.tsx:133:13",
+									"data-uid": "src/pages/Team.tsx:166:13",
 									"data-prohibitions": "[editContent]",
 									className: "text-2xl font-black",
 									children: availableToday
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Team.tsx:134:13",
+									"data-uid": "src/pages/Team.tsx:167:13",
 									"data-prohibitions": "[editContent]",
 									className: "text-xs text-muted-foreground mt-1 font-medium",
 									children: absencesToday > 0 ? `${absencesToday} ausências hoje` : "Equipe 100% completa"
@@ -93952,41 +93978,41 @@ function Team() {
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Team.tsx:140:9",
+						"data-uid": "src/pages/Team.tsx:173:9",
 						"data-prohibitions": "[editContent]",
 						className: "bg-white dark:bg-slate-900 border-l-4 border-l-indigo-500 shadow-sm",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Team.tsx:141:11",
+							"data-uid": "src/pages/Team.tsx:174:11",
 							"data-prohibitions": "[editContent]",
 							className: "p-6",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Team.tsx:142:13",
+									"data-uid": "src/pages/Team.tsx:175:13",
 									"data-prohibitions": "[]",
 									className: "flex items-center justify-between space-y-0 pb-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/pages/Team.tsx:143:15",
+										"data-uid": "src/pages/Team.tsx:176:15",
 										"data-prohibitions": "[]",
 										className: "text-sm font-medium text-muted-foreground",
 										children: "Taxa de Ocupação"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Percent, {
-										"data-uid": "src/pages/Team.tsx:144:15",
+										"data-uid": "src/pages/Team.tsx:177:15",
 										"data-prohibitions": "[editContent]",
 										className: "h-4 w-4 text-indigo-500"
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Team.tsx:146:13",
+									"data-uid": "src/pages/Team.tsx:179:13",
 									"data-prohibitions": "[editContent]",
 									className: "text-2xl font-black",
 									children: [occupancyRate, "%"]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Team.tsx:147:13",
+									"data-uid": "src/pages/Team.tsx:180:13",
 									"data-prohibitions": "[]",
 									className: "w-full bg-secondary h-2 mt-2 rounded-full overflow-hidden",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/pages/Team.tsx:148:15",
+										"data-uid": "src/pages/Team.tsx:181:15",
 										"data-prohibitions": "[editContent]",
 										className: "bg-indigo-500 h-full rounded-full transition-all duration-500",
 										style: { width: `${occupancyRate}%` }
@@ -93996,37 +94022,37 @@ function Team() {
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Team.tsx:156:9",
+						"data-uid": "src/pages/Team.tsx:189:9",
 						"data-prohibitions": "[editContent]",
 						className: cn$1("bg-white dark:bg-slate-900 border-l-4 shadow-sm", upcomingAbsences.length > 0 ? "border-l-orange-500" : "border-l-slate-300"),
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Team.tsx:162:11",
+							"data-uid": "src/pages/Team.tsx:195:11",
 							"data-prohibitions": "[editContent]",
 							className: "p-6",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Team.tsx:163:13",
+									"data-uid": "src/pages/Team.tsx:196:13",
 									"data-prohibitions": "[editContent]",
 									className: "flex items-center justify-between space-y-0 pb-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/pages/Team.tsx:164:15",
+										"data-uid": "src/pages/Team.tsx:197:15",
 										"data-prohibitions": "[]",
 										className: "text-sm font-medium text-muted-foreground",
 										children: "Alertas da Semana"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, {
-										"data-uid": "src/pages/Team.tsx:165:15",
+										"data-uid": "src/pages/Team.tsx:198:15",
 										"data-prohibitions": "[editContent]",
 										className: cn$1("h-4 w-4", upcomingAbsences.length > 0 ? "text-orange-500" : "text-slate-400")
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Team.tsx:172:13",
+									"data-uid": "src/pages/Team.tsx:205:13",
 									"data-prohibitions": "[editContent]",
 									className: "text-2xl font-black",
 									children: upcomingAbsences.length
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Team.tsx:173:13",
+									"data-uid": "src/pages/Team.tsx:206:13",
 									"data-prohibitions": "[]",
 									className: "text-xs text-muted-foreground mt-1 font-medium",
 									children: "Ausências nos próximos 7 dias"
@@ -94036,74 +94062,147 @@ function Team() {
 					})
 				]
 			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+				"data-uid": "src/pages/Team.tsx:213:7",
+				"data-prohibitions": "[editContent]",
+				className: "bg-white dark:bg-slate-900 border border-pink-100 dark:border-pink-900/50 shadow-sm relative overflow-hidden",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					"data-uid": "src/pages/Team.tsx:214:9",
+					"data-prohibitions": "[editContent]",
+					className: "absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl pointer-events-none"
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
+					"data-uid": "src/pages/Team.tsx:215:9",
+					"data-prohibitions": "[editContent]",
+					className: "p-4 md:p-6 relative z-10",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/pages/Team.tsx:216:11",
+						"data-prohibitions": "[editContent]",
+						className: "flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/pages/Team.tsx:217:13",
+								"data-prohibitions": "[]",
+								className: "flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/40 dark:to-pink-800/40 text-pink-600 dark:text-pink-400 shrink-0 shadow-inner",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Gift, {
+									"data-uid": "src/pages/Team.tsx:218:15",
+									"data-prohibitions": "[editContent]",
+									className: "h-6 w-6"
+								})
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-uid": "src/pages/Team.tsx:221:13",
+								"data-prohibitions": "[editContent]",
+								className: "flex-1 min-w-[200px]",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h4", {
+									"data-uid": "src/pages/Team.tsx:222:15",
+									"data-prohibitions": "[editContent]",
+									className: "text-lg font-bold text-foreground",
+									children: ["Aniversariantes de ", currentMonthName]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									"data-uid": "src/pages/Team.tsx:225:15",
+									"data-prohibitions": "[editContent]",
+									className: "text-sm text-muted-foreground mt-0.5",
+									children: birthdaysThisMonth.length > 0 ? "Não se esqueça de parabenizar nossa equipe! 🎉" : "Nenhum aniversariante registrado para este mês."
+								})]
+							}),
+							birthdaysThisMonth.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/pages/Team.tsx:233:15",
+								"data-prohibitions": "[editContent]",
+								className: "flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto mt-2 md:mt-0",
+								children: birthdaysThisMonth.map((emp) => {
+									const [, , day] = emp.birth_date.split("-");
+									return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/pages/Team.tsx:237:21",
+										"data-prohibitions": "[editContent]",
+										className: "flex items-center gap-2 bg-background px-3 py-1.5 rounded-lg border border-pink-200 dark:border-pink-800/50 shadow-sm",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
+											"data-uid": "src/pages/Team.tsx:241:23",
+											"data-prohibitions": "[editContent]",
+											variant: "outline",
+											className: "bg-pink-50 text-pink-600 border-pink-200 hover:bg-pink-100 dark:bg-pink-950/30 dark:text-pink-400 dark:border-pink-800",
+											children: ["Dia ", day]
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											"data-uid": "src/pages/Team.tsx:247:23",
+											"data-prohibitions": "[editContent]",
+											className: "text-sm font-medium text-foreground truncate max-w-[120px]",
+											title: emp.name,
+											children: emp.name.split(" ")[0]
+										})]
+									}, emp.id);
+								})
+							})
+						]
+					})
+				})]
+			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
-				"data-uid": "src/pages/Team.tsx:180:7",
+				"data-uid": "src/pages/Team.tsx:262:7",
 				"data-prohibitions": "[]",
 				value: activeTab,
 				onValueChange: setActiveTab,
 				className: "w-full space-y-6",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
-						"data-uid": "src/pages/Team.tsx:181:9",
+						"data-uid": "src/pages/Team.tsx:263:9",
 						"data-prohibitions": "[]",
 						className: "grid w-full grid-cols-1 md:grid-cols-4 h-auto p-1 bg-muted/50 rounded-xl gap-1",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Team.tsx:182:11",
+								"data-uid": "src/pages/Team.tsx:264:11",
 								"data-prohibitions": "[]",
 								value: "calendario",
 								className: "rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Calendar, {
-									"data-uid": "src/pages/Team.tsx:186:13",
+									"data-uid": "src/pages/Team.tsx:268:13",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Team.tsx:187:13",
+									"data-uid": "src/pages/Team.tsx:269:13",
 									"data-prohibitions": "[]",
 									children: "Calendário de Escala"
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Team.tsx:189:11",
+								"data-uid": "src/pages/Team.tsx:271:11",
 								"data-prohibitions": "[]",
 								value: "ausencias",
 								className: "rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-									"data-uid": "src/pages/Team.tsx:193:13",
+									"data-uid": "src/pages/Team.tsx:275:13",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Team.tsx:194:13",
+									"data-uid": "src/pages/Team.tsx:276:13",
 									"data-prohibitions": "[]",
 									children: "Lançamentos de Ausências"
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Team.tsx:196:11",
+								"data-uid": "src/pages/Team.tsx:278:11",
 								"data-prohibitions": "[]",
 								value: "profissionais",
 								className: "rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Briefcase, {
-									"data-uid": "src/pages/Team.tsx:200:13",
+									"data-uid": "src/pages/Team.tsx:282:13",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Team.tsx:201:13",
+									"data-uid": "src/pages/Team.tsx:283:13",
 									"data-prohibitions": "[]",
 									children: "Gestão de Profissionais"
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Team.tsx:203:11",
+								"data-uid": "src/pages/Team.tsx:285:11",
 								"data-prohibitions": "[]",
 								value: "pontos-facultativos",
 								className: "rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm py-2.5 font-medium flex items-center justify-center gap-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Umbrella, {
-									"data-uid": "src/pages/Team.tsx:207:13",
+									"data-uid": "src/pages/Team.tsx:289:13",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/pages/Team.tsx:208:13",
+									"data-uid": "src/pages/Team.tsx:290:13",
 									"data-prohibitions": "[]",
 									className: "truncate",
 									children: "Pontos Facultativos"
@@ -94112,26 +94211,26 @@ function Team() {
 						]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-						"data-uid": "src/pages/Team.tsx:212:9",
+						"data-uid": "src/pages/Team.tsx:294:9",
 						"data-prohibitions": "[]",
 						value: "calendario",
 						className: "space-y-6 outline-none focus-visible:ring-0",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TeamCalendar, {
-							"data-uid": "src/pages/Team.tsx:213:11",
+							"data-uid": "src/pages/Team.tsx:295:11",
 							"data-prohibitions": "[editContent]"
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-						"data-uid": "src/pages/Team.tsx:216:9",
+						"data-uid": "src/pages/Team.tsx:298:9",
 						"data-prohibitions": "[]",
 						value: "ausencias",
 						className: "space-y-6 outline-none focus-visible:ring-0",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Team.tsx:217:11",
+							"data-uid": "src/pages/Team.tsx:299:11",
 							"data-prohibitions": "[]",
 							className: "flex justify-end mb-4",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/pages/Team.tsx:218:13",
+								"data-uid": "src/pages/Team.tsx:300:13",
 								"data-prohibitions": "[]",
 								onClick: () => {
 									setEditingRequest(null);
@@ -94139,28 +94238,28 @@ function Team() {
 								},
 								className: "gap-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-									"data-uid": "src/pages/Team.tsx:225:15",
+									"data-uid": "src/pages/Team.tsx:307:15",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4"
 								}), "Nova Ausência"]
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TimeOffList, {
-							"data-uid": "src/pages/Team.tsx:229:11",
+							"data-uid": "src/pages/Team.tsx:311:11",
 							"data-prohibitions": "[editContent]",
 							onEdit: handleEditTimeOff
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-						"data-uid": "src/pages/Team.tsx:232:9",
+						"data-uid": "src/pages/Team.tsx:314:9",
 						"data-prohibitions": "[]",
 						value: "profissionais",
 						className: "space-y-6 outline-none focus-visible:ring-0",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Team.tsx:233:11",
+							"data-uid": "src/pages/Team.tsx:315:11",
 							"data-prohibitions": "[]",
 							className: "flex justify-end mb-4",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/pages/Team.tsx:234:13",
+								"data-uid": "src/pages/Team.tsx:316:13",
 								"data-prohibitions": "[]",
 								onClick: () => {
 									setEditingEmployee(null);
@@ -94168,29 +94267,29 @@ function Team() {
 								},
 								className: "gap-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-									"data-uid": "src/pages/Team.tsx:241:15",
+									"data-uid": "src/pages/Team.tsx:323:15",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4"
 								}), "Novo Profissional"]
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EmployeeList, {
-							"data-uid": "src/pages/Team.tsx:245:11",
+							"data-uid": "src/pages/Team.tsx:327:11",
 							"data-prohibitions": "[editContent]",
 							onEdit: handleEditEmployee,
 							onViewTimeOffs: handleViewTimeOffs
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-						"data-uid": "src/pages/Team.tsx:248:9",
+						"data-uid": "src/pages/Team.tsx:330:9",
 						"data-prohibitions": "[]",
 						value: "pontos-facultativos",
 						className: "space-y-6 outline-none focus-visible:ring-0",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Team.tsx:252:11",
+							"data-uid": "src/pages/Team.tsx:334:11",
 							"data-prohibitions": "[]",
 							className: "flex justify-end mb-4",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/pages/Team.tsx:253:13",
+								"data-uid": "src/pages/Team.tsx:335:13",
 								"data-prohibitions": "[]",
 								onClick: () => {
 									setEditingSystemHoliday(null);
@@ -94198,13 +94297,13 @@ function Team() {
 								},
 								className: "gap-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-									"data-uid": "src/pages/Team.tsx:260:15",
+									"data-uid": "src/pages/Team.tsx:342:15",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4"
 								}), "Novo Ponto Facultativo"]
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SystemHolidayList, {
-							"data-uid": "src/pages/Team.tsx:264:11",
+							"data-uid": "src/pages/Team.tsx:346:11",
 							"data-prohibitions": "[editContent]",
 							onEdit: handleEditSystemHoliday
 						})]
@@ -94212,7 +94311,7 @@ function Team() {
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TimeOffFormModal, {
-				"data-uid": "src/pages/Team.tsx:268:7",
+				"data-uid": "src/pages/Team.tsx:350:7",
 				"data-prohibitions": "[editContent]",
 				open: isTimeOffModalOpen,
 				onOpenChange: (open) => {
@@ -94222,7 +94321,7 @@ function Team() {
 				request: editingRequest
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EmployeeFormModal, {
-				"data-uid": "src/pages/Team.tsx:277:7",
+				"data-uid": "src/pages/Team.tsx:359:7",
 				"data-prohibitions": "[editContent]",
 				open: isEmployeeModalOpen,
 				onOpenChange: (open) => {
@@ -94232,7 +94331,7 @@ function Team() {
 				employee: editingEmployee
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SystemHolidayFormModal, {
-				"data-uid": "src/pages/Team.tsx:286:7",
+				"data-uid": "src/pages/Team.tsx:368:7",
 				"data-prohibitions": "[editContent]",
 				open: isSystemHolidayModalOpen,
 				onOpenChange: (open) => {
@@ -94461,4 +94560,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-Cqym5vPB.js.map
+//# sourceMappingURL=index-D6h-yfUj.js.map
