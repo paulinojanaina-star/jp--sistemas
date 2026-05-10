@@ -6190,6 +6190,10 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .sm\:grid-cols-3{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .sm\:flex-row{
     flex-direction: row;
   }
@@ -6294,6 +6298,14 @@ body {
 
   .md\:flex{
     display: flex;
+  }
+
+  .md\:w-\[200px\]{
+    width: 200px;
+  }
+
+  .md\:w-\[240px\]{
+    width: 240px;
   }
 
   .md\:w-\[var\(--radix-navigation-menu-viewport-width\)\]{
