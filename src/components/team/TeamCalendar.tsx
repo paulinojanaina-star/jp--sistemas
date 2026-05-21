@@ -136,8 +136,8 @@ export function TeamCalendar() {
           </div>
         </CardHeader>
         <CardContent className="p-3 sm:p-4">
-          <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center mb-2">
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((d) => (
+          <div className="grid grid-cols-5 gap-1 sm:gap-2 text-center mb-2">
+            {['Seg', 'Ter', 'Qua', 'Qui', 'Sex'].map((d) => (
               <div
                 key={d}
                 className="font-bold text-xs sm:text-sm text-muted-foreground/80 py-2 uppercase tracking-wider"
@@ -146,153 +146,158 @@ export function TeamCalendar() {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
-            {days.map((day) => {
-              const requests = timeOffRequests.filter((req) =>
-                isDateInRange(day, req.start_date, req.end_date),
-              )
-              const isSelected =
-                selectedDate && format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
-              const isCurrentMonth = isSameMonth(day, currentDate)
-              const isTodayDate = isToday(day)
+          <div className="grid grid-cols-5 gap-1 sm:gap-1.5">
+            {days
+              .filter((day) => {
+                const dayOfWeek = day.getDay()
+                return dayOfWeek !== 0 && dayOfWeek !== 6
+              })
+              .map((day) => {
+                const requests = timeOffRequests.filter((req) =>
+                  isDateInRange(day, req.start_date, req.end_date),
+                )
+                const isSelected =
+                  selectedDate && format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+                const isCurrentMonth = isSameMonth(day, currentDate)
+                const isTodayDate = isToday(day)
 
-              const systemOffRequest = requests.find(
-                (req) => req.type === 'FERIADO' || req.type === 'PONTO_FACULTATIVO',
-              )
-              const isSystemOff = !!systemOffRequest
-              const isHoliday = systemOffRequest?.type === 'FERIADO'
-              const isOptional = systemOffRequest?.type === 'PONTO_FACULTATIVO'
+                const systemOffRequest = requests.find(
+                  (req) => req.type === 'FERIADO' || req.type === 'PONTO_FACULTATIVO',
+                )
+                const isSystemOff = !!systemOffRequest
+                const isHoliday = systemOffRequest?.type === 'FERIADO'
+                const isOptional = systemOffRequest?.type === 'PONTO_FACULTATIVO'
 
-              return (
-                <div
-                  key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
-                  className={cn(
-                    'min-h-[80px] sm:min-h-[100px] xl:min-h-[130px] p-1 sm:p-1.5 border rounded-xl cursor-pointer transition-all flex flex-col items-start gap-1 group relative overflow-hidden',
-                    !isCurrentMonth && 'opacity-40 bg-muted/30',
-                    isHoliday
-                      ? isSelected
-                        ? 'ring-2 ring-emerald-500 border-emerald-500 shadow-md bg-emerald-500/20 scale-[1.02]'
-                        : 'border-emerald-200 bg-emerald-500/10 hover:border-emerald-300 hover:bg-emerald-500/20'
-                      : isOptional
-                        ? isSelected
-                          ? 'ring-2 ring-violet-500 border-violet-500 shadow-md bg-violet-500/20 scale-[1.02]'
-                          : 'border-violet-200 bg-violet-500/10 hover:border-violet-300 hover:bg-violet-500/20'
-                        : isSelected
-                          ? 'ring-2 ring-primary border-primary shadow-md bg-primary/5 scale-[1.02]'
-                          : 'hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm',
-                    !isSystemOff && isTodayDate && !isSelected
-                      ? 'bg-primary/5 border-primary/30'
-                      : !isSystemOff && !isSelected
-                        ? 'bg-card'
-                        : '',
-                  )}
-                >
-                  <span
+                return (
+                  <div
+                    key={day.toISOString()}
+                    onClick={() => setSelectedDate(day)}
                     className={cn(
-                      'text-xs sm:text-sm font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-colors z-10',
-                      isTodayDate && !isSystemOff
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : isHoliday
-                          ? 'text-emerald-800 bg-emerald-500/20'
-                          : isOptional
-                            ? 'text-violet-800 bg-violet-500/20'
-                            : isSelected
-                              ? 'text-primary'
-                              : 'text-foreground/80 group-hover:text-primary',
+                      'min-h-[80px] sm:min-h-[100px] xl:min-h-[130px] p-1 sm:p-1.5 border rounded-xl cursor-pointer transition-all flex flex-col items-start gap-1 group relative overflow-hidden',
+                      !isCurrentMonth && 'opacity-40 bg-muted/30',
+                      isHoliday
+                        ? isSelected
+                          ? 'ring-2 ring-emerald-500 border-emerald-500 shadow-md bg-emerald-500/20 scale-[1.02]'
+                          : 'border-emerald-200 bg-emerald-500/10 hover:border-emerald-300 hover:bg-emerald-500/20'
+                        : isOptional
+                          ? isSelected
+                            ? 'ring-2 ring-violet-500 border-violet-500 shadow-md bg-violet-500/20 scale-[1.02]'
+                            : 'border-violet-200 bg-violet-500/10 hover:border-violet-300 hover:bg-violet-500/20'
+                          : isSelected
+                            ? 'ring-2 ring-primary border-primary shadow-md bg-primary/5 scale-[1.02]'
+                            : 'hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm',
+                      !isSystemOff && isTodayDate && !isSelected
+                        ? 'bg-primary/5 border-primary/30'
+                        : !isSystemOff && !isSelected
+                          ? 'bg-card'
+                          : '',
                     )}
                   >
-                    {format(day, 'd')}
-                  </span>
+                    <span
+                      className={cn(
+                        'text-xs sm:text-sm font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-colors z-10',
+                        isTodayDate && !isSystemOff
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : isHoliday
+                            ? 'text-emerald-800 bg-emerald-500/20'
+                            : isOptional
+                              ? 'text-violet-800 bg-violet-500/20'
+                              : isSelected
+                                ? 'text-primary'
+                                : 'text-foreground/80 group-hover:text-primary',
+                      )}
+                    >
+                      {format(day, 'd')}
+                    </span>
 
-                  {isSystemOff ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex flex-col w-full gap-0.5 sm:gap-1 mt-auto z-10 items-center justify-center h-full pb-1 sm:pb-2 px-1 cursor-help">
-                          {(() => {
-                            const Icon = getHolidayIcon(systemOffRequest.notes)
-                            return (
-                              <Icon
-                                className={cn(
-                                  'h-4 w-4 sm:h-5 sm:w-5 opacity-80',
-                                  isHoliday ? 'text-emerald-600' : 'text-violet-600',
-                                )}
-                              />
-                            )
-                          })()}
-                          <span
-                            className={cn(
-                              'text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-center leading-tight line-clamp-2',
-                              isHoliday ? 'text-emerald-700' : 'text-violet-700',
-                            )}
-                          >
-                            {systemOffRequest.notes ||
-                              (isHoliday ? 'Feriado' : 'Ponto Facultativo')}
-                          </span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        className={cn(
-                          'border-none font-medium',
-                          isHoliday
-                            ? 'bg-emerald-600 text-emerald-50'
-                            : 'bg-violet-600 text-violet-50',
-                        )}
-                      >
-                        {systemOffRequest.notes ||
-                          (isHoliday ? 'Feriado Nacional' : 'Decreto Municipal')}
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : (
-                    requests.length > 0 && (
-                      <div className="flex flex-col w-full gap-1 mt-auto z-10">
-                        {/* Mobile view: just dots */}
-                        <div className="flex flex-wrap gap-1 sm:hidden">
-                          {requests.slice(0, 3).map((req, i) => (
-                            <div
-                              key={i}
-                              className={cn('w-1.5 h-1.5 rounded-full', getTypeColor(req.type))}
-                            />
-                          ))}
-                          {requests.length > 3 && (
-                            <span className="text-[9px] text-muted-foreground font-medium leading-none">
-                              +{requests.length - 3}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Desktop view: pills with names */}
-                        <div className="hidden sm:flex flex-col gap-1 w-full">
-                          {requests.slice(0, 5).map((req, i) => (
-                            <div
-                              key={i}
+                    {isSystemOff ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex flex-col w-full gap-0.5 sm:gap-1 mt-auto z-10 items-center justify-center h-full pb-1 sm:pb-2 px-1 cursor-help">
+                            {(() => {
+                              const Icon = getHolidayIcon(systemOffRequest.notes)
+                              return (
+                                <Icon
+                                  className={cn(
+                                    'h-4 w-4 sm:h-5 sm:w-5 opacity-80',
+                                    isHoliday ? 'text-emerald-600' : 'text-violet-600',
+                                  )}
+                                />
+                              )
+                            })()}
+                            <span
                               className={cn(
-                                'text-[10px] xl:text-xs font-semibold px-1.5 py-0.5 rounded-md truncate w-full border border-transparent',
-                                req.type === 'FERIAS'
-                                  ? 'bg-amber-100 text-amber-700 border-amber-200/50'
-                                  : req.type === 'ATESTADO'
-                                    ? 'bg-rose-100 text-rose-700 border-rose-200/50'
-                                    : req.type === 'ANIVERSARIO'
-                                      ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200/50'
-                                      : 'bg-blue-100 text-blue-700 border-blue-200/50',
+                                'text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-center leading-tight line-clamp-2',
+                                isHoliday ? 'text-emerald-700' : 'text-violet-700',
                               )}
-                              title={`${req.employees?.name} - ${req.type}`}
                             >
-                              {req.employees?.name?.split(' ')[0]}
-                            </div>
-                          ))}
-                          {requests.length > 5 && (
-                            <div className="text-[10px] text-muted-foreground font-medium pl-1">
-                              +{requests.length - 5} mais
-                            </div>
+                              {systemOffRequest.notes ||
+                                (isHoliday ? 'Feriado' : 'Ponto Facultativo')}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          className={cn(
+                            'border-none font-medium',
+                            isHoliday
+                              ? 'bg-emerald-600 text-emerald-50'
+                              : 'bg-violet-600 text-violet-50',
                           )}
+                        >
+                          {systemOffRequest.notes ||
+                            (isHoliday ? 'Feriado Nacional' : 'Decreto Municipal')}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      requests.length > 0 && (
+                        <div className="flex flex-col w-full gap-1 mt-auto z-10">
+                          {/* Mobile view: just dots */}
+                          <div className="flex flex-wrap gap-1 sm:hidden">
+                            {requests.slice(0, 3).map((req, i) => (
+                              <div
+                                key={i}
+                                className={cn('w-1.5 h-1.5 rounded-full', getTypeColor(req.type))}
+                              />
+                            ))}
+                            {requests.length > 3 && (
+                              <span className="text-[9px] text-muted-foreground font-medium leading-none">
+                                +{requests.length - 3}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Desktop view: pills with names */}
+                          <div className="hidden sm:flex flex-col gap-1 w-full">
+                            {requests.slice(0, 5).map((req, i) => (
+                              <div
+                                key={i}
+                                className={cn(
+                                  'text-[10px] xl:text-xs font-semibold px-1.5 py-0.5 rounded-md truncate w-full border border-transparent',
+                                  req.type === 'FERIAS'
+                                    ? 'bg-amber-100 text-amber-700 border-amber-200/50'
+                                    : req.type === 'ATESTADO'
+                                      ? 'bg-rose-100 text-rose-700 border-rose-200/50'
+                                      : req.type === 'ANIVERSARIO'
+                                        ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200/50'
+                                        : 'bg-blue-100 text-blue-700 border-blue-200/50',
+                                )}
+                                title={`${req.employees?.name} - ${req.type}`}
+                              >
+                                {req.employees?.name?.split(' ')[0]}
+                              </div>
+                            ))}
+                            {requests.length > 5 && (
+                              <div className="text-[10px] text-muted-foreground font-medium pl-1">
+                                +{requests.length - 5} mais
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              )
-            })}
+                      )
+                    )}
+                  </div>
+                )
+              })}
           </div>
         </CardContent>
       </Card>
