@@ -4,6 +4,7 @@ import { DashboardChart } from '@/components/DashboardChart'
 import { DashboardRecentActivity } from '@/components/DashboardRecentActivity'
 import { DashboardTopItemsChart } from '@/components/DashboardTopItemsChart'
 import { DashboardExpiringItems } from '@/components/DashboardExpiringItems'
+import { ConsumptionReport } from '@/components/reports/ConsumptionReport'
 import { Button } from '@/components/ui/button'
 import { Users, Package, ArrowLeft, ArrowRight, ShieldCheck } from 'lucide-react'
 
@@ -50,6 +51,8 @@ export default function Index() {
           <DashboardTopItemsChart />
           <DashboardExpiringItems />
         </div>
+
+        <ConsumptionReport />
       </div>
     )
   }
