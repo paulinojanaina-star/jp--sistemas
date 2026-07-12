@@ -6,6 +6,7 @@ import {
   PackageSearch,
   ShoppingCart,
   ShieldCheck,
+  Radar,
 } from 'lucide-react'
 import { StaleItemsReport } from '@/components/reports/StaleItemsReport'
 import { ConsumptionReport } from '@/components/reports/ConsumptionReport'
@@ -15,6 +16,7 @@ import { PurchaseSuggestionReport } from '@/components/reports/PurchaseSuggestio
 import { ItemDetailsReport } from '@/components/reports/ItemDetailsReport'
 import { FinancialInsightsReport } from '@/components/reports/FinancialInsightsReport'
 import { Info, DollarSign } from 'lucide-react'
+import { PurchasePredictionReport } from '@/components/reports/PurchasePredictionReport'
 
 export default function Reports() {
   return (
@@ -99,6 +101,14 @@ export default function Reports() {
               <span className="sm:hidden">Detalhes</span>
             </TabsTrigger>
             <TabsTrigger
+              value="prediction"
+              className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
+            >
+              <Radar className="h-5 w-5" />
+              <span className="hidden sm:inline">Predição</span>
+              <span className="sm:hidden">Predição</span>
+            </TabsTrigger>
+            <TabsTrigger
               value="financial"
               className="gap-2 text-sm py-3.5 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all font-extrabold"
             >
@@ -145,6 +155,12 @@ export default function Reports() {
             className="mt-0 outline-none animate-in fade-in-50 duration-500 slide-in-from-bottom-4"
           >
             <ItemDetailsReport />
+          </TabsContent>
+          <TabsContent
+            value="prediction"
+            className="mt-0 outline-none animate-in fade-in-50 duration-500 slide-in-from-bottom-4"
+          >
+            <PurchasePredictionReport />
           </TabsContent>
           <TabsContent
             value="financial"
