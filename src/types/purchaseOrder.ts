@@ -51,6 +51,26 @@ export interface CreateOrderItemInput {
   total_price?: number | null
 }
 
+export interface UpdateOrderItemInput {
+  id?: string // se já existe na tabela purchase_order_items
+  item_id: string
+  quantity_ordered: number
+  quantity_received?: number
+  unit_price?: number | null
+  total_price?: number | null
+}
+
+export interface UpdatePurchaseOrderInput {
+  order_id: string
+  request_number: string
+  supplier?: string | null
+  health_unit_name?: string | null
+  requested_at: string
+  expected_date?: string | null
+  notes?: string | null
+  items: UpdateOrderItemInput[]
+}
+
 export interface CreatePurchaseOrderInput {
   request_number: string
   items: CreateOrderItemInput[]

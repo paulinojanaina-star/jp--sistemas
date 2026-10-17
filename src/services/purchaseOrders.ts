@@ -4,6 +4,7 @@ import {
   PurchaseOrderItem,
   PurchaseOrderStatus,
   CreatePurchaseOrderInput,
+  UpdatePurchaseOrderInput,
   RegisterReceiptInput,
 } from '@/types/purchaseOrder'
 
@@ -379,6 +380,218 @@ export async function registerOrderReceipt(
   if (orderError) return { error: orderError }
 
   return {}
+}
+
+export async function updatePurchaseOrder(
+  input: UpdatePurchaseOrderInput,
+): Promise<{ data: PurchaseOrder | null; error: any }> {
+  if (!input.order_id) {
+    return { data: null, error: new Error('ID do pedido não informado.') }
+  }
+
+  if (!input.items || input.items.length === 0) {
+    return { data: null, error: new Error('A solicitação precisa de pelo menos 1 item.') }
+  }
+
+  // 1. Buscar itens atuais do pedido no banco para verificar integridade e regras de negócio
+  const { data: currentDbItems, error: fetchErr } = await (supabase as any)
+    .from('purchase_order_items')
+    .select('*')
+    .eq('purchase_order_id', input.order_id)
+
+  if (fetchErr) return { data: null, error: fetchErr }
+
+  const dbItemsMap = new Map<string, any>()
+  ;(currentDbItems || []).forEach((row: any) => {
+    dbItemsMap.set(row.id, row)
+  })
+
+  // 2. Validar que nenhum item com recebimento foi excluído ou teve quantidade menor que a recebida
+  const incomingItemIds = new Set(input.items.filter((it) => it.id).map((it) => it.id as string))
+
+  // Checar se algum item excluído já tinha quantidade recebida
+  for (const [id, dbItem] of dbItemsMap.entries()) {
+    const qtyRec = Number(dbItem.quantity_received || 0)
+    if (qtyRec > 0 && !incomingItemIds.has(id)) {
+      return {
+        data: null,
+        error: new Error(
+          `Não é permitido remover um item que já possui recebimento registrado (${qtyRec} un recebidas).`,
+        ),
+      }
+    }
+  }
+
+  // Checar se algum item teve a quantidade comprada reduzida para menos do que já foi recebido
+  for (const itemInput of input.items) {
+    if (itemInput.id && dbItemsMap.has(itemInput.id)) {
+      const existing = dbItemsMap.get(itemInput.id)
+      const qtyRec = Number(existing.quantity_received || 0)
+      const newQty = Number(itemInput.quantity_ordered)
+      if (newQty < qtyRec) {
+        return {
+          data: null,
+          error: new Error(
+            `A quantidade comprada (${newQty}) não pode ser menor que a quantidade já recebida (${qtyRec}).`,
+          ),
+        }
+      }
+    }
+  }
+
+  // 3. Processar linhas dos itens: calcular totais, status de cada linha e preparar payloads
+  let totalOrderQuantity = 0
+  let totalOrderReceived = 0
+  let totalOrderPrice = 0
+
+  const itemsToUpdate: any[] = []
+  const itemsToInsert: any[] = []
+
+  for (const itemInput of input.items) {
+    const qtyOrdered = Number(itemInput.quantity_ordered)
+    const existingRow = itemInput.id ? dbItemsMap.get(itemInput.id) : null
+    const qtyReceived = existingRow ? Number(existingRow.quantity_received || 0) : 0
+    const unitPrice =
+      itemInput.unit_price != null && Number(itemInput.unit_price) >= 0
+        ? Number(itemInput.unit_price)
+        : 0
+    const lineTotal =
+      itemInput.total_price != null && Number(itemInput.total_price) >= 0
+        ? Number(itemInput.total_price)
+        : unitPrice * qtyOrdered
+
+    // Status da linha
+    let lineStatus: PurchaseOrderStatus = 'PENDING'
+    if (qtyReceived >= qtyOrdered && qtyOrdered > 0) {
+      lineStatus = 'RECEIVED'
+    } else if (qtyReceived > 0) {
+      lineStatus = 'PARTIAL'
+    } else {
+      lineStatus = 'PENDING'
+    }
+
+    totalOrderQuantity += qtyOrdered
+    totalOrderReceived += qtyReceived
+    totalOrderPrice += lineTotal
+
+    if (itemInput.id && dbItemsMap.has(itemInput.id)) {
+      itemsToUpdate.push({
+        id: itemInput.id,
+        item_id: itemInput.item_id,
+        quantity_ordered: qtyOrdered,
+        quantity_received: qtyReceived,
+        unit_price: unitPrice,
+        total_price: lineTotal,
+        status: lineStatus,
+      })
+    } else {
+      itemsToInsert.push({
+        purchase_order_id: input.order_id,
+        item_id: itemInput.item_id,
+        quantity_ordered: qtyOrdered,
+        quantity_received: 0,
+        unit_price: unitPrice,
+        total_price: lineTotal,
+        status: lineStatus,
+      })
+    }
+  }
+
+  // 4. Itens a deletar (itens do banco que não estão no payload e têm recebimento == 0)
+  const idsToDelete: string[] = []
+  for (const [id, dbItem] of dbItemsMap.entries()) {
+    if (!incomingItemIds.has(id)) {
+      idsToDelete.push(id)
+    }
+  }
+
+  if (idsToDelete.length > 0) {
+    const { error: delErr } = await (supabase as any)
+      .from('purchase_order_items')
+      .delete()
+      .in('id', idsToDelete)
+
+    if (delErr) return { data: null, error: delErr }
+  }
+
+  // 5. Executar updates nos itens existentes
+  for (const upd of itemsToUpdate) {
+    const { error: updErr } = await (supabase as any)
+      .from('purchase_order_items')
+      .update({
+        item_id: upd.item_id,
+        quantity_ordered: upd.quantity_ordered,
+        quantity_received: upd.quantity_received,
+        unit_price: upd.unit_price,
+        total_price: upd.total_price,
+        status: upd.status,
+      })
+      .eq('id', upd.id)
+
+    if (updErr) return { data: null, error: updErr }
+  }
+
+  // 6. Executar inserts nos novos itens
+  if (itemsToInsert.length > 0) {
+    const { error: insErr } = await (supabase as any)
+      .from('purchase_order_items')
+      .insert(itemsToInsert)
+
+    if (insErr) return { data: null, error: insErr }
+  }
+
+  // 7. Atualizar preço dos itens na tabela items (refletindo no Controle Financeiro)
+  for (const itemInput of input.items) {
+    const price = Number(itemInput.unit_price || 0)
+    if (price > 0) {
+      const itemUpdates: Record<string, any> = { unit_price: price }
+      if (input.supplier?.trim()) {
+        itemUpdates.supplier = input.supplier.trim()
+      }
+      await supabase.from('items').update(itemUpdates).eq('id', itemInput.item_id)
+    }
+  }
+
+  // 8. Recalcular status geral do pedido
+  let orderStatus: PurchaseOrderStatus = 'PENDING'
+  if (totalOrderReceived >= totalOrderQuantity && totalOrderQuantity > 0) {
+    orderStatus = 'RECEIVED'
+  } else if (totalOrderReceived > 0) {
+    orderStatus = 'PARTIAL'
+  } else {
+    orderStatus = 'PENDING'
+  }
+
+  // Item principal para manter campos legados do cabeçalho
+  const firstItem = input.items[0]
+  const firstItemPrice = Number(firstItem?.unit_price || 0)
+
+  // 9. Atualizar cabeçalho da tabela purchase_orders
+  const headerUpdates: Record<string, any> = {
+    request_number: input.request_number.trim(),
+    supplier: input.supplier?.trim() || null,
+    health_unit_name: input.health_unit_name?.trim() || null,
+    requested_at: input.requested_at,
+    expected_date: input.expected_date || null,
+    notes: input.notes?.trim() || null,
+    quantity_ordered: totalOrderQuantity,
+    quantity_received: totalOrderReceived,
+    total_price: totalOrderPrice,
+    status: orderStatus,
+    item_id: firstItem?.item_id || null,
+    unit_price: firstItemPrice,
+  }
+
+  const { data: updatedHeader, error: headErr } = await supabase
+    .from('purchase_orders')
+    .update(headerUpdates)
+    .eq('id', input.order_id)
+    .select()
+    .single()
+
+  if (headErr) return { data: null, error: headErr }
+
+  return { data: updatedHeader as any, error: null }
 }
 
 export async function cancelPurchaseOrder(

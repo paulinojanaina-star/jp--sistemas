@@ -58,7 +58,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
       .from('inventory_movements')
       .select('*, items(name), profiles(email, full_name)')
       .order('created_at', { ascending: false })
-    if (!error && data) setMovements(data)
+    if (!error && data) setMovements(data as any)
   }
 
   const refreshData = async () => {

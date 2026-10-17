@@ -153,20 +153,30 @@ export function PurchasePredictionReport() {
 
   const handleExport = async () => {
     setIsExporting(true)
-    const columns = [
-      { header: 'Item', key: 'name', width: 30 },
-      { header: 'Estoque Atual', key: 'current_quantity', width: 15 },
-      { header: 'Estoque Mínimo', key: 'min_quantity', width: 15 },
-      { header: 'Consumo Diário', key: 'adc', width: 15 },
-      { header: 'Dias p/ Crítico', key: 'daysUntilCritical', width: 15 },
-      { header: 'Data Prevista Crítico', key: 'predictedCriticalDate', width: 22 },
-      { header: 'Sugestão de Compra', key: 'suggestedRestockDate', width: 22 },
-      { header: 'Risco', key: 'riskLevel', width: 12 },
+    const headers = [
+      'Item',
+      'Estoque Atual',
+      'Estoque Mínimo',
+      'Consumo Diário',
+      'Dias p/ Crítico',
+      'Data Prevista Crítico',
+      'Sugestão de Compra',
+      'Risco',
     ]
+    const rows = filteredItems.map((item) => [
+      item.name,
+      item.current_quantity,
+      item.min_quantity,
+      item.adc > 0 ? item.adc.toFixed(2) : '—',
+      item.daysUntilCritical ?? '—',
+      formatDate(item.predictedCriticalDate),
+      formatDate(item.suggestedRestockDate),
+      item.riskLevel,
+    ])
     const { error } = await exportGenericPdf(
       'Predição de Compra - Análise de Risco de Estoque',
-      filteredItems,
-      columns,
+      headers,
+      rows,
     )
     setIsExporting(false)
     if (error) {

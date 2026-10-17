@@ -60,7 +60,11 @@ export function EmployeeFormModal({
     setIsSubmitting(true)
     try {
       if (saveEmployee) {
-        await saveEmployee(employee?.id, { name, category, birth_date: birthDate || null })
+        await saveEmployee(employee?.id, {
+          name,
+          category: category as any,
+          birth_date: birthDate || null,
+        })
       }
       toast({
         title: 'Sucesso',

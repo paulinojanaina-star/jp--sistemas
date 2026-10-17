@@ -46,7 +46,7 @@ export function ItemDetailsReport() {
       if (movementsError) throw movementsError
 
       const details = items.map((item) => {
-        const nearest = getNearestExpiry(item, movements || [])
+        const nearest = getNearestExpiry(item, (movements || []) as any)
         const itemMovements = (movements || []).filter((m) => m.item_id === item.id)
 
         const expiryDates = Array.from(

@@ -59,6 +59,10 @@ import { formatItemDisplay } from '@/utils/itemFormat'
 import { CreateOrderModal } from '@/components/purchases/CreateOrderModal'
 import { RegisterReceiptModal } from '@/components/purchases/RegisterReceiptModal'
 import { CancelOrderModal } from '@/components/purchases/CancelOrderModal'
+import { EditOrderModal } from '@/components/purchases/EditOrderModal'
+import { UpdatePurchaseOrderInput } from '@/types/purchaseOrder'
+import { updatePurchaseOrder } from '@/services/purchaseOrders'
+import { Pencil } from 'lucide-react'
 
 export default function Purchases() {
   const { toast } = useToast()
@@ -89,6 +93,8 @@ export default function Purchases() {
   const [receiptModalOpen, setReceiptModalOpen] = useState(false)
   const [cancelOrder, setCancelOrder] = useState<PurchaseOrder | null>(null)
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [editOrder, setEditOrder] = useState<PurchaseOrder | null>(null)
+  const [editModalOpen, setEditModalOpen] = useState(false)
 
   // Load orders
   const loadOrders = useCallback(async () => {
@@ -231,6 +237,26 @@ export default function Purchases() {
     toast({
       title: 'Solicitação Criada com Sucesso!',
       description: `Pedido Nº ${values.request_number} com ${itemsCount} ${itemsCount === 1 ? 'item cadastrado' : 'itens cadastrados'}.`,
+    })
+    await Promise.all([loadOrders(), refreshInventory()])
+    return true
+  }
+
+  const handleUpdateOrder = async (values: UpdatePurchaseOrderInput): Promise<boolean> => {
+    const { error } = await updatePurchaseOrder(values)
+    if (error) {
+      toast({
+        title: 'Erro ao editar solicitação',
+        description: error.message,
+        variant: 'destructive',
+      })
+      return false
+    }
+
+    const itemsCount = values.items?.length || 1
+    toast({
+      title: 'Solicitação Atualizada com Sucesso!',
+      description: `Pedido Nº ${values.request_number} atualizado com ${itemsCount} ${itemsCount === 1 ? 'item' : 'itens'}.`,
     })
     await Promise.all([loadOrders(), refreshInventory()])
     return true
@@ -794,37 +820,56 @@ export default function Purchases() {
 
                         {/* Ações */}
                         <TableCell className="py-4 pr-6 align-top text-right">
-                          {isOpen ? (
+                          {order.status !== 'CANCELLED' ? (
                             <div className="flex items-center justify-end gap-1.5">
+                              {/* Botão Editar Solicitação */}
                               <Button
                                 size="sm"
-                                variant="default"
+                                variant="outline"
                                 onClick={() => {
-                                  setReceiptOrder(order)
-                                  setReceiptModalOpen(true)
+                                  setEditOrder(order)
+                                  setEditModalOpen(true)
                                 }}
-                                className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1 px-2.5"
+                                className="h-8 text-xs font-semibold hover:bg-primary/10 hover:text-primary border-border/80 gap-1 px-2.5"
+                                title="Editar solicitação e itens"
                               >
-                                <ArrowDownToLine className="h-3.5 w-3.5" />
-                                Receber
+                                <Pencil className="h-3.5 w-3.5" />
+                                Editar
                               </Button>
 
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setCancelOrder(order)
-                                  setCancelModalOpen(true)
-                                }}
-                                className="h-8 text-xs font-semibold text-destructive hover:text-destructive hover:bg-destructive/10 px-2"
-                                title="Cancelar pedido"
-                              >
-                                <Ban className="h-3.5 w-3.5 mr-1" />
-                                Cancelar
-                              </Button>
+                              {isOpen && (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => {
+                                    setReceiptOrder(order)
+                                    setReceiptModalOpen(true)
+                                  }}
+                                  className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1 px-2.5"
+                                >
+                                  <ArrowDownToLine className="h-3.5 w-3.5" />
+                                  Receber
+                                </Button>
+                              )}
+
+                              {isOpen && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setCancelOrder(order)
+                                    setCancelModalOpen(true)
+                                  }}
+                                  className="h-8 text-xs font-semibold text-destructive hover:text-destructive hover:bg-destructive/10 px-2"
+                                  title="Cancelar pedido"
+                                >
+                                  <Ban className="h-3.5 w-3.5 mr-1" />
+                                  Cancelar
+                                </Button>
+                              )}
                             </div>
                           ) : (
-                            <span className="text-xs text-muted-foreground italic">Concluído</span>
+                            <span className="text-xs text-muted-foreground italic">Cancelado</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -951,6 +996,15 @@ export default function Purchases() {
         open={cancelModalOpen}
         onOpenChange={setCancelModalOpen}
         onConfirm={handleCancelOrder}
+      />
+
+      <EditOrderModal
+        order={editOrder}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        items={items}
+        existingUnits={healthUnits}
+        onSubmit={handleUpdateOrder}
       />
     </div>
   )

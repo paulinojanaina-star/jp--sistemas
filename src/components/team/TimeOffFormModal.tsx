@@ -15,12 +15,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 
 interface Props {
-  id: string | null
+  id?: string | null
+  request?: any
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function TimeOffFormModal({ id, open, onOpenChange }: Props) {
+export function TimeOffFormModal({ id: propId, request, open, onOpenChange }: Props) {
+  const id = request ? (typeof request === 'string' ? request : request.id) : propId
   const { employees, timeOffRequests, saveTimeOff } = useTeamStore()
   const { toast } = useToast()
   const [employeeId, setEmployeeId] = useState('')
