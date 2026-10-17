@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -29,6 +31,9 @@ import {
   CalendarClock,
   Loader2,
   Download,
+  ShoppingCart,
+  Truck,
+  CheckCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -114,10 +119,12 @@ function StatCard({
 }
 
 export function PurchasePredictionReport() {
+  const navigate = useNavigate()
   const [period, setPeriod] = useState(90)
   const [healthUnit, setHealthUnit] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [isExporting, setIsExporting] = useState(false)
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([])
   const { toast } = useToast()
 
   const { loading, items, healthUnits } = usePurchasePrediction(period, healthUnit)
@@ -151,6 +158,79 @@ export function PurchasePredictionReport() {
     return { critical, warning, stable, noData }
   }, [items])
 
+  const handleToggleSelect = (itemId: string) => {
+    setSelectedItemIds((prev) =>
+      prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId],
+    )
+  }
+
+  const handleSelectAllFiltered = () => {
+    // Select all eligible items in the filtered view that have a suggested purchase quantity > 0
+    const eligibleIds = filteredItems.filter((i) => i.suggestedQuantity > 0).map((i) => i.id)
+    const allSelected =
+      eligibleIds.length > 0 && eligibleIds.every((id) => selectedItemIds.includes(id))
+
+    if (allSelected) {
+      // Unselect filtered items
+      setSelectedItemIds((prev) => prev.filter((id) => !eligibleIds.includes(id)))
+    } else {
+      // Add all eligible
+      setSelectedItemIds((prev) => Array.from(new Set([...prev, ...eligibleIds])))
+    }
+  }
+
+  const handleSelectCritical = () => {
+    // Select all items at critical risk (<= 7 days) and with positive suggested quantity
+    const criticalEligible = items
+      .filter((i) => i.riskLevel === 'critical' && i.suggestedQuantity > 0)
+      .map((i) => i.id)
+
+    if (criticalEligible.length === 0) {
+      toast({
+        title: 'Nenhum item crítico para compra',
+        description:
+          'Não há itens críticos (≤ 7 dias) precisando de reposição (ou todos já estão cobertos em rota).',
+      })
+      return
+    }
+
+    setSelectedItemIds((prev) => Array.from(new Set([...prev, ...criticalEligible])))
+    toast({
+      title: 'Itens críticos selecionados',
+      description: `${criticalEligible.length} ${criticalEligible.length === 1 ? 'item crítico selecionado' : 'itens críticos selecionados'}.`,
+    })
+  }
+
+  const handleGeneratePurchaseOrder = () => {
+    const selectedItems = items.filter((i) => selectedItemIds.includes(i.id))
+    if (selectedItems.length === 0) {
+      toast({
+        title: 'Nenhum item selecionado',
+        description: 'Selecione ao menos um item da predição para gerar a solicitação.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Prepare draft order state for navigation to /compras
+    // Find common supplier if all selected items share the same one
+    const suppliers = Array.from(new Set(selectedItems.map((i) => i.supplier).filter(Boolean)))
+    const commonSupplier = suppliers.length === 1 ? suppliers[0] : selectedItems[0]?.supplier || ''
+
+    const draftOrder = {
+      health_unit_name: healthUnit || 'APS',
+      supplier: commonSupplier,
+      items: selectedItems.map((item) => ({
+        item_id: item.id,
+        // Suggested quantity, fallback to 1 if 0
+        quantity_ordered: item.suggestedQuantity > 0 ? item.suggestedQuantity : 1,
+        unit_price: item.unit_price > 0 ? item.unit_price : 0,
+      })),
+    }
+
+    navigate('/compras', { state: { draftOrder } })
+  }
+
   const handleExport = async () => {
     setIsExporting(true)
     const headers = [
@@ -159,8 +239,8 @@ export function PurchasePredictionReport() {
       'Estoque Mínimo',
       'Consumo Diário',
       'Dias p/ Crítico',
-      'Data Prevista Crítico',
-      'Sugestão de Compra',
+      'Em Rota',
+      'Sugestão Reposição',
       'Risco',
     ]
     const rows = filteredItems.map((item) => [
@@ -169,8 +249,12 @@ export function PurchasePredictionReport() {
       item.min_quantity,
       item.adc > 0 ? item.adc.toFixed(2) : '—',
       item.daysUntilCritical ?? '—',
-      formatDate(item.predictedCriticalDate),
-      formatDate(item.suggestedRestockDate),
+      item.inRouteQuantity > 0 ? `${item.inRouteQuantity} un` : '—',
+      item.isCoveredInRoute
+        ? 'Coberto em rota'
+        : item.suggestedQuantity > 0
+          ? `${item.suggestedQuantity} un`
+          : '—',
       item.riskLevel,
     ])
     const { error } = await exportGenericPdf(
@@ -243,6 +327,25 @@ export function PurchasePredictionReport() {
             <Button
               variant="outline"
               size="sm"
+              className="h-9 font-semibold"
+              onClick={handleSelectCritical}
+            >
+              <CheckCheck className="mr-1.5 h-4 w-4 text-red-500" />
+              Selecionar todos os críticos
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              className="h-9 font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm gap-1.5"
+              disabled={selectedItemIds.length === 0}
+              onClick={handleGeneratePurchaseOrder}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Gerar Solicitação de Compra ({selectedItemIds.length})
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               className="h-9"
               disabled={isExporting || filteredItems.length === 0}
               onClick={handleExport}
@@ -302,54 +405,105 @@ export function PurchasePredictionReport() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30">
+                  <TableHead className="w-10 text-center">
+                    <Checkbox
+                      checked={
+                        filteredItems.filter((i) => i.suggestedQuantity > 0).length > 0 &&
+                        filteredItems
+                          .filter((i) => i.suggestedQuantity > 0)
+                          .every((i) => selectedItemIds.includes(i.id))
+                      }
+                      onCheckedChange={handleSelectAllFiltered}
+                      aria-label="Selecionar todos os itens da tabela"
+                    />
+                  </TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead className="text-right">Estoque Atual</TableHead>
                   <TableHead className="text-right">Estoque Mín.</TableHead>
                   <TableHead className="text-right">Consumo Diário</TableHead>
                   <TableHead className="text-center">Risco</TableHead>
                   <TableHead className="text-right">Dias p/ Crítico</TableHead>
+                  <TableHead className="text-center">Em Rota</TableHead>
+                  <TableHead className="text-right">Sugestão Reposição</TableHead>
                   <TableHead className="text-right">Data Crítico</TableHead>
-                  <TableHead className="text-right">Sugestão de Compra</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={10} className="h-24 text-center">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : filteredItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
                       {search ? 'Nenhum item encontrado para a busca.' : 'Nenhum item cadastrado.'}
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredItems.map((item: PredictionItem) => {
                     const config = RISK_CONFIG[item.riskLevel]
+                    const isSelected = selectedItemIds.includes(item.id)
+                    const canSelect = item.suggestedQuantity > 0
+
                     return (
-                      <TableRow key={item.id} className={cn('border-l-4', config.borderColor)}>
-                        <TableCell className="font-medium">
-                          {item.name}
-                          {item.unit_type && (
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                              {item.unit_type}
-                            </div>
-                          )}
+                      <TableRow
+                        key={item.id}
+                        className={cn(
+                          'border-l-4 transition-colors',
+                          config.borderColor,
+                          isSelected && 'bg-primary/5',
+                        )}
+                      >
+                        {/* Checkbox de seleção */}
+                        <TableCell className="text-center">
+                          <Checkbox
+                            checked={isSelected}
+                            disabled={!canSelect}
+                            onCheckedChange={() => handleToggleSelect(item.id)}
+                            aria-label={`Selecionar ${item.name}`}
+                          />
                         </TableCell>
+
+                        {/* Item */}
+                        <TableCell className="font-medium">
+                          <div className="font-bold text-foreground">{item.name}</div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                            {item.unit_type && <span>{item.unit_type}</span>}
+                            {item.supplier && <span>• Forn: {item.supplier}</span>}
+                            {item.unit_price > 0 && (
+                              <span>
+                                • R${' '}
+                                {item.unit_price.toLocaleString('pt-BR', {
+                                  minimumFractionDigits: 2,
+                                })}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+
+                        {/* Estoque Atual */}
                         <TableCell className="text-right font-medium">
                           {item.current_quantity.toLocaleString('pt-BR')}
                         </TableCell>
+
+                        {/* Estoque Mínimo */}
                         <TableCell className="text-right text-muted-foreground">
                           {item.min_quantity.toLocaleString('pt-BR')}
                         </TableCell>
+
+                        {/* Consumo Diário */}
                         <TableCell className="text-right text-muted-foreground">
                           {item.adc > 0 ? item.adc.toFixed(2) : '—'}
                         </TableCell>
+
+                        {/* Risco */}
                         <TableCell className="text-center">
                           <RiskBadge level={item.riskLevel} />
                         </TableCell>
+
+                        {/* Dias p/ Crítico */}
                         <TableCell className="text-right">
                           {item.riskLevel === 'no-data' ? (
                             <span className="text-muted-foreground text-xs italic">
@@ -361,6 +515,51 @@ export function PurchasePredictionReport() {
                             <span className={config.color}>{item.daysUntilCritical} dias</span>
                           )}
                         </TableCell>
+
+                        {/* Em Rota (Melhoria 2) */}
+                        <TableCell className="text-center">
+                          {item.inRouteQuantity > 0 ? (
+                            <Badge
+                              variant="outline"
+                              className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30 font-semibold gap-1"
+                            >
+                              <Truck className="h-3 w-3" />✔{' '}
+                              {item.inRouteQuantity.toLocaleString('pt-BR')} un em rota
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </TableCell>
+
+                        {/* Sugestão de Reposição (descontando Em Rota) */}
+                        <TableCell className="text-right">
+                          {item.riskLevel === 'no-data' ? (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          ) : item.isCoveredInRoute ? (
+                            <Badge
+                              variant="outline"
+                              className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 font-bold text-[11px]"
+                            >
+                              Coberto em rota
+                            </Badge>
+                          ) : item.suggestedQuantity > 0 ? (
+                            <div className="font-mono font-black text-sm text-primary">
+                              {item.suggestedQuantity.toLocaleString('pt-BR')}{' '}
+                              <span className="text-xs font-normal text-muted-foreground">
+                                {item.unit_type || 'un'}
+                              </span>
+                              {item.inRouteQuantity > 0 && (
+                                <div className="text-[10px] font-normal text-muted-foreground">
+                                  (Bruto: {item.rawSuggestedQuantity} - {item.inRouteQuantity} rota)
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </TableCell>
+
+                        {/* Data Crítico */}
                         <TableCell className="text-right">
                           {item.riskLevel === 'no-data' ? (
                             '—'
@@ -377,18 +576,12 @@ export function PurchasePredictionReport() {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <p>Estimativa de zeragem: {formatDate(item.predictedZeroDate)}</p>
+                                  <p>
+                                    Sugestão de pedido até: {formatDate(item.suggestedRestockDate)}
+                                  </p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.riskLevel === 'no-data' ? (
-                            '—'
-                          ) : (
-                            <span className="text-primary font-medium">
-                              {formatDate(item.suggestedRestockDate)}
-                            </span>
                           )}
                         </TableCell>
                       </TableRow>

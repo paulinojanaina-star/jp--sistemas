@@ -7,6 +7,8 @@ export interface PredictionItem {
   id: string
   name: string
   unit_type: string
+  supplier: string | null
+  unit_price: number
   current_quantity: number
   min_quantity: number
   adc: number
@@ -18,6 +20,10 @@ export interface PredictionItem {
   riskLevel: RiskLevel
   totalConsumed: number
   movementCount: number
+  inRouteQuantity: number
+  rawSuggestedQuantity: number
+  suggestedQuantity: number
+  isCoveredInRoute: boolean
 }
 
 export interface UsePurchasePredictionResult {
@@ -36,6 +42,7 @@ export function usePurchasePrediction(
   const [rawItems, setRawItems] = useState<any[]>([])
   const [movements, setMovements] = useState<any[]>([])
   const [healthUnits, setHealthUnits] = useState<string[]>([])
+  const [inRouteMap, setInRouteMap] = useState<Map<string, number>>(new Map())
 
   const periodStart = useMemo(() => {
     const d = new Date()
@@ -49,24 +56,57 @@ export function usePurchasePrediction(
     async function fetchData() {
       setLoading(true)
       try {
-        const [{ data: itemsData }, { data: movementsData }, { data: unitsData }] =
-          await Promise.all([
-            supabase.from('items').select('id, name, unit_type, current_quantity, min_quantity'),
-            supabase
-              .from('inventory_movements')
-              .select('item_id, quantity, type, created_at, health_unit_name')
-              .in('type', CONSUMPTION_TYPES)
-              .gte('created_at', periodStart),
-            supabase
-              .from('inventory_movements')
-              .select('health_unit_name')
-              .not('health_unit_name', 'is', null),
-          ])
+        const [
+          { data: itemsData },
+          { data: movementsData },
+          { data: unitsData },
+          { data: orderItemsData },
+        ] = await Promise.all([
+          supabase
+            .from('items')
+            .select('id, name, unit_type, current_quantity, min_quantity, supplier, unit_price'),
+          supabase
+            .from('inventory_movements')
+            .select('item_id, quantity, type, created_at, health_unit_name')
+            .in('type', CONSUMPTION_TYPES)
+            .gte('created_at', periodStart),
+          supabase
+            .from('inventory_movements')
+            .select('health_unit_name')
+            .not('health_unit_name', 'is', null),
+          (supabase as any).from('purchase_order_items').select(`
+              item_id,
+              quantity_ordered,
+              quantity_received,
+              status,
+              purchase_orders!inner (
+                id,
+                status
+              )
+            `),
+        ])
 
         if (!isMounted) return
 
         setRawItems(itemsData || [])
         setMovements(movementsData || [])
+
+        // Map pending quantity in route per item for active purchase orders (PENDING and PARTIAL)
+        const inRouteByItem = new Map<string, number>()
+        ;(orderItemsData || []).forEach((row: any) => {
+          const orderStatus = row.purchase_orders?.status
+          // Only active orders: PENDING and PARTIAL (exclude RECEIVED and CANCELLED)
+          if (orderStatus === 'PENDING' || orderStatus === 'PARTIAL') {
+            const ordered = Number(row.quantity_ordered) || 0
+            const received = Number(row.quantity_received) || 0
+            const pending = Math.max(0, ordered - received)
+            if (pending > 0 && row.item_id) {
+              const current = inRouteByItem.get(row.item_id) || 0
+              inRouteByItem.set(row.item_id, current + pending)
+            }
+          }
+        })
+        setInRouteMap(inRouteByItem)
 
         const uniqueUnits = [
           ...new Set((unitsData || []).map((d: any) => d.health_unit_name).filter(Boolean)),
@@ -155,21 +195,39 @@ export function usePurchasePrediction(
           riskLevel = 'stable'
         }
 
+        // Raw suggested replenishment quantity based on target stock
+        // Rule: Target Stock = min_quantity + 30 days of consumption (adc * 30)
+        // If current stock < target stock, raw replenishment = target stock - current stock
+        // Otherwise, if current stock is below min, at least (min - current)
+        const monthlyConsumption = Math.ceil(adc * 30)
+        const targetStock = minQty + monthlyConsumption
+        const rawSuggestedQuantity = Math.max(0, Math.ceil(targetStock - currentQty))
+
+        const inRouteQuantity = inRouteMap.get(item.id) || 0
+        const suggestedQuantity = Math.max(0, rawSuggestedQuantity - inRouteQuantity)
+        const isCoveredInRoute = rawSuggestedQuantity > 0 && inRouteQuantity >= rawSuggestedQuantity
+
         return {
           id: item.id,
           name: item.name || 'Desconhecido',
           unit_type: item.unit_type || '',
+          supplier: item.supplier || null,
+          unit_price: Number(item.unit_price) || 0,
           current_quantity: currentQty,
           min_quantity: minQty,
           adc,
-          daysUntilCritical,
-          daysUntilZero,
+          daysUntilCritical: daysUntilCritical,
+          daysUntilZero: daysUntilZero,
           predictedCriticalDate,
           predictedZeroDate,
           suggestedRestockDate,
           riskLevel,
           totalConsumed,
           movementCount,
+          inRouteQuantity,
+          rawSuggestedQuantity,
+          suggestedQuantity,
+          isCoveredInRoute,
         }
       })
       .sort((a, b) => {
@@ -187,7 +245,7 @@ export function usePurchasePrediction(
         }
         return a.name.localeCompare(b.name)
       })
-  }, [rawItems, movements, healthUnit, periodDays])
+  }, [rawItems, movements, healthUnit, periodDays, inRouteMap])
 
   return { loading, items, healthUnits }
 }

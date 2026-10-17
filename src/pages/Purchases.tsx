@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ShoppingCart,
   PlusCircle,
@@ -68,6 +69,8 @@ export default function Purchases() {
   const { toast } = useToast()
   const { session } = useAuth()
   const { items, refreshData: refreshInventory } = useInventoryStore()
+  const location = useLocation()
+  const navigate = useNavigate()
 
   const [orders, setOrders] = useState<PurchaseOrder[]>([])
   const [loading, setLoading] = useState(true)
@@ -89,12 +92,24 @@ export default function Purchases() {
 
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [draftOrderData, setDraftOrderData] = useState<any>(null)
   const [receiptOrder, setReceiptOrder] = useState<PurchaseOrder | null>(null)
   const [receiptModalOpen, setReceiptModalOpen] = useState(false)
   const [cancelOrder, setCancelOrder] = useState<PurchaseOrder | null>(null)
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [editOrder, setEditOrder] = useState<PurchaseOrder | null>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
+
+  // Detect draft order passed via navigation state from PurchasePredictionReport
+  useEffect(() => {
+    const state = location.state as { draftOrder?: any } | null
+    if (state?.draftOrder) {
+      setDraftOrderData(state.draftOrder)
+      setCreateModalOpen(true)
+      // Clear navigation state so refreshing or subsequent interactions don't re-trigger
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.state, navigate, location.pathname])
 
   // Load orders
   const loadOrders = useCallback(async () => {
@@ -978,9 +993,15 @@ export default function Purchases() {
       {/* Modals */}
       <CreateOrderModal
         open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
+        onOpenChange={(open) => {
+          setCreateModalOpen(open)
+          if (!open) {
+            setDraftOrderData(null)
+          }
+        }}
         items={items}
         existingUnits={healthUnits}
+        initialData={draftOrderData}
         onSubmit={handleCreateOrder}
       />
 

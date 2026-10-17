@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -64,11 +64,23 @@ const orderSchema = z.object({
 
 type OrderFormValues = z.infer<typeof orderSchema>
 
+export interface InitialOrderData {
+  supplier?: string
+  health_unit_name?: string
+  notes?: string
+  items?: Array<{
+    item_id: string
+    quantity_ordered: number
+    unit_price?: number
+  }>
+}
+
 interface CreateOrderModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   items: Item[]
   existingUnits: string[]
+  initialData?: InitialOrderData | null
   onSubmit: (values: CreatePurchaseOrderInput) => Promise<boolean>
 }
 
@@ -77,6 +89,7 @@ export function CreateOrderModal({
   onOpenChange,
   items,
   existingUnits,
+  initialData,
   onSubmit,
 }: CreateOrderModalProps) {
   const [submitting, setSubmitting] = useState(false)
@@ -103,6 +116,27 @@ export function CreateOrderModal({
       ],
     },
   })
+
+  // Whenever open turns true or initialData is provided, apply initialData or default values
+  useEffect(() => {
+    if (open) {
+      if (initialData && initialData.items && initialData.items.length > 0) {
+        form.reset({
+          request_number: '',
+          supplier: initialData.supplier || '',
+          health_unit_name: initialData.health_unit_name || 'APS',
+          requested_at: todayStr,
+          expected_date: '',
+          notes: initialData.notes || '',
+          items: initialData.items.map((it) => ({
+            item_id: it.item_id,
+            quantity_ordered: it.quantity_ordered,
+            unit_price: it.unit_price ?? 0,
+          })),
+        })
+      }
+    }
+  }, [open, initialData, form, todayStr])
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
