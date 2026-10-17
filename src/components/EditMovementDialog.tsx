@@ -51,8 +51,19 @@ export function EditMovementDialog({
   const { toast } = useToast()
   const [submitting, setSubmitting] = useState(false)
 
-  const form = useForm<z.infer<typeof editSchema>>({
-    resolver: zodResolver(editSchema),
+  type EditFormValues = {
+    quantity: number
+    health_unit_name: string
+    batch_number?: string
+    manufacturing_date?: string
+    expiry_date?: string
+    observations?: string
+    edit_justification: string
+    password: string
+  }
+
+  const form = useForm<EditFormValues>({
+    resolver: zodResolver(editSchema) as any,
     defaultValues: {
       quantity: 1,
       health_unit_name: '',

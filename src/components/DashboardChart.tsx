@@ -56,7 +56,7 @@ export function DashboardChart() {
               axisLine={false}
             />
             <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-            <ChartTooltip content={<ChartTooltipContent />} />
+            <ChartTooltip content={(props: any) => <ChartTooltipContent {...props} />} />
             <Bar dataKey="saidas" fill="var(--color-saidas)" radius={[4, 4, 0, 0]} barSize={40} />
           </BarChart>
         </ChartContainer>

@@ -8,6 +8,8 @@ export interface PurchaseOrder {
   item_id: string
   quantity_ordered: number
   quantity_received: number
+  unit_price?: number | null
+  total_price?: number | null
   status: PurchaseOrderStatus
   supplier?: string | null
   health_unit_name?: string | null
@@ -26,6 +28,8 @@ export interface CreatePurchaseOrderInput {
   request_number: string
   item_id: string
   quantity_ordered: number
+  unit_price?: number | null
+  total_price?: number | null
   supplier?: string | null
   health_unit_name?: string | null
   requested_at: string
@@ -37,6 +41,7 @@ export interface RegisterReceiptInput {
   order_id: string
   item_id: string
   quantity_received_now: number
+  unit_price?: number | null
   batch_number?: string | null
   expiry_date?: string | null
   received_at?: string

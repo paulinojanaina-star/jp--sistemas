@@ -24,7 +24,16 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { PurchaseOrder, RegisterReceiptInput } from '@/types/purchaseOrder'
 import { formatItemDisplay } from '@/utils/itemFormat'
-import { Loader2, ArrowDownToLine, AlertCircle, Calendar, Hash, PackageCheck } from 'lucide-react'
+import {
+  Loader2,
+  ArrowDownToLine,
+  AlertCircle,
+  Calendar,
+  Hash,
+  PackageCheck,
+  DollarSign,
+  Calculator,
+} from 'lucide-react'
 
 interface RegisterReceiptModalProps {
   order: PurchaseOrder | null
@@ -47,12 +56,21 @@ export function RegisterReceiptModal({
     return Math.max(0, order.quantity_ordered - order.quantity_received)
   }, [order])
 
+  const defaultUnitPrice = useMemo(() => {
+    if (!order) return 0
+    if (order.unit_price && Number(order.unit_price) > 0) return Number(order.unit_price)
+    if (order.item?.unit_price && Number(order.item.unit_price) > 0)
+      return Number(order.item.unit_price)
+    return 0
+  }, [order])
+
   const receiptSchema = useMemo(() => {
     return z.object({
       quantity_received_now: z.coerce
         .number()
         .positive('A quantidade deve ser maior que zero')
         .max(pendingQty, `A quantidade não pode exceder o pendente (${pendingQty})`),
+      unit_price: z.coerce.number().min(0, 'Valor unitário não pode ser negativo').optional(),
       batch_number: z.string().optional(),
       expiry_date: z.string().optional(),
       received_at: z.string().min(1, 'Informe a data de recebimento'),
@@ -64,9 +82,10 @@ export function RegisterReceiptModal({
   type ReceiptFormValues = z.infer<typeof receiptSchema>
 
   const form = useForm<ReceiptFormValues>({
-    resolver: zodResolver(receiptSchema),
+    resolver: zodResolver(receiptSchema) as any,
     values: {
       quantity_received_now: pendingQty,
+      unit_price: defaultUnitPrice,
       batch_number: '',
       expiry_date: '',
       received_at: todayStr,
@@ -81,15 +100,19 @@ export function RegisterReceiptModal({
   if (!order) return null
 
   const watchedQty = Number(form.watch('quantity_received_now')) || 0
+  const watchedPrice = Number(form.watch('unit_price')) || 0
+  const deliveryTotal = watchedQty * watchedPrice
   const isPartial = watchedQty < pendingQty
   const willComplete = watchedQty >= pendingQty && pendingQty > 0
 
   const handleFormSubmit = async (values: ReceiptFormValues) => {
     setSubmitting(true)
+    const price = Number(values.unit_price) || 0
     const success = await onSubmit({
       order_id: order.id,
       item_id: order.item_id,
       quantity_received_now: Number(values.quantity_received_now),
+      unit_price: price > 0 ? price : undefined,
       batch_number: values.batch_number || null,
       expiry_date: values.expiry_date || null,
       received_at: values.received_at,
@@ -176,25 +199,26 @@ export function RegisterReceiptModal({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4 pt-1">
-            {/* Quantidade Recebida Agora */}
-            <div className="space-y-2">
+            {/* Quantidade e Valor Unitário Real */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Quantidade Recebida Agora */}
               <FormField
                 control={form.control}
                 name="quantity_received_now"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
-                      <FormLabel className="font-bold text-sm">
-                        Quantidade Recebida Nesta Entrega
+                      <FormLabel className="font-bold text-xs">
+                        Qtd. Recebida Nesta Entrega
                       </FormLabel>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="text-xs h-7 text-primary"
+                        className="text-[11px] h-6 px-1.5 text-primary"
                         onClick={() => form.setValue('quantity_received_now', pendingQty)}
                       >
-                        Receber tudo ({pendingQty})
+                        Tudo ({pendingQty})
                       </Button>
                     </div>
                     <FormControl>
@@ -204,7 +228,7 @@ export function RegisterReceiptModal({
                         max={pendingQty}
                         step="any"
                         placeholder="Ex: 50"
-                        className="font-mono text-lg font-bold"
+                        className="font-mono text-base font-bold"
                         {...field}
                       />
                     </FormControl>
@@ -213,7 +237,58 @@ export function RegisterReceiptModal({
                 )}
               />
 
-              {/* Status preview */}
+              {/* Valor Unitário Real da Nota */}
+              <FormField
+                control={form.control}
+                name="unit_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold text-xs flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        Valor Unitário Real (R$)
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-normal">
+                        Atualiza financeiro
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0,00"
+                        className="font-mono text-base font-bold"
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value === '' ? '' : parseFloat(e.target.value)
+                          field.onChange(val)
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Total desta entrega e status preview */}
+            <div className="space-y-2">
+              <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs font-bold text-muted-foreground">
+                    Valor total desta entrega:
+                  </span>
+                </div>
+                <div className="text-base font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    deliveryTotal,
+                  )}
+                </div>
+              </div>
+
               <div className="text-xs px-3 py-2 rounded-lg bg-muted/60 border flex items-center justify-between">
                 <span className="text-muted-foreground">Status resultante do pedido:</span>
                 {willComplete ? (

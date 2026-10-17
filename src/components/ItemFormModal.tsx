@@ -39,7 +39,7 @@ const itemSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   description: z.string().optional(),
   unit_type: z.enum(['Caixa', 'Unidade', 'Rolo', 'Litro', 'Frasco', 'Par', 'Pacote'], {
-    errorMap: () => ({ message: 'Selecione uma unidade de medida válida' }),
+    message: 'Selecione uma unidade de medida válida',
   }),
   min_quantity: z.coerce.number().min(0, 'Estoque mínimo não pode ser negativo'),
   current_quantity: z.coerce.number().min(0, 'Saldo inicial não pode ser negativo'),
@@ -89,8 +89,21 @@ export function ItemFormModal({
       ? Math.ceil(consumption.dailyConsumption * 40)
       : 0
 
-  const form = useForm<z.infer<typeof itemSchema>>({
-    resolver: zodResolver(itemSchema),
+  type ItemFormValues = {
+    name: string
+    description?: string
+    unit_type: 'Caixa' | 'Unidade' | 'Rolo' | 'Litro' | 'Frasco' | 'Par' | 'Pacote'
+    min_quantity: number
+    current_quantity: number
+    batch_number?: string
+    manufacturing_date?: string
+    expiry_date?: string
+    is_indefinite_expiry: boolean
+    supplier?: string
+  }
+
+  const form = useForm<ItemFormValues>({
+    resolver: zodResolver(itemSchema) as any,
     defaultValues: {
       name: item?.name || '',
       description: item?.description || '',

@@ -100,7 +100,7 @@ export function DashboardTopItemsChart() {
                 }
               />
               <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip content={(props: any) => <ChartTooltipContent {...props} />} />
               <Bar dataKey="total" fill="var(--color-total)" radius={[4, 4, 0, 0]} barSize={40} />
             </BarChart>
           </ChartContainer>

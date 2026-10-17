@@ -20,6 +20,8 @@ export async function fetchPurchaseOrders(): Promise<{
     ...row,
     quantity_ordered: Number(row.quantity_ordered),
     quantity_received: Number(row.quantity_received || 0),
+    unit_price: row.unit_price != null ? Number(row.unit_price) : null,
+    total_price: row.total_price != null ? Number(row.total_price) : null,
     item: row.items,
   }))
 
@@ -29,6 +31,13 @@ export async function fetchPurchaseOrders(): Promise<{
 export async function createPurchaseOrder(
   input: CreatePurchaseOrderInput,
 ): Promise<{ data: PurchaseOrder | null; error: any }> {
+  const unitPrice =
+    input.unit_price !== undefined && input.unit_price !== null ? Number(input.unit_price) : 0
+  const totalPrice =
+    input.total_price !== undefined && input.total_price !== null
+      ? Number(input.total_price)
+      : unitPrice * Number(input.quantity_ordered)
+
   const { data, error } = await supabase
     .from('purchase_orders')
     .insert({
@@ -36,6 +45,8 @@ export async function createPurchaseOrder(
       item_id: input.item_id,
       quantity_ordered: input.quantity_ordered,
       quantity_received: 0,
+      unit_price: unitPrice,
+      total_price: totalPrice,
       status: 'PENDING',
       supplier: input.supplier?.trim() || null,
       health_unit_name: input.health_unit_name?.trim() || null,
@@ -48,11 +59,23 @@ export async function createPurchaseOrder(
 
   if (error) return { data: null, error }
 
+  // Se um valor unitário positivo foi informado, atualizar o preço do item na tabela items
+  // para que o Controle Financeiro e relatórios reflitam o preço mais recente de compra
+  if (unitPrice > 0) {
+    const itemUpdates: Record<string, any> = { unit_price: unitPrice }
+    if (input.supplier?.trim()) {
+      itemUpdates.supplier = input.supplier.trim()
+    }
+    await supabase.from('items').update(itemUpdates).eq('id', input.item_id)
+  }
+
   return {
     data: {
       ...data,
       quantity_ordered: Number(data.quantity_ordered),
       quantity_received: Number(data.quantity_received || 0),
+      unit_price: data.unit_price != null ? Number(data.unit_price) : null,
+      total_price: data.total_price != null ? Number(data.total_price) : null,
       item: data.items,
     },
     error: null,
@@ -94,15 +117,36 @@ export async function registerOrderReceipt(
   if (moveError) return { error: moveError }
 
   // 2. Update purchase_orders with accumulated quantity_received and status
+  const orderUpdates: Record<string, any> = {
+    quantity_received: newReceivedTotal,
+    status: nextStatus,
+  }
+
+  // Se foi fornecido um valor unitário atualizado no momento do recebimento, atualizar também o pedido
+  if (receipt.unit_price !== undefined && receipt.unit_price !== null && receipt.unit_price > 0) {
+    orderUpdates.unit_price = Number(receipt.unit_price)
+    orderUpdates.total_price = Number(receipt.unit_price) * Number(currentOrder.quantity_ordered)
+  }
+
   const { error: orderError } = await supabase
     .from('purchase_orders')
-    .update({
-      quantity_received: newReceivedTotal,
-      status: nextStatus,
-    })
+    .update(orderUpdates)
     .eq('id', currentOrder.id)
 
   if (orderError) return { error: orderError }
+
+  // 3. Atualizar o preço unitário do item na tabela items se informado no recebimento
+  // Garantindo que a aba Controle Financeiro mostre o valor real da nota recebida
+  const finalUnitPrice =
+    receipt.unit_price !== undefined && receipt.unit_price !== null && receipt.unit_price > 0
+      ? Number(receipt.unit_price)
+      : currentOrder.unit_price && currentOrder.unit_price > 0
+        ? Number(currentOrder.unit_price)
+        : null
+
+  if (finalUnitPrice && finalUnitPrice > 0) {
+    await supabase.from('items').update({ unit_price: finalUnitPrice }).eq('id', receipt.item_id)
+  }
 
   return {}
 }

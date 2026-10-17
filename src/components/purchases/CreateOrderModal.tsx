@@ -34,12 +34,21 @@ import { Item } from '@/types/inventory'
 import { CreatePurchaseOrderInput } from '@/types/purchaseOrder'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { cn } from '@/lib/utils'
-import { Check, ChevronsUpDown, Loader2, PlusCircle, Building2 } from 'lucide-react'
+import {
+  Check,
+  ChevronsUpDown,
+  Loader2,
+  PlusCircle,
+  Building2,
+  Calculator,
+  DollarSign,
+} from 'lucide-react'
 
 const orderSchema = z.object({
   request_number: z.string().min(1, 'Digite o número oficial da solicitação').trim(),
   item_id: z.string().min(1, 'Selecione um item'),
   quantity_ordered: z.coerce.number().positive('Quantidade deve ser maior que zero'),
+  unit_price: z.coerce.number().min(0, 'Valor unitário não pode ser negativo').optional(),
   supplier: z.string().optional(),
   health_unit_name: z.string().optional(),
   requested_at: z.string().min(1, 'Informe a data da solicitação'),
@@ -71,11 +80,12 @@ export function CreateOrderModal({
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], [])
 
   const form = useForm<OrderFormValues>({
-    resolver: zodResolver(orderSchema),
+    resolver: zodResolver(orderSchema) as any,
     defaultValues: {
       request_number: '',
       item_id: '',
       quantity_ordered: 1,
+      unit_price: 0,
       supplier: '',
       health_unit_name: 'APS',
       requested_at: todayStr,
@@ -85,6 +95,13 @@ export function CreateOrderModal({
   })
 
   const selectedItemId = form.watch('item_id')
+  const quantityOrdered = Number(form.watch('quantity_ordered')) || 0
+  const unitPrice = Number(form.watch('unit_price')) || 0
+
+  const calculatedTotal = useMemo(() => {
+    return Math.max(0, quantityOrdered * unitPrice)
+  }, [quantityOrdered, unitPrice])
+
   const selectedItem = useMemo(
     () => items.find((i) => i.id === selectedItemId),
     [items, selectedItemId],
@@ -95,15 +112,25 @@ export function CreateOrderModal({
     if (item.supplier) {
       form.setValue('supplier', item.supplier)
     }
+    // Pre-popula o valor unitário com o preço atual cadastrado do item, se houver
+    if (item.unit_price && Number(item.unit_price) > 0) {
+      form.setValue('unit_price', Number(item.unit_price))
+    }
     setItemPopoverOpen(false)
   }
 
   const handleFormSubmit = async (values: OrderFormValues) => {
     setSubmitting(true)
+    const price = Number(values.unit_price) || 0
+    const qty = Number(values.quantity_ordered)
+    const total = price * qty
+
     const success = await onSubmit({
       request_number: values.request_number,
       item_id: values.item_id,
-      quantity_ordered: Number(values.quantity_ordered),
+      quantity_ordered: qty,
+      unit_price: price,
+      total_price: total,
       supplier: values.supplier || null,
       health_unit_name: values.health_unit_name || null,
       requested_at: values.requested_at,
@@ -116,6 +143,7 @@ export function CreateOrderModal({
         request_number: '',
         item_id: '',
         quantity_ordered: 1,
+        unit_price: 0,
         supplier: '',
         health_unit_name: 'APS',
         requested_at: todayStr,
@@ -281,6 +309,75 @@ export function CreateOrderModal({
                 )}
               />
 
+              {/* Valor Unitário */}
+              <FormField
+                control={form.control}
+                name="unit_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        Valor Unitário (R$)
+                      </span>
+                      {selectedItem?.unit_price && Number(selectedItem.unit_price) > 0 ? (
+                        <span className="text-[10px] text-muted-foreground">
+                          Atual: R$ {Number(selectedItem.unit_price).toFixed(2)}
+                        </span>
+                      ) : null}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0,00"
+                        className="font-mono text-base font-semibold"
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value === '' ? '' : parseFloat(e.target.value)
+                          field.onChange(val)
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Card com Cálculo Automático do Valor da Nota */}
+            <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <Calculator className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Cálculo Automático da Nota
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {quantityOrdered} {selectedItem?.unit_type || 'un'} ×{' '}
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                      unitPrice,
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="text-right sm:border-l sm:pl-4 border-emerald-500/20">
+                <div className="text-[11px] font-bold text-muted-foreground uppercase">
+                  Valor Total da Nota
+                </div>
+                <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    calculatedTotal,
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
               {/* Fornecedor */}
               <FormField
                 control={form.control}

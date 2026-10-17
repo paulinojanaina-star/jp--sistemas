@@ -80,8 +80,21 @@ export function MovementForm() {
 
   const defaultItemId = (location.state as any)?.itemId || ''
 
-  const form = useForm<z.infer<typeof movementSchema>>({
-    resolver: zodResolver(movementSchema),
+  type MovementFormValues = {
+    item_id: string
+    type: 'IN' | 'OUT' | 'SPECIAL_OUT'
+    quantity: number
+    health_unit_name: string
+    special_reason?: string
+    observations?: string
+    file?: any
+    batch_number?: string
+    manufacturing_date?: string
+    expiry_date?: string
+  }
+
+  const form = useForm<MovementFormValues>({
+    resolver: zodResolver(movementSchema) as any,
     defaultValues: {
       type: 'OUT',
       health_unit_name: '',

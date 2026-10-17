@@ -123,10 +123,20 @@ export default function Purchases() {
         const pending = Math.max(0, order.quantity_ordered - order.quantity_received)
         totalPendingQty += pending
 
-        const unitPrice = order.item?.unit_price ? Number(order.item.unit_price) : 0
-        if (unitPrice > 0) {
+        // Priorizar o valor unitário gravado no próprio pedido de compra;
+        // caso não informado no pedido, fazer fallback para o item.unit_price
+        const orderUnitPrice =
+          order.unit_price !== undefined &&
+          order.unit_price !== null &&
+          Number(order.unit_price) > 0
+            ? Number(order.unit_price)
+            : order.item?.unit_price
+              ? Number(order.item.unit_price)
+              : 0
+
+        if (orderUnitPrice > 0) {
           hasPriceAvailable = true
-          totalPendingValue += pending * unitPrice
+          totalPendingValue += pending * orderUnitPrice
         }
       }
     })
@@ -184,7 +194,7 @@ export default function Purchases() {
       title: 'Solicitação Criada com Sucesso!',
       description: `Pedido Nº ${values.request_number} cadastrado.`,
     })
-    await loadOrders()
+    await Promise.all([loadOrders(), refreshInventory()])
     return true
   }
 
@@ -379,7 +389,7 @@ export default function Purchases() {
                 })}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Calculado com base no preço unitário dos itens cadastrados
+                Calculado com base no valor unitário informado nos pedidos e itens
               </p>
             </CardContent>
           </Card>
@@ -483,6 +493,9 @@ export default function Purchases() {
                 <TableHead className="font-extrabold text-xs uppercase tracking-wider py-4 text-center">
                   Pendente
                 </TableHead>
+                <TableHead className="font-extrabold text-xs uppercase tracking-wider py-4 text-right">
+                  Valor Total
+                </TableHead>
                 <TableHead className="font-extrabold text-xs uppercase tracking-wider py-4 text-center">
                   Status
                 </TableHead>
@@ -494,7 +507,7 @@ export default function Purchases() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-36 text-center">
+                  <TableCell colSpan={9} className="h-36 text-center">
                     <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                       <Loader2 className="h-6 w-6 animate-spin text-primary" />
                       <span className="text-sm font-medium">Carregando pedidos de compra...</span>
@@ -503,7 +516,7 @@ export default function Purchases() {
                 </TableRow>
               ) : filteredOrders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-44 text-center">
+                  <TableCell colSpan={9} className="h-44 text-center">
                     <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                       <div className="p-3 rounded-full bg-muted">
                         <ShoppingCart className="h-8 w-8 opacity-40" />
@@ -653,6 +666,53 @@ export default function Purchases() {
                             0 (Zerado)
                           </span>
                         )}
+                      </TableCell>
+
+                      {/* Valor Total da Nota */}
+                      <TableCell className="py-4 align-top text-right font-mono">
+                        {(() => {
+                          const unitPrice =
+                            order.unit_price !== undefined &&
+                            order.unit_price !== null &&
+                            Number(order.unit_price) > 0
+                              ? Number(order.unit_price)
+                              : order.item?.unit_price
+                                ? Number(order.item.unit_price)
+                                : 0
+
+                          const totalOrderValue =
+                            order.total_price !== undefined &&
+                            order.total_price !== null &&
+                            Number(order.total_price) > 0
+                              ? Number(order.total_price)
+                              : unitPrice * order.quantity_ordered
+
+                          if (totalOrderValue <= 0) {
+                            return (
+                              <span className="text-xs text-muted-foreground italic font-sans">
+                                Não informado
+                              </span>
+                            )
+                          }
+
+                          return (
+                            <div>
+                              <div className="font-extrabold text-sm text-foreground">
+                                {new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                }).format(totalOrderValue)}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground">
+                                {new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                }).format(unitPrice)}
+                                /{unitType}
+                              </div>
+                            </div>
+                          )
+                        })()}
                       </TableCell>
 
                       {/* Status */}
