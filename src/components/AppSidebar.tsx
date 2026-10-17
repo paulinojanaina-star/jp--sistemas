@@ -8,6 +8,7 @@ import {
   Activity,
   Users,
   ShieldAlert,
+  ShoppingCart,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -26,6 +27,7 @@ export function AppSidebar() {
     { title: 'Dashboard', url: '/almoxarifado', icon: LayoutDashboard },
     { title: 'Itens', url: '/itens', icon: Package },
     { title: 'Movimentações', url: '/movimentacoes', icon: ArrowRightLeft },
+    { title: 'Compras', url: '/compras', icon: ShoppingCart },
     { title: 'Histórico', url: '/historico', icon: History },
     { title: 'Profissionais & Escalas', url: '/equipe', icon: Users },
     { title: 'Relatórios', url: '/relatorios', icon: FileBarChart },

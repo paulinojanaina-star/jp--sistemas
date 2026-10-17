@@ -14,6 +14,7 @@ import Index from './pages/Index'
 import Almoxarifado from './pages/Almoxarifado'
 import Items from './pages/Items'
 import Movements from './pages/Movements'
+import Purchases from './pages/Purchases'
 import History from './pages/History'
 import Reports from './pages/Reports'
 import DataHealth from './pages/DataHealth'
@@ -62,6 +63,7 @@ const App = () => (
                   <Route path="/almoxarifado" element={<Almoxarifado />} />
                   <Route path="/itens" element={<Items />} />
                   <Route path="/movimentacoes" element={<Movements />} />
+                  <Route path="/compras" element={<Purchases />} />
                   <Route path="/historico" element={<History />} />
                   <Route path="/equipe" element={<Team />} />
                   <Route path="/relatorios" element={<Reports />} />
