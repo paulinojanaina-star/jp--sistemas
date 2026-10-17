@@ -114,7 +114,7 @@ function StatCard({
 }
 
 export function PurchasePredictionReport() {
-  const [period, setPeriod] = useState(30)
+  const [period, setPeriod] = useState(90)
   const [healthUnit, setHealthUnit] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [isExporting, setIsExporting] = useState(false)

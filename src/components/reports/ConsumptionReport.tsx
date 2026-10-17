@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils'
 import { useConsumptionReport } from '@/hooks/use-consumption-report'
 import { ConsumptionCharts } from './ConsumptionCharts'
 
-type DatePreset = '7d' | '30d' | 'thisMonth' | 'custom'
+type DatePreset = '7d' | '30d' | '90d' | 'thisMonth' | 'custom'
 
 function getPresetRange(preset: DatePreset) {
   const now = new Date()
@@ -34,16 +34,18 @@ function getPresetRange(preset: DatePreset) {
       return { start: subDays(now, 7), end: now }
     case '30d':
       return { start: subDays(now, 30), end: now }
+    case '90d':
+      return { start: subDays(now, 90), end: now }
     case 'thisMonth':
       return { start: startOfMonth(now), end: now }
     default:
-      return { start: subDays(now, 30), end: now }
+      return { start: subDays(now, 90), end: now }
   }
 }
 
 export function ConsumptionReport() {
-  const [preset, setPreset] = useState<DatePreset>('30d')
-  const [dateRange, setDateRange] = useState(() => getPresetRange('30d'))
+  const [preset, setPreset] = useState<DatePreset>('90d')
+  const [dateRange, setDateRange] = useState(() => getPresetRange('90d'))
   const [healthUnit, setHealthUnit] = useState<string | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [itemSearchOpen, setItemSearchOpen] = useState(false)
@@ -74,7 +76,7 @@ export function ConsumptionReport() {
         <CardHeader className="pb-4">
           <CardTitle className="text-lg">Relatório de Consumo Dinâmico</CardTitle>
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            {(['7d', '30d', 'thisMonth'] as DatePreset[]).map((p) => (
+            {(['7d', '30d', '90d', 'thisMonth'] as DatePreset[]).map((p) => (
               <Button
                 key={p}
                 size="sm"
@@ -82,7 +84,13 @@ export function ConsumptionReport() {
                 onClick={() => handlePreset(p)}
                 className="h-8"
               >
-                {p === '7d' ? '7 dias' : p === '30d' ? '30 dias' : 'Este mês'}
+                {p === '7d'
+                  ? '7 dias'
+                  : p === '30d'
+                    ? '30 dias'
+                    : p === '90d'
+                      ? '90 dias'
+                      : 'Este mês'}
               </Button>
             ))}
             <Popover>

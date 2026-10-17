@@ -20,14 +20,14 @@ export function DashboardTopItemsChart() {
 
     async function fetchData() {
       try {
-        const thirtyDaysAgo = new Date()
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        const ninetyDaysAgo = new Date()
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
         const { data: movements, error } = await supabase
           .from('inventory_movements')
           .select('item_id, quantity, items(name)')
           .eq('type', 'OUT')
-          .gte('created_at', thirtyDaysAgo.toISOString())
+          .gte('created_at', ninetyDaysAgo.toISOString())
 
         if (error) {
           console.error('Error fetching top items:', error)
@@ -75,7 +75,7 @@ export function DashboardTopItemsChart() {
   return (
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
-        <CardTitle className="text-lg">Itens com Maior Saída (Últimos 30 Dias)</CardTitle>
+        <CardTitle className="text-lg">Itens com Maior Saída (Últimos 90 Dias)</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -83,7 +83,7 @@ export function DashboardTopItemsChart() {
         ) : data.length === 0 ? (
           <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
             <p className="text-sm text-muted-foreground">
-              Nenhuma saída registrada nos últimos 30 dias.
+              Nenhuma saída registrada nos últimos 90 dias.
             </p>
           </div>
         ) : (

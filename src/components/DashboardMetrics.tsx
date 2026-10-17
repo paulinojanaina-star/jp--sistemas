@@ -22,18 +22,18 @@ export function DashboardMetrics() {
     (i) => Number(i.current_quantity) < Number(i.min_quantity),
   ).length
 
-  const currentMonth = new Date().getMonth()
-  const currentYear = new Date().getFullYear()
+  const ninetyDaysAgo = new Date()
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
-  const monthlyMovements = movements.filter((m) => {
+  const periodMovements = movements.filter((m) => {
     const d = new Date(m.created_at)
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+    return d >= ninetyDaysAgo
   })
 
-  const monthlyIn = monthlyMovements
+  const monthlyIn = periodMovements
     .filter((m) => m.type === 'IN')
     .reduce((sum, m) => sum + Number(m.quantity), 0)
-  const monthlyOut = monthlyMovements
+  const monthlyOut = periodMovements
     .filter((m) => m.type === 'OUT')
     .reduce((sum, m) => sum + Number(m.quantity), 0)
 
@@ -224,7 +224,7 @@ export function DashboardMetrics() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Entradas (Mês)</CardTitle>
+          <CardTitle className="text-sm font-medium">Entradas (90 dias)</CardTitle>
           <ArrowDownToLine className="h-4 w-4 text-secondary" strokeWidth={1.5} />
         </CardHeader>
         <CardContent>
@@ -235,7 +235,7 @@ export function DashboardMetrics() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Saídas (Mês)</CardTitle>
+          <CardTitle className="text-sm font-medium">Saídas (90 dias)</CardTitle>
           <ArrowUpFromLine className="h-4 w-4 text-primary" strokeWidth={1.5} />
         </CardHeader>
         <CardContent>

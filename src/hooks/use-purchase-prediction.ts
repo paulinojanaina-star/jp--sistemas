@@ -26,7 +26,7 @@ export interface UsePurchasePredictionResult {
   healthUnits: string[]
 }
 
-const CONSUMPTION_TYPES = ['OUT', 'SPECIAL_OUT']
+const CONSUMPTION_TYPES = ['OUT']
 
 export function usePurchasePrediction(
   periodDays: number,

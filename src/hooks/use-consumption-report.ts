@@ -34,7 +34,7 @@ interface DateRange {
   end: Date
 }
 
-const CONSUMPTION_TYPES = ['OUT', 'SPECIAL_OUT']
+const CONSUMPTION_TYPES = ['OUT']
 
 function getPreviousRange(range: DateRange): DateRange {
   const durationMs = range.end.getTime() - range.start.getTime()

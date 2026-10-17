@@ -8,17 +8,25 @@ export function DashboardChart() {
   const { movements } = useInventoryStore()
 
   const data = useMemo(() => {
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      return d.toISOString().split('T')[0]
+    const numWeeks = 13
+    const weeks = Array.from({ length: numWeeks }, (_, i) => {
+      const weekEnd = new Date()
+      weekEnd.setDate(weekEnd.getDate() - i * 7)
+      weekEnd.setHours(23, 59, 59, 999)
+      const weekStart = new Date(weekEnd)
+      weekStart.setDate(weekStart.getDate() - 6)
+      weekStart.setHours(0, 0, 0, 0)
+      return { start: weekStart, end: weekEnd }
     }).reverse()
 
-    return days.map((dayStr) => {
-      const dateObj = new Date(dayStr + 'T00:00:00')
-      const formatted = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+    return weeks.map(({ start, end }) => {
+      const formatted = start.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
       const totalOut = movements
-        .filter((m) => m.type === 'OUT' && m.created_at.startsWith(dayStr))
+        .filter((m) => {
+          if (m.type !== 'OUT') return false
+          const d = new Date(m.created_at || 0)
+          return d >= start && d <= end
+        })
         .reduce((sum, m) => sum + Number(m.quantity), 0)
 
       return { date: formatted, saidas: totalOut }
@@ -35,7 +43,7 @@ export function DashboardChart() {
   return (
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
-        <CardTitle className="text-lg">Consumo (Últimos 7 dias)</CardTitle>
+        <CardTitle className="text-lg">Consumo (Últimos 90 dias)</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">

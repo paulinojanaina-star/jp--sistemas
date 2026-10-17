@@ -35,7 +35,7 @@ export function PurchaseSuggestionReport() {
   const { items, movements, updateItem } = useInventoryStore()
   const [search, setSearch] = useState('')
   const [isExporting, setIsExporting] = useState(false)
-  const [period, setPeriod] = useState<number | 'YTD'>('YTD')
+  const [period, setPeriod] = useState<number | '90d'>('90d')
   const [purchaseHorizon, setPurchaseHorizon] = useState<number>(1)
   const [customQuantities, setCustomQuantities] = useState<Record<string, string>>({})
   const [customMinStocks, setCustomMinStocks] = useState<Record<string, string>>({})
@@ -51,7 +51,7 @@ export function PurchaseSuggestionReport() {
         const { monthlyConsumption, dailyConsumption } = calculateConsumption(
           item,
           movements,
-          period === 'YTD' ? undefined : period,
+          period === '90d' ? undefined : period,
         )
 
         const suggestedMinStock = Math.ceil(dailyConsumption * 40)
@@ -183,13 +183,13 @@ export function PurchaseSuggestionReport() {
 
           <Select
             value={period.toString()}
-            onValueChange={(v) => setPeriod(v === 'YTD' ? 'YTD' : Number(v))}
+            onValueChange={(v) => setPeriod(v === '90d' ? '90d' : Number(v))}
           >
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Base de cálculo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="YTD">Histórico: Ano Atual</SelectItem>
+              <SelectItem value="90d">Histórico: Últimos 90 dias</SelectItem>
               <SelectItem value="3">Histórico: Últimos 3 meses</SelectItem>
               <SelectItem value="6">Histórico: Últimos 6 meses</SelectItem>
               <SelectItem value="8">Histórico: Últimos 8 meses</SelectItem>
