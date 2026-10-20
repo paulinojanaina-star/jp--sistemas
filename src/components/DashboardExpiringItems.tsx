@@ -5,6 +5,8 @@ import { AlertTriangle, CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { formatItemDisplay } from '@/utils/itemFormat'
 import { getNearestExpiry } from '@/utils/expiryLogic'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 
 export function DashboardExpiringItems() {
   const { items, movements } = useInventoryStore()
@@ -44,11 +46,39 @@ export function DashboardExpiringItems() {
 
   return (
     <Card className="col-span-1 lg:col-span-1 flex flex-col">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-amber-500" />
           Alertas de Validade
         </CardTitle>
+        <ExportButtons
+          size="sm"
+          disabled={displayList.length === 0}
+          options={(): GenericExportOptions<any> => ({
+            filename: 'alertas-validade-dashboard',
+            title: 'Alertas de Validade (Dashboard)',
+            data: displayList,
+            columns: [
+              {
+                header: 'Item',
+                accessor: (d) => formatItemDisplay(d.item),
+              },
+              {
+                header: 'Data de Vencimento',
+                accessor: (d) => format(d.nearestExpiry, 'dd/MM/yyyy'),
+              },
+              {
+                header: 'Lote',
+                accessor: (d) => d.batch || '-',
+              },
+              {
+                header: 'Situação',
+                accessor: (d) =>
+                  d.isExpired ? 'Vencido' : d.diffDays <= 60 ? '≤ 60 Dias' : '≤ 120 Dias',
+              },
+            ],
+          })}
+        />
       </CardHeader>
       <CardContent className="flex-1">
         <div className="space-y-4">

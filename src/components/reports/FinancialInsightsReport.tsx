@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 import { DollarSign, TrendingUp, AlertTriangle, Layers, Loader2 } from 'lucide-react'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import {
@@ -118,6 +120,46 @@ export function FinancialInsightsReport() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <ExportButtons
+          disabled={!insights || insights.topItems.length === 0}
+          options={(): GenericExportOptions<any> => ({
+            filename: 'insights-financeiros',
+            title: 'Diagnóstico e Insights Financeiros do Estoque',
+            subtitle: `Capital Total: ${formatCurrency(insights?.totalValue || 0)} | Ticket Médio: ${formatCurrency(insights?.avgValue || 0)}`,
+            filters: [
+              { label: 'Capital Imobilizado', value: formatCurrency(insights?.totalValue || 0) },
+              { label: 'Itens Precificados', value: insights?.validItemsCount },
+              { label: 'Sem Precificação', value: insights?.missingPriceItems },
+            ],
+            data: insights?.topItems || [],
+            columns: [
+              { header: 'Insumo (Top Capital)', key: 'name' },
+              {
+                header: 'Preço Unitário (R$)',
+                accessor: (i) => formatCurrency(i.price),
+                align: 'right',
+              },
+              {
+                header: 'Quantidade em Estoque',
+                key: 'quantity',
+                align: 'right',
+              },
+              {
+                header: 'Total Imobilizado (R$)',
+                accessor: (i) => formatCurrency(i.value),
+                align: 'right',
+              },
+              {
+                header: 'Classificação ABC',
+                accessor: (i) => `Classe ${i.class}`,
+                align: 'center',
+              },
+            ],
+          })}
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">

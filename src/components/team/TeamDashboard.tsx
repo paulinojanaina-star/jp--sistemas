@@ -19,6 +19,8 @@ import { TimeOffFormModal } from './TimeOffFormModal'
 import { TimeOffRequest } from '@/types/team'
 import { SmartTimeOffCard } from './SmartTimeOffCard'
 import { TimeOffCalendar } from './TimeOffCalendar'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 
 export function TeamDashboard() {
   const { employees, timeOffRequests, deleteTimeOff } = useTeamStore()
@@ -254,7 +256,7 @@ export function TeamDashboard() {
               <h2 className="text-lg font-bold tracking-tight">Todas as Escalas Programadas</h2>
               <p className="text-sm text-muted-foreground">Visão geral das ausências e folgas</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -272,6 +274,65 @@ export function TeamDashboard() {
                   <CalendarIcon className="h-4 w-4 mr-2" /> Calendário
                 </TabsTrigger>
               </TabsList>
+              <ExportButtons
+                disabled={calendarRequests.length === 0}
+                options={(): GenericExportOptions<TimeOffRequest> => ({
+                  filename: 'escalas-ausencias-equipe',
+                  title: 'Quadro de Escalas e Ausências da Equipe',
+                  subtitle: `Total: ${calendarRequests.length} registros`,
+                  filters: [{ label: 'Busca Colaborador', value: searchTerm || 'Todos' }],
+                  data: calendarRequests,
+                  columns: [
+                    {
+                      header: 'Colaborador',
+                      accessor: (r) => r.employees?.name || 'Não informado',
+                    },
+                    {
+                      header: 'Cargo / Categoria',
+                      accessor: (r) => r.employees?.category || '-',
+                    },
+                    {
+                      header: 'Tipo de Escala / Ausência',
+                      accessor: (r) => {
+                        if (r.type === 'FERIAS') return 'Férias'
+                        if (r.type === 'ATESTADO') return 'Atestado Médico'
+                        if (r.type === 'FOLGA') return 'Folga'
+                        if (r.type === 'FERIADO') return 'Feriado'
+                        return r.type
+                      },
+                    },
+                    {
+                      header: 'Data Início',
+                      accessor: (r) => {
+                        const parts = r.start_date.split('-')
+                        return parts.length === 3
+                          ? `${parts[2]}/${parts[1]}/${parts[0]}`
+                          : r.start_date
+                      },
+                    },
+                    {
+                      header: 'Data Fim',
+                      accessor: (r) => {
+                        const parts = r.end_date.split('-')
+                        return parts.length === 3
+                          ? `${parts[2]}/${parts[1]}/${parts[0]}`
+                          : r.end_date
+                      },
+                    },
+                    {
+                      header: 'Total Dias',
+                      accessor: (r) => {
+                        const diffTime = Math.abs(
+                          new Date(r.end_date).getTime() - new Date(r.start_date).getTime(),
+                        )
+                        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+                      },
+                      align: 'center',
+                    },
+                    { header: 'Observações', accessor: (r) => r.notes || '-' },
+                  ],
+                })}
+              />
             </div>
           </div>
 

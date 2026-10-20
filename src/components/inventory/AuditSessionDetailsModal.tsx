@@ -22,6 +22,8 @@ import {
 } from 'lucide-react'
 import { InventoryAuditSession, InventoryAuditSessionItem } from '@/types/inventoryAudit'
 import { fetchInventoryAuditSessionDetails } from '@/services/inventoryAudit'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 
 interface AuditSessionDetailsModalProps {
   session: InventoryAuditSession | null
@@ -151,7 +153,50 @@ export function AuditSessionDetailsModal({
 
           {/* Tabela de Itens Conferidos */}
           <div>
-            <h4 className="text-sm font-semibold mb-2">Itens Conferidos na Sessão</h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold">Itens Conferidos na Sessão</h4>
+              <ExportButtons
+                disabled={items.length === 0}
+                options={(): GenericExportOptions<InventoryAuditSessionItem> => ({
+                  filename: `sessao-inventario-${session.health_unit_name.toLowerCase().replace(/\s+/g, '-')}`,
+                  title: `Itens Conferidos na Sessão de Inventário - ${session.health_unit_name}`,
+                  subtitle: `Realizado em ${new Date(session.created_at).toLocaleString('pt-BR')} por ${session.profiles?.full_name || session.profiles?.email || 'Usuário'}`,
+                  filters: [
+                    { label: 'Unidade', value: session.health_unit_name },
+                    { label: 'Total Conferidos', value: session.total_items_checked },
+                    { label: 'Divergências', value: session.divergent_items_count },
+                    { label: 'Justificativa', value: session.justification },
+                  ],
+                  data: items,
+                  columns: [
+                    {
+                      header: 'Insumo / Material',
+                      accessor: (it) => it.items?.name || 'Item',
+                    },
+                    {
+                      header: 'Estoque Sistema',
+                      accessor: (it) => it.system_quantity,
+                      align: 'right',
+                    },
+                    {
+                      header: 'Qtd. Auditada',
+                      accessor: (it) => it.counted_quantity,
+                      align: 'right',
+                    },
+                    {
+                      header: 'Diferença',
+                      accessor: (it) =>
+                        it.difference > 0 ? `+${it.difference}` : `${it.difference}`,
+                      align: 'right',
+                    },
+                    {
+                      header: 'Observações',
+                      accessor: (it) => it.notes || '-',
+                    },
+                  ],
+                })}
+              />
+            </div>
             {loading ? (
               <div className="p-8 flex items-center justify-center text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando itens da conferência...

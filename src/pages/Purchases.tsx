@@ -44,6 +44,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { useInventoryStore } from '@/stores/useInventoryStore'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 import {
   PurchaseOrder,
   PurchaseOrderStatus,
@@ -547,6 +549,93 @@ export default function Purchases() {
                 Limpar
               </Button>
             )}
+
+            <div className="ml-auto flex items-center gap-2">
+              <ExportButtons
+                disabled={filteredOrders.length === 0}
+                options={(): GenericExportOptions<PurchaseOrder> => ({
+                  filename: 'solicitacoes-compras',
+                  title: 'Relatório de Solicitações de Compras',
+                  subtitle: `Status: ${statusFilter} | Unidade: ${unitFilter} | Total: ${filteredOrders.length} pedidos`,
+                  filters: [
+                    { label: 'Status', value: statusFilter },
+                    { label: 'Unidade Destino', value: unitFilter },
+                    { label: 'Termo de Busca', value: searchTerm || 'Todos' },
+                  ],
+                  data: filteredOrders,
+                  columns: [
+                    { header: 'Nº Solicitação', key: 'request_number' },
+                    {
+                      header: 'Data Solicitação',
+                      accessor: (o) =>
+                        o.requested_at
+                          ? new Date(o.requested_at + 'T00:00:00').toLocaleDateString('pt-BR')
+                          : '-',
+                    },
+                    {
+                      header: 'Previsão de Entrega',
+                      accessor: (o) =>
+                        o.expected_date
+                          ? new Date(o.expected_date + 'T00:00:00').toLocaleDateString('pt-BR')
+                          : '-',
+                    },
+                    {
+                      header: 'Itens Detalhados',
+                      accessor: (o) => {
+                        if (o.order_items && o.order_items.length > 0) {
+                          return o.order_items
+                            .map(
+                              (it) =>
+                                `${it.item?.name || 'Item'} (${it.quantity_ordered} ${it.item?.unit_type || 'un'})`,
+                            )
+                            .join('; ')
+                        }
+                        return o.item ? o.item.name : '-'
+                      },
+                    },
+                    { header: 'Fornecedor', accessor: (o) => o.supplier || '-' },
+                    { header: 'Unidade Destino', accessor: (o) => o.health_unit_name || '-' },
+                    {
+                      header: 'Qtd. Total Comprada',
+                      accessor: (o) => o.quantity_ordered,
+                      align: 'right',
+                    },
+                    {
+                      header: 'Qtd. Total Recebida',
+                      accessor: (o) => o.quantity_received,
+                      align: 'right',
+                    },
+                    {
+                      header: 'Qtd. Total Pendente',
+                      accessor: (o) => Math.max(0, o.quantity_ordered - o.quantity_received),
+                      align: 'right',
+                    },
+                    {
+                      header: 'Valor Total da Nota (R$)',
+                      accessor: (o) =>
+                        o.total_price > 0
+                          ? new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            }).format(o.total_price)
+                          : 'R$ 0,00',
+                      align: 'right',
+                    },
+                    {
+                      header: 'Status',
+                      accessor: (o) => {
+                        if (o.status === 'PENDING') return 'Pendente'
+                        if (o.status === 'PARTIAL') return 'Recebida Parcial'
+                        if (o.status === 'RECEIVED') return 'Recebida Total'
+                        if (o.status === 'CANCELLED') return 'Cancelada'
+                        return o.status
+                      },
+                    },
+                    { header: 'Observações', accessor: (o) => o.notes || '-' },
+                  ],
+                })}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -894,11 +983,77 @@ export default function Purchases() {
                         <TableRow className="bg-muted/30 hover:bg-muted/30 border-t-0">
                           <TableCell colSpan={10} className="p-4 pl-12 pr-6">
                             <div className="rounded-xl border bg-card p-3 shadow-sm space-y-2">
-                              <div className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-                                <span>Detalhamento dos Itens ({itemsList.length})</span>
-                                <span className="text-[11px] font-normal lowercase">
-                                  pedido nº {order.request_number}
+                              <div className="text-xs font-black uppercase tracking-wider text-muted-foreground flex flex-wrap items-center justify-between gap-2">
+                                <span>
+                                  Detalhamento dos Itens ({itemsList.length}) - pedido nº{' '}
+                                  {order.request_number}
                                 </span>
+                                <ExportButtons
+                                  size="sm"
+                                  disabled={itemsList.length === 0}
+                                  options={(): GenericExportOptions<any> => ({
+                                    filename: `itens-pedido-${order.request_number.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+                                    title: `Itens da Solicitação de Compra Nº ${order.request_number}`,
+                                    subtitle: `Fornecedor: ${order.supplier || 'N/A'} | Destino: ${order.health_unit_name || 'N/A'}`,
+                                    filters: [
+                                      { label: 'Nº Pedido', value: order.request_number },
+                                      { label: 'Fornecedor', value: order.supplier },
+                                      { label: 'Destino', value: order.health_unit_name },
+                                      { label: 'Data', value: requestedDateFormatted },
+                                    ],
+                                    data: itemsList,
+                                    columns: [
+                                      {
+                                        header: 'Item',
+                                        accessor: (poi) =>
+                                          poi.item ? formatItemDisplay(poi.item) : 'Item',
+                                      },
+                                      {
+                                        header: 'Unidade',
+                                        accessor: (poi) => poi.item?.unit_type || 'un',
+                                      },
+                                      {
+                                        header: 'Saldo Atual em Estoque',
+                                        accessor: (poi) => poi.item?.current_quantity || 0,
+                                        align: 'right',
+                                      },
+                                      {
+                                        header: 'Qtd. Comprada',
+                                        accessor: (poi) => poi.quantity_ordered,
+                                        align: 'right',
+                                      },
+                                      {
+                                        header: 'Qtd. Recebida',
+                                        accessor: (poi) => poi.quantity_received,
+                                        align: 'right',
+                                      },
+                                      {
+                                        header: 'Qtd. Pendente',
+                                        accessor: (poi) =>
+                                          Math.max(0, poi.quantity_ordered - poi.quantity_received),
+                                        align: 'right',
+                                      },
+                                      {
+                                        header: 'Preço Unitário (R$)',
+                                        accessor: (poi) =>
+                                          new Intl.NumberFormat('pt-BR', {
+                                            style: 'currency',
+                                            currency: 'BRL',
+                                          }).format(poi.unit_price || 0),
+                                        align: 'right',
+                                      },
+                                      {
+                                        header: 'Subtotal (R$)',
+                                        accessor: (poi) =>
+                                          new Intl.NumberFormat('pt-BR', {
+                                            style: 'currency',
+                                            currency: 'BRL',
+                                          }).format(poi.total_price || 0),
+                                        align: 'right',
+                                      },
+                                    ],
+                                  })}
+                                />
                               </div>
                               <div className="divide-y divide-border/60">
                                 {itemsList.map((poi, idx) => {

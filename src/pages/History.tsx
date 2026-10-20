@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useToast } from '@/hooks/use-toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -289,50 +291,134 @@ export default function History() {
               </Select>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex flex-1 gap-2 items-center">
-                <Input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full"
-                  title="Data Inicial"
-                />
-                <span className="text-muted-foreground text-sm">até</span>
-                <Input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full"
-                  title="Data Final"
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="flex flex-1 flex-col sm:flex-row gap-4 w-full">
+                <div className="flex flex-1 gap-2 items-center">
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="w-full"
+                    title="Data Inicial"
+                  />
+                  <span className="text-muted-foreground text-sm">até</span>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="w-full"
+                    title="Data Final"
+                  />
+                </div>
+                <Select value={healthUnit} onValueChange={setHealthUnit}>
+                  <SelectTrigger className="w-full sm:w-[220px]">
+                    <SelectValue placeholder="Unidade de Saúde" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TODAS">Todas as Unidades</SelectItem>
+                    {uniqueHealthUnits.map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {unit}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={batch} onValueChange={setBatch}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Lote" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TODOS">Todos os Lotes</SelectItem>
+                    {uniqueBatches.map((b) => (
+                      <SelectItem key={b} value={b}>
+                        Lote: {b}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto flex justify-end">
+                <ExportButtons
+                  disabled={filteredMovements.length === 0}
+                  options={(): GenericExportOptions<any> => ({
+                    filename: 'historico-movimentacoes',
+                    title: 'Histórico de Movimentações de Estoque',
+                    subtitle: `Período: ${dateFrom ? new Date(dateFrom).toLocaleDateString('pt-BR') : 'Início'} até ${dateTo ? new Date(dateTo).toLocaleDateString('pt-BR') : 'Hoje'} | Total: ${filteredMovements.length} registros`,
+                    filters: [
+                      { label: 'Tipo', value: filterType },
+                      { label: 'Unidade', value: healthUnit },
+                      { label: 'Lote', value: batch },
+                      { label: 'Busca', value: search || 'Todos' },
+                      {
+                        label: 'Período',
+                        value: `${dateFrom || 'Início'} a ${dateTo || 'Hoje'}`,
+                      },
+                    ],
+                    data: filteredMovements,
+                    columns: [
+                      {
+                        header: 'Data / Hora',
+                        accessor: (m) =>
+                          new Date(m.created_at).toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }),
+                      },
+                      {
+                        header: 'Operação',
+                        accessor: (m) => {
+                          if (m.type === 'INVENTORY_ADJUST_IN') return 'Ajuste Entrada'
+                          if (m.type === 'INVENTORY_ADJUST_OUT') return 'Ajuste Perda'
+                          if (m.type === 'IN') return 'Entrada'
+                          if (m.type === 'SPECIAL_OUT') return 'Saída Especial'
+                          return 'Saída'
+                        },
+                      },
+                      {
+                        header: 'Item',
+                        accessor: (m) =>
+                          m.items
+                            ? formatItemDisplay({ name: m.items.name, id: m.item_id })
+                            : 'Item Excluído',
+                      },
+                      {
+                        header: 'Quantidade',
+                        accessor: (m) => {
+                          const isPos = m.type === 'IN' || m.type === 'INVENTORY_ADJUST_IN'
+                          return isPos ? `+${m.quantity}` : `-${m.quantity}`
+                        },
+                        align: 'right',
+                      },
+                      {
+                        header: 'Lote',
+                        accessor: (m) => m.batch_number || '-',
+                      },
+                      {
+                        header: 'Validade',
+                        accessor: (m) =>
+                          m.expiry_date ? new Date(m.expiry_date).toLocaleDateString('pt-BR') : '-',
+                      },
+                      {
+                        header: 'Responsável',
+                        accessor: (m) =>
+                          m.profiles?.full_name || m.profiles?.email || 'Desconhecido',
+                      },
+                      {
+                        header: 'Unidade Origem/Destino',
+                        accessor: (m) => m.health_unit_name || '-',
+                      },
+                      {
+                        header: 'Motivo / Obs.',
+                        accessor: (m) => m.special_reason || m.edit_justification || '-',
+                      },
+                    ],
+                  })}
                 />
               </div>
-              <Select value={healthUnit} onValueChange={setHealthUnit}>
-                <SelectTrigger className="w-full md:w-[240px]">
-                  <SelectValue placeholder="Unidade de Saúde" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TODAS">Todas as Unidades</SelectItem>
-                  {uniqueHealthUnits.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                      {unit}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={batch} onValueChange={setBatch}>
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Lote" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TODOS">Todos os Lotes</SelectItem>
-                  {uniqueBatches.map((b) => (
-                    <SelectItem key={b} value={b}>
-                      Lote: {b}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 

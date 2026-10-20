@@ -5,6 +5,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search, Edit, Trash2, CalendarDays } from 'lucide-react'
 import { differenceInYears } from 'date-fns'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
+import { Employee } from '@/types/team'
 
 interface Props {
   onEdit: (id: string) => void
@@ -36,13 +39,44 @@ export function EmployeeList({ onEdit, onViewTimeOffs }: Props) {
         </div>
       </CardHeader>
       <CardContent className="px-0 space-y-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome..."
-            className="pl-9 h-10 bg-background"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome..."
+              className="pl-9 h-10 bg-background"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <ExportButtons
+            disabled={filtered.length === 0}
+            options={(): GenericExportOptions<Employee> => ({
+              filename: 'profissionais-equipe',
+              title: 'Lista de Profissionais / Membros da Equipe',
+              subtitle: `Total: ${filtered.length} profissionais`,
+              filters: [{ label: 'Busca', value: search || 'Todos' }],
+              data: filtered,
+              columns: [
+                { header: 'Nome do Profissional', key: 'name' },
+                { header: 'Categoria / Função', key: 'category' },
+                {
+                  header: 'Data de Nascimento',
+                  accessor: (emp) =>
+                    emp.birth_date
+                      ? new Date(emp.birth_date + 'T00:00:00').toLocaleDateString('pt-BR')
+                      : '-',
+                },
+                {
+                  header: 'Idade',
+                  accessor: (emp) =>
+                    emp.birth_date
+                      ? `${differenceInYears(new Date(), new Date(emp.birth_date + 'T00:00:00'))} anos`
+                      : '-',
+                  align: 'center',
+                },
+              ],
+            })}
           />
         </div>
 

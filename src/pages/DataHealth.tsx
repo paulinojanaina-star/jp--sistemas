@@ -32,6 +32,8 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 
 const EmptyState = ({ msg }: { msg: string }) => (
   <Card>
@@ -276,51 +278,82 @@ export default function DataHealth() {
           {duplicateGroups.length === 0 ? (
             <EmptyState msg="Nenhum item duplicado encontrado na sua base de dados." />
           ) : (
-            <div className="space-y-6">
-              {duplicateGroups.map((group, idx) => (
-                <Card key={idx} className="overflow-hidden">
-                  <CardHeader className="py-3 bg-muted/50 border-b">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-500" />
-                      Grupo {idx + 1}:{' '}
-                      <span className="font-semibold">{formatItemDisplay(group[0])}</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-muted/20">
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Unidade</TableHead>
-                          <TableHead className="text-right">Estoque</TableHead>
-                          <TableHead className="w-[120px] text-center">Ação</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {group.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell className="font-medium">{item.name}</TableCell>
-                            <TableCell>{item.unit_type}</TableCell>
-                            <TableCell className="text-right font-mono">
-                              {item.current_quantity}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setMergeItem(item)}
-                                className="w-full"
-                              >
-                                <Merge className="h-3 w-3 mr-2" /> Mesclar
-                              </Button>
-                            </TableCell>
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <ExportButtons
+                  disabled={duplicateGroups.length === 0}
+                  options={(): GenericExportOptions<any> => {
+                    const flatDuplicates: any[] = []
+                    duplicateGroups.forEach((grp, grpIdx) => {
+                      grp.forEach((it) => {
+                        flatDuplicates.push({
+                          ...it,
+                          groupIdx: grpIdx + 1,
+                        })
+                      })
+                    })
+                    return {
+                      filename: 'itens-duplicados',
+                      title: 'Auditoria de Itens Duplicados ou Similares',
+                      subtitle: `Total de grupos: ${duplicateGroups.length}`,
+                      data: flatDuplicates,
+                      columns: [
+                        { header: 'Grupo', accessor: (it) => `Grupo ${it.groupIdx}` },
+                        { header: 'Nome do Item', key: 'name' },
+                        { header: 'Unidade', key: 'unit_type' },
+                        { header: 'Estoque Atual', key: 'current_quantity', align: 'right' },
+                        { header: 'Fornecedor', accessor: (it) => it.supplier || '-' },
+                      ],
+                    }
+                  }}
+                />
+              </div>
+              <div className="space-y-6">
+                {duplicateGroups.map((group, idx) => (
+                  <Card key={idx} className="overflow-hidden">
+                    <CardHeader className="py-3 bg-muted/50 border-b">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        Grupo {idx + 1}:{' '}
+                        <span className="font-semibold">{formatItemDisplay(group[0])}</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/20">
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Unidade</TableHead>
+                            <TableHead className="text-right">Estoque</TableHead>
+                            <TableHead className="w-[120px] text-center">Ação</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              ))}
+                        </TableHeader>
+                        <TableBody>
+                          {group.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell className="font-medium">{item.name}</TableCell>
+                              <TableCell>{item.unit_type}</TableCell>
+                              <TableCell className="text-right font-mono">
+                                {item.current_quantity}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setMergeItem(item)}
+                                  className="w-full"
+                                >
+                                  <Merge className="h-3 w-3 mr-2" /> Mesclar
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
         </TabsContent>
@@ -329,45 +362,63 @@ export default function DataHealth() {
           {itemsWithoutSupplier.length === 0 ? (
             <EmptyState msg="Todos os seus itens possuem fornecedor vinculado." />
           ) : (
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/30">
-                      <TableHead>Item</TableHead>
-                      <TableHead>Unidade</TableHead>
-                      <TableHead className="text-right">Estoque</TableHead>
-                      <TableHead className="w-[120px] text-center">Ação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {itemsWithoutSupplier.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{formatItemDisplay(item)}</TableCell>
-                        <TableCell>{item.unit_type}</TableCell>
-                        <TableCell className="text-right font-mono">
-                          {item.current_quantity}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <ItemFormModal
-                            item={item}
-                            trigger={
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
-                              >
-                                <Edit2 className="h-3 w-3 mr-2" /> Vincular
-                              </Button>
-                            }
-                          />
-                        </TableCell>
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <ExportButtons
+                  disabled={itemsWithoutSupplier.length === 0}
+                  options={(): GenericExportOptions<Item> => ({
+                    filename: 'itens-sem-fornecedor',
+                    title: 'Insumos sem Fornecedor Vinculado',
+                    subtitle: `Total: ${itemsWithoutSupplier.length} insumos`,
+                    data: itemsWithoutSupplier,
+                    columns: [
+                      { header: 'Insumo', accessor: (i) => formatItemDisplay(i) },
+                      { header: 'Unidade', key: 'unit_type' },
+                      { header: 'Estoque Atual', key: 'current_quantity', align: 'right' },
+                    ],
+                  })}
+                />
+              </div>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/30">
+                        <TableHead>Item</TableHead>
+                        <TableHead>Unidade</TableHead>
+                        <TableHead className="text-right">Estoque</TableHead>
+                        <TableHead className="w-[120px] text-center">Ação</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {itemsWithoutSupplier.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">{formatItemDisplay(item)}</TableCell>
+                          <TableCell>{item.unit_type}</TableCell>
+                          <TableCell className="text-right font-mono">
+                            {item.current_quantity}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <ItemFormModal
+                              item={item}
+                              trigger={
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
+                                >
+                                  <Edit2 className="h-3 w-3 mr-2" /> Vincular
+                                </Button>
+                              }
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </TabsContent>
 
@@ -375,45 +426,63 @@ export default function DataHealth() {
           {itemsWithoutExpiry.length === 0 ? (
             <EmptyState msg="Todos os itens em estoque possuem data de validade registrada." />
           ) : (
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/30">
-                      <TableHead>Item</TableHead>
-                      <TableHead>Unidade</TableHead>
-                      <TableHead className="text-right">Estoque</TableHead>
-                      <TableHead className="w-[120px] text-center">Ação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {itemsWithoutExpiry.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{formatItemDisplay(item)}</TableCell>
-                        <TableCell>{item.unit_type}</TableCell>
-                        <TableCell className="text-right font-mono">
-                          {item.current_quantity}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <ItemFormModal
-                            item={item}
-                            trigger={
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
-                              >
-                                <Edit2 className="h-3 w-3 mr-2" /> Registrar
-                              </Button>
-                            }
-                          />
-                        </TableCell>
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <ExportButtons
+                  disabled={itemsWithoutExpiry.length === 0}
+                  options={(): GenericExportOptions<Item> => ({
+                    filename: 'itens-sem-validade',
+                    title: 'Insumos em Estoque sem Data de Validade',
+                    subtitle: `Total: ${itemsWithoutExpiry.length} insumos`,
+                    data: itemsWithoutExpiry,
+                    columns: [
+                      { header: 'Insumo', accessor: (i) => formatItemDisplay(i) },
+                      { header: 'Unidade', key: 'unit_type' },
+                      { header: 'Estoque Atual', key: 'current_quantity', align: 'right' },
+                    ],
+                  })}
+                />
+              </div>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/30">
+                        <TableHead>Item</TableHead>
+                        <TableHead>Unidade</TableHead>
+                        <TableHead className="text-right">Estoque</TableHead>
+                        <TableHead className="w-[120px] text-center">Ação</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {itemsWithoutExpiry.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">{formatItemDisplay(item)}</TableCell>
+                          <TableCell>{item.unit_type}</TableCell>
+                          <TableCell className="text-right font-mono">
+                            {item.current_quantity}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <ItemFormModal
+                              item={item}
+                              trigger={
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
+                                >
+                                  <Edit2 className="h-3 w-3 mr-2" /> Registrar
+                                </Button>
+                              }
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </TabsContent>
 
@@ -421,26 +490,44 @@ export default function DataHealth() {
           {itemsWithoutPrice.length === 0 ? (
             <EmptyState msg="Todos os seus itens possuem preço cadastrado." />
           ) : (
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/30">
-                      <TableHead>Item</TableHead>
-                      <TableHead>Unidade</TableHead>
-                      <TableHead className="text-right">Estoque</TableHead>
-                      <TableHead>Preço Unitário</TableHead>
-                      <TableHead className="w-[140px] text-center">Ação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {itemsWithoutPrice.map((item) => (
-                      <PriceUpdateRow key={item.id} item={item} onUpdate={handleUpdatePrice} />
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <ExportButtons
+                  disabled={itemsWithoutPrice.length === 0}
+                  options={(): GenericExportOptions<Item> => ({
+                    filename: 'itens-sem-preco',
+                    title: 'Insumos Cadastrados sem Preço Unitário',
+                    subtitle: `Total: ${itemsWithoutPrice.length} insumos`,
+                    data: itemsWithoutPrice,
+                    columns: [
+                      { header: 'Insumo', accessor: (i) => formatItemDisplay(i) },
+                      { header: 'Unidade', key: 'unit_type' },
+                      { header: 'Estoque Atual', key: 'current_quantity', align: 'right' },
+                    ],
+                  })}
+                />
+              </div>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/30">
+                        <TableHead>Item</TableHead>
+                        <TableHead>Unidade</TableHead>
+                        <TableHead className="text-right">Estoque</TableHead>
+                        <TableHead>Preço Unitário</TableHead>
+                        <TableHead className="w-[140px] text-center">Ação</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {itemsWithoutPrice.map((item) => (
+                        <PriceUpdateRow key={item.id} item={item} onUpdate={handleUpdatePrice} />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </TabsContent>
       </Tabs>

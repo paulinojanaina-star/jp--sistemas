@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { SmartTimeOffCard } from './SmartTimeOffCard'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
+import { TimeOffRequest } from '@/types/team'
 
 export function TimeOffList({ onEdit }: { onEdit: (id: string) => void }) {
   const { timeOffRequests, deleteTimeOff } = useTeamStore()
@@ -31,13 +34,69 @@ export function TimeOffList({ onEdit }: { onEdit: (id: string) => void }) {
         <CardDescription>
           Visão geral de todas as ausências futuras em ordem cronológica
         </CardDescription>
-        <div className="mt-4 relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por colaborador..."
-            className="pl-9 bg-muted/50"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por colaborador..."
+              className="pl-9 bg-muted/50"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <ExportButtons
+            disabled={upcomingRequests.length === 0}
+            options={(): GenericExportOptions<TimeOffRequest> => ({
+              filename: 'escalas-programadas',
+              title: 'Todas as Escalas Programadas',
+              subtitle: `Total: ${upcomingRequests.length} escalas`,
+              filters: [{ label: 'Busca', value: searchTerm || 'Todos' }],
+              data: upcomingRequests,
+              columns: [
+                {
+                  header: 'Profissional',
+                  accessor: (r) => r.employees?.name || 'Não informado',
+                },
+                {
+                  header: 'Função',
+                  accessor: (r) => r.employees?.category || '-',
+                },
+                {
+                  header: 'Tipo',
+                  accessor: (r) => {
+                    if (r.type === 'FERIAS') return 'Férias'
+                    if (r.type === 'ATESTADO') return 'Atestado'
+                    if (r.type === 'FOLGA') return 'Folga'
+                    return r.type
+                  },
+                },
+                {
+                  header: 'Início',
+                  accessor: (r) => {
+                    const parts = r.start_date.split('-')
+                    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : r.start_date
+                  },
+                },
+                {
+                  header: 'Fim',
+                  accessor: (r) => {
+                    const parts = r.end_date.split('-')
+                    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : r.end_date
+                  },
+                },
+                {
+                  header: 'Dias',
+                  accessor: (r) => {
+                    const diffTime = Math.abs(
+                      new Date(r.end_date).getTime() - new Date(r.start_date).getTime(),
+                    )
+                    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+                  },
+                  align: 'center',
+                },
+                { header: 'Observações', accessor: (r) => r.notes || '-' },
+              ],
+            })}
           />
         </div>
       </CardHeader>

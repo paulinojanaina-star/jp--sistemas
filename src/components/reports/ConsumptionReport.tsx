@@ -3,6 +3,8 @@ import { subDays, startOfMonth, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 import {
   Select,
   SelectContent,
@@ -74,7 +76,32 @@ export function ConsumptionReport() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Relatório de Consumo Dinâmico</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="text-lg">Relatório de Consumo Dinâmico</CardTitle>
+            <ExportButtons
+              disabled={barData.length === 0}
+              options={(): GenericExportOptions<any> => ({
+                filename: 'relatorio-consumo',
+                title: 'Relatório Dinâmico de Consumo de Insumos',
+                subtitle: `Período: ${format(dateRange.start, 'dd/MM/yyyy')} a ${format(dateRange.end, 'dd/MM/yyyy')} | Unidade: ${healthUnit || 'Todas'}`,
+                filters: [
+                  { label: 'Início', value: format(dateRange.start, 'dd/MM/yyyy') },
+                  { label: 'Fim', value: format(dateRange.end, 'dd/MM/yyyy') },
+                  { label: 'Unidade', value: healthUnit || 'Todas' },
+                  { label: 'Item Selecionado', value: selectedItemName || 'Todos' },
+                ],
+                data: barData,
+                columns: [
+                  { header: 'Insumo / Material', key: 'name' },
+                  {
+                    header: 'Quantidade Consumida',
+                    key: 'quantity',
+                    align: 'right',
+                  },
+                ],
+              })}
+            />
+          </div>
           <div className="flex flex-wrap items-center gap-2 mt-3">
             {(['7d', '30d', '90d', 'thisMonth'] as DatePreset[]).map((p) => (
               <Button

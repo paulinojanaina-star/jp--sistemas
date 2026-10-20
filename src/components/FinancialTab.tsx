@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 import {
   Table,
   TableBody,
@@ -66,13 +68,51 @@ export function FinancialTab() {
           </div>
         </Card>
         <div className="col-span-1 md:col-span-2 flex flex-col justify-end">
-          <div className="relative w-full ml-auto md:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Pesquisar item..."
-              className="pl-9 rounded-xl bg-background"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+          <div className="flex flex-wrap items-center gap-2 justify-end w-full">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Pesquisar item..."
+                className="pl-9 rounded-xl bg-background"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <ExportButtons
+              disabled={filteredItems.length === 0}
+              options={(): GenericExportOptions<any> => ({
+                filename: 'controle-financeiro-estoque',
+                title: 'Controle Financeiro de Estoque',
+                subtitle: `Total Imobilizado: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalGlobalValue)}`,
+                filters: [{ label: 'Pesquisa', value: searchQuery || 'Todos' }],
+                data: filteredItems,
+                columns: [
+                  { header: 'Item', key: 'name' },
+                  {
+                    header: 'Quantidade',
+                    accessor: (it) => `${Number(it.current_quantity || 0)} ${it.unit_type || 'UN'}`,
+                    align: 'right',
+                  },
+                  {
+                    header: 'Preço Unitário (R$)',
+                    accessor: (it) =>
+                      new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(Number(it.unit_price || 0)),
+                    align: 'right',
+                  },
+                  {
+                    header: 'Valor Total (R$)',
+                    accessor: (it) =>
+                      new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(Number(it.current_quantity || 0) * Number(it.unit_price || 0)),
+                    align: 'right',
+                  },
+                ],
+              })}
             />
           </div>
         </div>

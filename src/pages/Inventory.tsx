@@ -38,6 +38,8 @@ import { InventoryReviewStep } from '@/components/inventory/InventoryReviewStep'
 import { AuditSessionDetailsModal } from '@/components/inventory/AuditSessionDetailsModal'
 import { InventoryAuditSession, SaveInventoryAuditInput } from '@/types/inventoryAudit'
 import { fetchInventoryAuditSessions, saveInventoryAudit } from '@/services/inventoryAudit'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 
 const DEFAULT_UNITS = [
   'APS',
@@ -240,7 +242,7 @@ export default function Inventory() {
         {/* Aba 2: Histórico de Auditorias de Inventário */}
         <TabsContent value="history" className="mt-4 space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
               <div>
                 <CardTitle className="text-base font-bold flex items-center gap-2">
                   <FileSpreadsheet className="h-5 w-5 text-primary" />
@@ -250,16 +252,72 @@ export default function Inventory() {
                   Registro auditável de todas as conferências manuais já realizadas no sistema.
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadAuditHistory}
-                disabled={loadingHistory}
-                className="h-8 text-xs"
-              >
-                <RotateCcw className={`h-3.5 w-3.5 mr-1 ${loadingHistory ? 'animate-spin' : ''}`} />
-                Atualizar
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadAuditHistory}
+                  disabled={loadingHistory}
+                  className="h-8 text-xs"
+                >
+                  <RotateCcw
+                    className={`h-3.5 w-3.5 mr-1 ${loadingHistory ? 'animate-spin' : ''}`}
+                  />
+                  Atualizar
+                </Button>
+                <ExportButtons
+                  disabled={auditSessions.length === 0}
+                  options={(): GenericExportOptions<InventoryAuditSession> => ({
+                    filename: 'sessoes-inventario',
+                    title: 'Sessões de Contagem Concluídas (Inventário)',
+                    subtitle: `Unidade: ${selectedUnit}`,
+                    filters: [{ label: 'Unidade Selecionada', value: selectedUnit }],
+                    data: auditSessions,
+                    columns: [
+                      {
+                        header: 'Data / Hora',
+                        accessor: (s) =>
+                          new Date(s.created_at).toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }),
+                      },
+                      { header: 'Unidade', key: 'health_unit_name' },
+                      {
+                        header: 'Responsável',
+                        accessor: (s) => s.profiles?.full_name || s.profiles?.email || 'Usuário',
+                      },
+                      {
+                        header: 'Itens Conferidos',
+                        accessor: (s) => s.total_items_checked,
+                        align: 'center',
+                      },
+                      {
+                        header: 'Divergências',
+                        accessor: (s) => `${s.divergent_items_count} divergente(s)`,
+                        align: 'center',
+                      },
+                      {
+                        header: 'Ajustes (+)',
+                        accessor: (s) => s.positive_adjustments_count,
+                        align: 'center',
+                      },
+                      {
+                        header: 'Ajustes (-)',
+                        accessor: (s) => s.negative_adjustments_count,
+                        align: 'center',
+                      },
+                      {
+                        header: 'Justificativa',
+                        accessor: (s) => s.justification || '-',
+                      },
+                    ],
+                  })}
+                />
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>

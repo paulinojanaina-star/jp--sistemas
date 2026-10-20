@@ -16,6 +16,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import { format, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
+import { SystemHoliday } from '@/stores/useTeamStore'
 
 interface SystemHolidayListProps {
   onEdit: (id: string) => void
@@ -55,64 +58,89 @@ export function SystemHolidayList({ onEdit }: SystemHolidayListProps) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {systemHolidays.map((holiday) => (
-        <Card
-          key={holiday.id}
-          className="p-5 flex flex-col gap-4 bg-white dark:bg-slate-900 border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-all group"
-        >
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <h4 className="font-bold text-base leading-none">{holiday.name}</h4>
-              <div className="flex items-center text-sm text-muted-foreground gap-1.5 mt-2">
-                <CalendarIcon className="h-3.5 w-3.5" />
-                <span>
-                  {format(parseISO(holiday.date), "dd 'de' MMMM, yyyy", { locale: ptBR })}
-                </span>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <ExportButtons
+          disabled={systemHolidays.length === 0}
+          options={(): GenericExportOptions<SystemHoliday> => ({
+            filename: 'pontos-facultativos',
+            title: 'Pontos Facultativos e Folgas Automáticas',
+            subtitle: `Total: ${systemHolidays.length} datas cadastradas`,
+            data: systemHolidays,
+            columns: [
+              { header: 'Nome do Evento', key: 'name' },
+              {
+                header: 'Data',
+                accessor: (h) => (h.date ? format(parseISO(h.date), 'dd/MM/yyyy') : '-'),
+              },
+              {
+                header: 'Descrição / Mês',
+                accessor: (h) =>
+                  h.date ? format(parseISO(h.date), "MMMM 'de' yyyy", { locale: ptBR }) : '-',
+              },
+            ],
+          })}
+        />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {systemHolidays.map((holiday) => (
+          <Card
+            key={holiday.id}
+            className="p-5 flex flex-col gap-4 bg-white dark:bg-slate-900 border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-all group"
+          >
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <h4 className="font-bold text-base leading-none">{holiday.name}</h4>
+                <div className="flex items-center text-sm text-muted-foreground gap-1.5 mt-2">
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  <span>
+                    {format(parseISO(holiday.date), "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-500 hover:text-blue-600"
+                  onClick={() => onEdit(holiday.id)}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-slate-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir ponto facultativo?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação não pode ser desfeita. Isso removerá a folga automática para toda
+                        a equipe nesta data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDelete(holiday.id)}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Excluir
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
-            <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-slate-500 hover:text-blue-600"
-                onClick={() => onEdit(holiday.id)}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-slate-500 hover:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir ponto facultativo?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta ação não pode ser desfeita. Isso removerá a folga automática para toda a
-                      equipe nesta data.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleDelete(holiday.id)}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Excluir
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        </Card>
-      ))}
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }

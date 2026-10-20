@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ItemFormModal } from '@/components/ItemFormModal'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ExportButtons } from '@/components/ExportButtons'
+import { GenericExportOptions } from '@/utils/exportGeneric'
 import {
   Table,
   TableBody,
@@ -338,113 +340,186 @@ export default function Items() {
                 />
               </div>
 
-              <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-border/50 overflow-x-auto w-full xl:w-auto">
-                <Button
-                  variant={currentFilter === 'todos' ? 'default' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    'rounded-lg text-sm font-bold whitespace-nowrap',
-                    currentFilter === 'todos' ? 'shadow-sm' : 'text-muted-foreground',
-                  )}
-                  onClick={() => setFilter('todos')}
-                >
-                  Todos
-                </Button>
-                <Button
-                  variant={currentFilter === 'critico' ? 'default' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    'rounded-lg text-sm font-bold whitespace-nowrap',
-                    currentFilter === 'critico'
-                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'
-                      : 'text-orange-600 dark:text-orange-400',
-                  )}
-                  onClick={() => setFilter('critico')}
-                >
-                  Crítico
-                </Button>
-                <Button
-                  variant={currentFilter === 'zerado' ? 'default' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    'rounded-lg text-sm font-bold whitespace-nowrap',
-                    currentFilter === 'zerado'
-                      ? 'bg-red-500 hover:bg-red-600 text-white shadow-sm'
-                      : 'text-red-600 dark:text-red-400',
-                  )}
-                  onClick={() => setFilter('zerado')}
-                >
-                  Zerado
-                </Button>
-                <Button
-                  variant={currentFilter === '180dias' ? 'default' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    'rounded-lg text-sm font-bold whitespace-nowrap',
-                    currentFilter === '180dias'
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-sm'
-                      : 'text-blue-600 dark:text-blue-400',
-                  )}
-                  onClick={() => setFilter('180dias')}
-                >
-                  ≤ 180 Dias
-                </Button>
-                <Button
-                  variant={
-                    currentFilter === '120dias' || currentFilter === 'vencimento_proximo'
-                      ? 'default'
-                      : 'ghost'
-                  }
-                  size="sm"
-                  className={cn(
-                    'rounded-lg text-sm font-bold whitespace-nowrap',
-                    currentFilter === '120dias' || currentFilter === 'vencimento_proximo'
-                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-sm'
-                      : 'text-yellow-600 dark:text-yellow-400',
-                  )}
-                  onClick={() => setFilter('120dias')}
-                >
-                  ≤ 120 Dias
-                </Button>
-                <Button
-                  variant={currentFilter === '60dias' ? 'default' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    'rounded-lg text-sm font-bold whitespace-nowrap',
-                    currentFilter === '60dias'
-                      ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-sm'
-                      : 'text-amber-600 dark:text-amber-500',
-                  )}
-                  onClick={() => setFilter('60dias')}
-                >
-                  ≤ 60 Dias
-                </Button>
-                <Button
-                  variant={currentFilter === 'ruptura' ? 'default' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    'rounded-lg text-sm font-bold whitespace-nowrap',
-                    currentFilter === 'ruptura'
-                      ? 'bg-purple-500 hover:bg-purple-600 text-white shadow-sm'
-                      : 'text-purple-600 dark:text-purple-400',
-                  )}
-                  onClick={() => setFilter('ruptura')}
-                >
-                  Ruptura
-                </Button>
-                <Button
-                  variant={currentFilter === 'vencidos' ? 'default' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    'rounded-lg text-sm font-bold whitespace-nowrap',
-                    currentFilter === 'vencidos'
-                      ? 'bg-destructive hover:bg-destructive/90 text-white shadow-sm'
-                      : 'text-destructive',
-                  )}
-                  onClick={() => setFilter('vencidos')}
-                >
-                  Vencidos
-                </Button>
+              <div className="flex items-center gap-2 w-full xl:w-auto justify-between xl:justify-end">
+                <ExportButtons
+                  disabled={filteredItems.length === 0}
+                  options={(): GenericExportOptions<any> => ({
+                    filename: 'itens-estoque',
+                    title: 'Relatório de Itens do Estoque',
+                    subtitle: `Filtro: ${currentFilter.toUpperCase()} | Total: ${filteredItems.length} insumos`,
+                    filters: [
+                      { label: 'Filtro Rápido', value: currentFilter },
+                      { label: 'Pesquisa', value: searchQuery || 'Todos' },
+                    ],
+                    data: filteredItems,
+                    columns: [
+                      { header: 'Item / Descrição', key: 'name' },
+                      { header: 'Unidade', accessor: (it) => it.unit_type || 'UN' },
+                      {
+                        header: 'Estoque Atual',
+                        accessor: (it) => it.currentQty,
+                        align: 'right',
+                      },
+                      {
+                        header: 'Estoque Mínimo',
+                        accessor: (it) => it.minQty,
+                        align: 'right',
+                      },
+                      {
+                        header: 'Consumo Médio/Mês',
+                        accessor: (it) => it.monthlyConsumption,
+                        align: 'right',
+                      },
+                      {
+                        header: 'Preço Unitário (R$)',
+                        accessor: (it) =>
+                          it.unit_price
+                            ? Number(it.unit_price).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })
+                            : 'R$ 0,00',
+                        align: 'right',
+                      },
+                      {
+                        header: 'Valor Total (R$)',
+                        accessor: (it) =>
+                          Number((it.currentQty || 0) * (it.unit_price || 0)).toLocaleString(
+                            'pt-BR',
+                            {
+                              style: 'currency',
+                              currency: 'BRL',
+                            },
+                          ),
+                        align: 'right',
+                      },
+                      {
+                        header: 'Status',
+                        accessor: (it) => {
+                          const statusList: string[] = []
+                          if (it.isExpired) statusList.push('Vencido')
+                          if (it.isZerado) statusList.push('Zerado')
+                          if (it.isCritico) statusList.push('Crítico')
+                          if (it.isStockoutRisk) statusList.push('Ruptura')
+                          if (statusList.length === 0) statusList.push('Regular')
+                          return statusList.join(', ')
+                        },
+                      },
+                      {
+                        header: 'Fornecedor',
+                        accessor: (it) => it.supplier || '-',
+                      },
+                    ],
+                  })}
+                />
+                <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-border/50 overflow-x-auto w-full xl:w-auto">
+                  <Button
+                    variant={currentFilter === 'todos' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      'rounded-lg text-sm font-bold whitespace-nowrap',
+                      currentFilter === 'todos' ? 'shadow-sm' : 'text-muted-foreground',
+                    )}
+                    onClick={() => setFilter('todos')}
+                  >
+                    Todos
+                  </Button>
+                  <Button
+                    variant={currentFilter === 'critico' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      'rounded-lg text-sm font-bold whitespace-nowrap',
+                      currentFilter === 'critico'
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'
+                        : 'text-orange-600 dark:text-orange-400',
+                    )}
+                    onClick={() => setFilter('critico')}
+                  >
+                    Crítico
+                  </Button>
+                  <Button
+                    variant={currentFilter === 'zerado' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      'rounded-lg text-sm font-bold whitespace-nowrap',
+                      currentFilter === 'zerado'
+                        ? 'bg-red-500 hover:bg-red-600 text-white shadow-sm'
+                        : 'text-red-600 dark:text-red-400',
+                    )}
+                    onClick={() => setFilter('zerado')}
+                  >
+                    Zerado
+                  </Button>
+                  <Button
+                    variant={currentFilter === '180dias' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      'rounded-lg text-sm font-bold whitespace-nowrap',
+                      currentFilter === '180dias'
+                        ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-sm'
+                        : 'text-blue-600 dark:text-blue-400',
+                    )}
+                    onClick={() => setFilter('180dias')}
+                  >
+                    ≤ 180 Dias
+                  </Button>
+                  <Button
+                    variant={
+                      currentFilter === '120dias' || currentFilter === 'vencimento_proximo'
+                        ? 'default'
+                        : 'ghost'
+                    }
+                    size="sm"
+                    className={cn(
+                      'rounded-lg text-sm font-bold whitespace-nowrap',
+                      currentFilter === '120dias' || currentFilter === 'vencimento_proximo'
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-sm'
+                        : 'text-yellow-600 dark:text-yellow-400',
+                    )}
+                    onClick={() => setFilter('120dias')}
+                  >
+                    ≤ 120 Dias
+                  </Button>
+                  <Button
+                    variant={currentFilter === '60dias' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      'rounded-lg text-sm font-bold whitespace-nowrap',
+                      currentFilter === '60dias'
+                        ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-sm'
+                        : 'text-amber-600 dark:text-amber-500',
+                    )}
+                    onClick={() => setFilter('60dias')}
+                  >
+                    ≤ 60 Dias
+                  </Button>
+                  <Button
+                    variant={currentFilter === 'ruptura' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      'rounded-lg text-sm font-bold whitespace-nowrap',
+                      currentFilter === 'ruptura'
+                        ? 'bg-purple-500 hover:bg-purple-600 text-white shadow-sm'
+                        : 'text-purple-600 dark:text-purple-400',
+                    )}
+                    onClick={() => setFilter('ruptura')}
+                  >
+                    Ruptura
+                  </Button>
+                  <Button
+                    variant={currentFilter === 'vencidos' ? 'default' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      'rounded-lg text-sm font-bold whitespace-nowrap',
+                      currentFilter === 'vencidos'
+                        ? 'bg-destructive hover:bg-destructive/90 text-white shadow-sm'
+                        : 'text-destructive',
+                    )}
+                    onClick={() => setFilter('vencidos')}
+                  >
+                    Vencidos
+                  </Button>
+                </div>
               </div>
             </div>
 
