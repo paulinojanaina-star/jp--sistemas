@@ -1,7 +1,12 @@
 export const ITEM_UNITS = ['Caixa', 'Unidade', 'Rolo', 'Litro', 'Frasco', 'Par', 'Pacote'] as const
 
 export type ItemUnit = (typeof ITEM_UNITS)[number] | string
-export type MovementType = 'IN' | 'OUT' | 'SPECIAL_OUT'
+export type MovementType =
+  | 'IN'
+  | 'OUT'
+  | 'SPECIAL_OUT'
+  | 'INVENTORY_ADJUST_IN'
+  | 'INVENTORY_ADJUST_OUT'
 
 export interface Item {
   id: string

@@ -99,12 +99,13 @@ export default function History() {
   const summary = useMemo(() => {
     return filteredMovements.reduce(
       (acc, m) => {
-        if (m.type === 'IN') acc.in += m.quantity
+        if (m.type === 'IN' || m.type === 'INVENTORY_ADJUST_IN') acc.in += m.quantity
         else if (m.type === 'OUT') acc.out += m.quantity
         else if (m.type === 'SPECIAL_OUT') acc.special += m.quantity
+        else if (m.type === 'INVENTORY_ADJUST_OUT') acc.adjustLoss += m.quantity
         return acc
       },
-      { in: 0, out: 0, special: 0 },
+      { in: 0, out: 0, special: 0, adjustLoss: 0 },
     )
   }, [filteredMovements])
 
@@ -139,7 +140,15 @@ export default function History() {
     const rows = filteredMovements.map((m) => {
       const date = new Date(m.created_at).toLocaleString('pt-BR')
       const type =
-        m.type === 'IN' ? 'ENTRADA' : m.type === 'SPECIAL_OUT' ? 'SAÍDA ESPECIAL' : 'SAÍDA'
+        m.type === 'IN'
+          ? 'ENTRADA'
+          : m.type === 'INVENTORY_ADJUST_IN'
+            ? 'AJUSTE ENTRADA'
+            : m.type === 'INVENTORY_ADJUST_OUT'
+              ? 'AJUSTE PERDA'
+              : m.type === 'SPECIAL_OUT'
+                ? 'SAÍDA ESPECIAL'
+                : 'SAÍDA'
       const item = m.items ? formatItemDisplay({ name: m.items.name, id: m.item_id }) : 'Excluído'
       const qty = m.quantity
       const batchNum = m.batch_number || ''
@@ -198,7 +207,7 @@ export default function History() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -233,6 +242,18 @@ export default function History() {
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Perdas / Ajustes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-rose-600">
+              -{summary.adjustLoss.toLocaleString('pt-BR')}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
@@ -257,9 +278,13 @@ export default function History() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="TODOS">Todas as Operações</SelectItem>
-                  <SelectItem value="IN">Apenas Entradas</SelectItem>
-                  <SelectItem value="OUT">Apenas Saídas</SelectItem>
+                  <SelectItem value="IN">Entradas Regulares</SelectItem>
+                  <SelectItem value="OUT">Saídas Regulares</SelectItem>
                   <SelectItem value="SPECIAL_OUT">Saídas Especiais</SelectItem>
+                  <SelectItem value="INVENTORY_ADJUST_IN">
+                    Ajustes: Entradas (Inventário)
+                  </SelectItem>
+                  <SelectItem value="INVENTORY_ADJUST_OUT">Ajustes: Perdas (Inventário)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -334,8 +359,10 @@ export default function History() {
                 </TableRow>
               ) : (
                 paginatedMovements.map((m) => {
-                  const isEntry = m.type === 'IN'
+                  const isEntry = m.type === 'IN' || m.type === 'INVENTORY_ADJUST_IN'
                   const isSpecial = m.type === 'SPECIAL_OUT'
+                  const isAdjustIn = m.type === 'INVENTORY_ADJUST_IN'
+                  const isAdjustOut = m.type === 'INVENTORY_ADJUST_OUT'
 
                   return (
                     <TableRow key={m.id}>
@@ -350,23 +377,52 @@ export default function History() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={isEntry ? 'outline' : isSpecial ? 'secondary' : 'default'}
-                          className={`uppercase text-[10px] tracking-wider font-semibold ${isEntry ? 'text-secondary border-secondary/30 bg-secondary/10' : isSpecial ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' : ''}`}
+                          variant={
+                            isEntry
+                              ? 'outline'
+                              : isSpecial
+                                ? 'secondary'
+                                : isAdjustOut
+                                  ? 'destructive'
+                                  : 'default'
+                          }
+                          className={`uppercase text-[10px] tracking-wider font-semibold ${
+                            isAdjustIn
+                              ? 'text-emerald-700 border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/30'
+                              : isAdjustOut
+                                ? 'bg-rose-500/10 text-rose-600 border-rose-500/30'
+                                : isEntry
+                                  ? 'text-secondary border-secondary/30 bg-secondary/10'
+                                  : isSpecial
+                                    ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                    : ''
+                          }`}
                         >
                           <span className="flex items-center gap-1">
                             {isEntry ? (
                               <ArrowDownToLine size={12} strokeWidth={1.5} />
-                            ) : isSpecial ? (
+                            ) : isSpecial || isAdjustOut ? (
                               <AlertCircle size={12} strokeWidth={1.5} />
                             ) : (
                               <ArrowUpFromLine size={12} strokeWidth={1.5} />
                             )}
-                            {isEntry ? 'ENTRADA' : isSpecial ? 'SAÍDA ESP.' : 'SAÍDA'}
+                            {isAdjustIn
+                              ? 'AJUSTE ENTRADA'
+                              : isAdjustOut
+                                ? 'AJUSTE PERDA'
+                                : isEntry
+                                  ? 'ENTRADA'
+                                  : isSpecial
+                                    ? 'SAÍDA ESP.'
+                                    : 'SAÍDA'}
                           </span>
                         </Badge>
-                        {isSpecial && m.special_reason && (
+                        {(m.special_reason || isAdjustIn || isAdjustOut) && (
                           <div className="text-[10px] text-muted-foreground mt-1 font-medium">
-                            {m.special_reason}
+                            {m.special_reason ||
+                              (isAdjustOut
+                                ? 'Perda identificada em inventário'
+                                : 'Sobra identificada em inventário')}
                           </div>
                         )}
                         {m.edit_justification && (
@@ -384,7 +440,13 @@ export default function History() {
                           : 'Excluído'}
                       </TableCell>
                       <TableCell
-                        className={`text-right font-mono font-bold ${isEntry ? 'text-secondary' : 'text-foreground'}`}
+                        className={`text-right font-mono font-bold ${
+                          isAdjustOut
+                            ? 'text-rose-600'
+                            : isEntry
+                              ? 'text-secondary'
+                              : 'text-foreground'
+                        }`}
                       >
                         {isEntry ? '+' : '-'}
                         {m.quantity}
