@@ -177,7 +177,7 @@ export async function createPurchaseOrder(
   }
 
   // 3. Se houver valor unitário informado em cada item, atualizar o preço na tabela items
-  // para que o Controle Financeiro e relatórios reflitam o preço mais recente de compra
+  // e registrar no histórico de preços (item_price_history)
   for (const itemInput of preparedItems) {
     if (itemInput.unit_price > 0) {
       const itemUpdates: Record<string, any> = { unit_price: itemInput.unit_price }
@@ -185,6 +185,22 @@ export async function createPurchaseOrder(
         itemUpdates.supplier = input.supplier.trim()
       }
       await supabase.from('items').update(itemUpdates).eq('id', itemInput.item_id)
+
+      // Registrar no histórico de preços
+      const matchedPoi = createdItems?.find((ci: any) => ci.item_id === itemInput.item_id)
+      await (supabase as any).from('item_price_history').insert({
+        item_id: itemInput.item_id,
+        purchase_order_id: orderHeader.id,
+        purchase_order_item_id: matchedPoi?.id || null,
+        request_number: input.request_number.trim(),
+        supplier: input.supplier?.trim() || 'Não informado',
+        health_unit_name: input.health_unit_name?.trim() || 'Almoxarifado Central',
+        unit_price: itemInput.unit_price,
+        quantity: itemInput.quantity_ordered,
+        total_price: itemInput.total_price,
+        source_type: 'PURCHASE_ORDER',
+        record_date: input.requested_at || new Date().toISOString().split('T')[0],
+      })
     }
   }
 
@@ -312,6 +328,22 @@ export async function registerOrderReceipt(
     // 1.3 Update items table unit_price if provided
     if (unitPrice && unitPrice > 0) {
       await supabase.from('items').update({ unit_price: unitPrice }).eq('id', itemRec.item_id)
+
+      // Registrar recebimento com preço no histórico
+      await (supabase as any).from('item_price_history').insert({
+        item_id: itemRec.item_id,
+        purchase_order_id: currentOrder.id,
+        purchase_order_item_id: itemRec.order_item_id || null,
+        request_number: currentOrder.request_number,
+        supplier: currentOrder.supplier || 'Não informado',
+        health_unit_name:
+          receipt.health_unit_name || currentOrder.health_unit_name || 'Almoxarifado Central',
+        unit_price: unitPrice,
+        quantity: qtyNow,
+        total_price: unitPrice * qtyNow,
+        source_type: 'RECEIPT',
+        record_date: receipt.received_at || new Date().toISOString().split('T')[0],
+      })
     }
   }
 
@@ -540,7 +572,7 @@ export async function updatePurchaseOrder(
     if (insErr) return { data: null, error: insErr }
   }
 
-  // 7. Atualizar preço dos itens na tabela items (refletindo no Controle Financeiro)
+  // 7. Atualizar preço dos itens na tabela items e registrar no histórico
   for (const itemInput of input.items) {
     const price = Number(itemInput.unit_price || 0)
     if (price > 0) {
@@ -549,6 +581,22 @@ export async function updatePurchaseOrder(
         itemUpdates.supplier = input.supplier.trim()
       }
       await supabase.from('items').update(itemUpdates).eq('id', itemInput.item_id)
+
+      // Registrar/atualizar no histórico de preços se houver alteração
+      await (supabase as any).from('item_price_history').insert({
+        item_id: itemInput.item_id,
+        purchase_order_id: input.order_id,
+        purchase_order_item_id: itemInput.id || null,
+        request_number: input.request_number.trim(),
+        supplier: input.supplier?.trim() || 'Não informado',
+        health_unit_name: input.health_unit_name?.trim() || 'Almoxarifado Central',
+        unit_price: price,
+        quantity: Number(itemInput.quantity_ordered) || 1,
+        total_price:
+          Number(itemInput.total_price) || price * (Number(itemInput.quantity_ordered) || 1),
+        source_type: 'PURCHASE_ORDER',
+        record_date: input.requested_at || new Date().toISOString().split('T')[0],
+      })
     }
   }
 
